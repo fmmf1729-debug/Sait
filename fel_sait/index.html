@@ -56,11 +56,12 @@ a{color:inherit;text-decoration:none}
 #wipe{position:fixed;inset:0;background:#050708;z-index:200;transform:translateY(0);transition:transform .6s cubic-bezier(.8,0,.2,1)}
 #wipe::after{content:'';position:absolute;left:0;right:0;bottom:0;height:10px;background:#16e0e0;box-shadow:0 0 18px rgba(22,224,224,.55)}
 #wipe.off{transform:translateY(-102%)}
-#glow{position:fixed;top:0;left:0;width:600px;height:600px;z-index:1;pointer-events:none;background:radial-gradient(circle,var(--glowbg),transparent 60%);mix-blend-mode:screen}
 #bg{position:fixed;inset:-10%;z-index:0;pointer-events:none}
-.cross{position:absolute;background:currentColor;clip-path:polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%);animation:floaty 12s ease-in-out infinite alternate}
-.cross.w{color:var(--crossA)} .cross.k{color:var(--crossB)}
-.cross.c{color:var(--crossC);filter:drop-shadow(0 0 12px rgba(22,224,224,.4))}
+/* кресты: обёртка въезжает при скролле, внутренность качается */
+.crossw{position:absolute;will-change:transform,opacity}
+.crossw.w{color:var(--crossA)} .crossw.k{color:var(--crossB)} .crossw.c{color:var(--crossC)}
+.cross{display:block;width:100%;height:100%;background:currentColor;clip-path:polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%);animation:floaty 12s ease-in-out infinite alternate}
+.crossw.c .cross{filter:drop-shadow(0 0 12px rgba(22,224,224,.4))}
 @keyframes floaty{from{transform:rotate(var(--r)) translateY(0)}to{transform:rotate(calc(var(--r) + 20deg)) translateY(-30px)}}
 
 #head{position:fixed;left:0;top:0;width:600px;max-width:none;transform-origin:top left;z-index:60;pointer-events:none;will-change:transform;filter:drop-shadow(0 10px 30px rgba(0,0,0,.35))}
@@ -114,7 +115,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .hero-letters{position:absolute;top:6%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
 .hero-title{font-family:var(--fd);font-weight:900;font-size:clamp(3rem,12vw,9rem);line-height:.95;text-transform:uppercase;position:relative;z-index:1}
 .hero-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
-.hero-sub{margin-top:18px;color:var(--muted);font-size:clamp(.9rem,2vw,1.2rem);letter-spacing:.15em;text-transform:uppercase;position:relative;z-index:1}
+.hero-sub{margin-top:28px;color:var(--muted);font-size:clamp(.9rem,2vw,1.2rem);letter-spacing:.15em;text-transform:uppercase;position:relative;z-index:1}
 .hero-actions{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap;position:relative;z-index:1}
 .scroll-hint{position:absolute;bottom:18px;left:8vw;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px}
 .scroll-hint span{width:60px;height:2px;background:var(--cy);display:inline-block;animation:hint 1.4s ease-in-out infinite}
@@ -132,6 +133,9 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .inline{color:var(--cy);border-bottom:2px solid var(--cy)}
 .note{margin-top:26px;color:var(--muted)}
 
+/* ник-бейдж в стиле ленты */
+.nick{display:inline-block;background:var(--cy);color:var(--oncy);font-family:var(--fd);font-weight:900;font-size:1rem;letter-spacing:.08em;padding:9px 16px;border:3px solid #000;box-shadow:6px 6px 0 var(--btnsh);rotate:-2deg;margin:0 0 16px}
+
 .over-sec{position:relative}
 .over-png{position:absolute;right:5%;top:-110px;height:auto;max-height:220px;max-width:45vw;width:auto;z-index:0;pointer-events:none;filter:drop-shadow(0 0 22px rgba(22,224,224,.2))}
 .panel-box{position:relative;z-index:1;background:var(--panel);border:2px solid var(--line);padding:28px;box-shadow:8px 8px 0 rgba(0,0,0,.35)}
@@ -141,7 +145,9 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .end-wrap{display:flex;justify-content:center;position:relative;z-index:1;margin-top:30px}
 .end-wrap img{width:auto;height:auto;max-height:min(46vh,380px);max-width:min(90%,430px);margin-bottom:-64px;filter:drop-shadow(0 0 26px rgba(22,224,224,.2))}
 
-.marquee{overflow:hidden;border-block:3px solid #000;background:var(--cy);color:var(--oncy);padding:12px 0;position:relative;z-index:2;box-shadow:0 0 30px rgba(22,224,224,.35)}
+/* лента: липнет, закручивается и падает вправо-вниз при скролле */
+.mq-wrap{height:220vh;position:relative;z-index:1}
+.marquee{overflow:hidden;border-block:3px solid #000;background:var(--cy);color:var(--oncy);padding:12px 0;position:sticky;top:18vh;box-shadow:0 0 30px rgba(22,224,224,.35);will-change:transform,opacity;pointer-events:none}
 .marquee .track{display:inline-block;white-space:nowrap;animation:mq 22s linear infinite;font-family:var(--fd);font-weight:900;font-size:1.1rem;letter-spacing:.1em}
 @keyframes mq{to{transform:translateX(-50%)}}
 
@@ -245,7 +251,6 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 [data-reveal].in{opacity:1;transform:none;clip-path:inset(0 0 0 0);transition-delay:var(--d,0s)}
 [data-reveal].done{transition:transform .15s ease-out,opacity .5s,clip-path .5s;transition-delay:0s}
 
-/* ===== ТОЛЬКО ТЕЛЕФОНЫ ===== */
 @media(max-width:800px){
   html,body{overflow-x:clip}
   .hdr{padding:10px 14px;gap:10px}
@@ -264,6 +269,8 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   .over-png{max-height:130px;top:-60px;max-width:50vw}
   .duo{padding-top:120px}
   .duo-png{max-height:170px;max-width:60vw}
+  .mq-wrap{height:170vh}
+  .marquee{top:14vh}
   .tl{padding-left:38px}
   .tl-item::before{left:-32px}
   .btn{padding:12px 20px;font-size:.78rem}
@@ -278,7 +285,6 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   #head{filter:none}
 }
 @media(pointer:coarse){
-  #glow{display:none}
   #head{filter:none}
   .hdr{backdrop-filter:none;background:var(--bg)}
 }
@@ -287,11 +293,14 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   [data-reveal]{opacity:1;transform:none}
   .tl-item{opacity:1;translate:0 0}
   .tl-line i{transform:scaleY(1)!important}
+  .crossw{opacity:1!important;transform:none!important}
+  .marquee{position:static;transform:none!important;opacity:1!important}
+  .mq-wrap{height:auto}
 }
 </style>
 </head>
 <body>
-<div id="wipe"></div><div id="glow"></div><div id="bg"></div><div id="progress"></div>
+<div id="wipe"></div><div id="bg"></div><div id="progress"></div>
 <img id="head" src="img/golova.png" alt="">
 <noscript><style>#wipe{display:none}.page{display:block!important}#head{display:none}</style></noscript>
 
@@ -335,10 +344,12 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
     </div>
     <div class="scroll-hint">СКРОЛЛЬ<span></span></div>
   </div>
-  <div class="marquee"><div class="track">
-    <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚&nbsp;</span>
-    <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚&nbsp;</span>
-  </div></div>
+  <div class="mq-wrap" id="mqwrap">
+    <div class="marquee" id="marquee"><div class="track">
+      <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚&nbsp;</span>
+      <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚&nbsp;</span>
+    </div></div>
+  </div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Что это за сайт</h2>
     <p class="lead" data-reveal style="--d:.1s">Если коротко: здесь мои <b>открытые проекты</b>, <b>портфолио</b> и все ссылки на меня. Нужно превью, оформление или сайт — заказы тоже здесь.</p>
@@ -354,6 +365,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
       <img src="img/stand.png" class="duo-png" alt="">
       <div class="duo-card" data-reveal>
         <h2 class="h2" data-reveal="mask">Без шаблонов</h2>
+        <div class="nick" data-reveal="pop" style="--d:.15s">FEL_IKS ✚</div>
         <p class="lead">Не использую заготовки. Каждый проект собирается с нуля под задачу: стиль, цвета, детали — всё обсуждаемо. <a class="inline" href="#/orders">Обсудить заказ →</a></p>
       </div>
     </div>
@@ -515,7 +527,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 <script>
 const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
-const wipe=$('#wipe'),progress=$('#progress'),marq=$('.marquee'),head=$('#head');
+const wipe=$('#wipe'),progress=$('#progress'),marq=$('#marquee'),mqwrap=$('#mqwrap'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
@@ -567,14 +579,19 @@ const title=$('#splitTitle');
   title.innerHTML=[...t].map(c=>`<span data-dx="${(Math.random()*2-1).toFixed(2)}" data-dy="${(Math.random()*2-1).toFixed(2)}" data-dr="${(Math.random()*2-1).toFixed(2)}">${c}</span>`).join('');
 }
 
-/* кресты */
+/* кресты: въезжают в фон по скроллу, качание осталось */
 const bg=$('#bg');
+const crosses=[];
 const CROSS_N=coarse?10:16;
 for(let i=0;i<CROSS_N;i++){
-  const s=document.createElement('i'),size=18+Math.random()*90,r=Math.random();
-  s.className='cross '+(r<.45?'w':r<.8?'k':'c');
-  s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px;--r:${Math.random()*360|0}deg;animation-delay:-${Math.random()*12}s`;
-  bg.appendChild(s);
+  const w=document.createElement('i'),s=document.createElement('b');
+  const size=18+Math.random()*90,r=Math.random();
+  w.className='crossw '+(r<.45?'w':r<.8?'k':'c');
+  s.className='cross';
+  w.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px`;
+  s.style.cssText=`--r:${Math.random()*360|0}deg;animation-delay:-${Math.random()*12}s`;
+  w.appendChild(s);bg.appendChild(w);
+  crosses.push({w,f:Math.random(),dx:(Math.random()*2-1),dy:(Math.random()*2-1)});
 }
 
 /* reveal туда-обратно */
@@ -643,14 +660,28 @@ function update(){
   tick=false;const y=scrollY,vw=innerWidth,vh=innerHeight;
   const docH=document.documentElement.scrollHeight-vh;
   progress.style.transform=`scaleX(${docH?y/docH:0})`;
-  bg.style.transform=`translateY(${y*-0.06}px)`;
+  /* кресты въезжают: у каждого своя точка на странице */
+  crosses.forEach(c=>{
+    const d=Math.abs(y-c.f*docH);
+    const p=clamp(1-d/(vh*1.3),0,1);
+    const e=p*p*(3-2*p);
+    c.w.style.opacity=e.toFixed(2);
+    c.w.style.transform=`translate(${((1-e)*c.dx*140).toFixed(1)}px,${((1-e)*c.dy*140).toFixed(1)}px) scale(${(.3+.7*e).toFixed(2)})`;
+  });
   $$('[data-plx]').forEach(el=>{el.style.transform=`translateY(${y*parseFloat(el.dataset.plx)}px)`;});
   const t=clamp(y/(vh*.7),0,1);
   $$('#splitTitle span').forEach(sp=>{
     sp.style.transform=`translate(${sp.dataset.dx*t*160}px,${sp.dataset.dy*t*160}px) rotate(${sp.dataset.dr*t*60}deg)`;
     sp.style.opacity=1-t*.85;
   });
-  marq.style.transform=`skewY(${clamp((y-lastY)*.12,-6,6)}deg)`;
+  /* лента: закручивается и падает вправо-вниз, без дёргания */
+  if(mqwrap&&marq&&!reduced){
+    const r=mqwrap.getBoundingClientRect();
+    const q=clamp(-r.top/(r.height-vh),0,1);
+    const e=q*q*(3-2*q);
+    marq.style.transform=`translate(${(e*32).toFixed(1)}vw,${(e*52).toFixed(1)}vh) rotate(${(e*-10).toFixed(1)}deg) scale(${(1-e*.55).toFixed(2)})`;
+    marq.style.opacity=q<.72?1:clamp(1-(q-.72)/.28,0,1).toFixed(2);
+  }
   lastY=y;
   $$('.tl').forEach(tl=>{
     const r=tl.getBoundingClientRect();
@@ -662,7 +693,7 @@ function update(){
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update);}});
 
-/* голова + свечение */
+/* голова */
 const HEAD_BASE=600;
 let hx=null,hy=null,hs=null,vel=0,lastLoopY=scrollY;
 function headTarget(){
@@ -673,13 +704,7 @@ function headTarget(){
   const small=clamp(vw*.15,86,128);
   return {x:lerp(vw-big-vw*.06,vw-small-18,e),y:lerp(vh*.14,vh-small-20,e),size:lerp(big,small,e)};
 }
-const glow=$('#glow');let gx=innerWidth/2,gy=innerHeight/2,tx=gx,ty=gy;
-if(!coarse)addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;});
 (function loop(now){
-  if(!coarse){
-    gx=lerp(gx,tx,.08);gy=lerp(gy,ty,.08);
-    glow.style.transform=`translate(${gx-300}px,${gy-300}px)`;
-  }
   if(head){
     const t=headTarget();
     if(hx===null){hx=t.x;hy=t.y;hs=t.size;}
