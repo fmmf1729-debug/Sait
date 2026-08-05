@@ -56,14 +56,14 @@ a{color:inherit;text-decoration:none}
 #wipe{position:fixed;inset:0;background:#050708;z-index:200;transform:translateY(0);transition:transform .6s cubic-bezier(.8,0,.2,1)}
 #wipe::after{content:'';position:absolute;left:0;right:0;bottom:0;height:10px;background:#16e0e0;box-shadow:0 0 18px rgba(22,224,224,.55)}
 #wipe.off{transform:translateY(-102%)}
-/* клякса от кнопки ника */
 .splat{position:fixed;z-index:190;background:#050708;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%) scale(0)}
 .splat::before,.splat::after{content:'';position:absolute;background:inherit;border-radius:50%}
 .splat::before{width:18%;height:18%;left:-7%;top:10%}
 .splat::after{width:11%;height:11%;right:-4%;top:4%}
 .splat.go{transition:transform .45s cubic-bezier(.2,.8,.2,1);transform:translate(-50%,-50%) scale(1)}
 #bg{position:fixed;inset:-10%;z-index:0;pointer-events:none}
-.crossw{position:absolute;will-change:transform,opacity}
+/* кресты: только плавное дыхание */
+.crossw{position:absolute}
 .crossw.w{color:var(--crossA)} .crossw.k{color:var(--crossB)} .crossw.c{color:var(--crossC)}
 .cross{display:block;width:100%;height:100%;background:currentColor;clip-path:polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%);animation:floaty 12s ease-in-out infinite alternate}
 .crossw.c .cross{filter:drop-shadow(0 0 12px rgba(22,224,224,.4))}
@@ -138,10 +138,8 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .inline{color:var(--cy);border-bottom:2px solid var(--cy)}
 .note{margin-top:26px;color:var(--muted)}
 
-/* ник-кнопка в стиле ленты */
 .nick{rotate:-2deg;margin-top:4px}
 
-/* лента: на месте, текст крутится, появляется/исчезает как блоки */
 .marquee{overflow:hidden;border-block:3px solid #000;background:var(--cy);color:var(--oncy);padding:12px 0;position:relative;z-index:2;box-shadow:0 0 30px rgba(22,224,224,.35)}
 .marquee .track{display:inline-block;white-space:nowrap;animation:mq 22s linear infinite;font-family:var(--fd);font-weight:900;font-size:1.1rem;letter-spacing:.1em}
 @keyframes mq{to{transform:translateX(-50%)}}
@@ -155,19 +153,30 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .end-wrap{display:flex;justify-content:center;position:relative;z-index:1;margin-top:30px}
 .end-wrap img{width:auto;height:auto;max-height:min(46vh,380px);max-width:min(90%,430px);margin-bottom:-64px;filter:drop-shadow(0 0 26px rgba(22,224,224,.2))}
 
-.works{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:28px;margin-top:30px}
-.work{position:relative;background:var(--panel);border:3px solid #000;box-shadow:8px 8px 0 rgba(0,0,0,.4);cursor:pointer;transition:translate .3s,box-shadow .4s;--gc:rgb(22,224,224)}
-.work img{width:100%;aspect-ratio:16/9;object-fit:cover;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
-.work:hover img{transform:scale(1.06)}
+/* ===== карусель работ ===== */
+.car{position:relative;z-index:2;margin-top:26px;overflow:hidden}
+.car-track{display:flex;gap:24px;padding:24px 0;cursor:grab;touch-action:pan-y;user-select:none;
+  transition:transform .65s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.car-track.drag{transition:none;cursor:grabbing}
+.work{position:relative;flex:0 0 auto;width:min(720px,86vw);background:var(--panel);border:3px solid #000;
+  box-shadow:8px 8px 0 rgba(0,0,0,.4);cursor:pointer;--gc:rgb(22,224,224);
+  opacity:.45;transform:scale(.92) translateY(14px);
+  transition:transform .65s cubic-bezier(.2,.8,.2,1),opacity .5s,box-shadow .4s}
+.work.active{opacity:1;transform:scale(1) translateY(0);
+  box-shadow:0 0 38px color-mix(in srgb,var(--gc) 40%,transparent),8px 8px 0 rgba(0,0,0,.4)}
+.work:hover{box-shadow:0 0 44px color-mix(in srgb,var(--gc) 55%,transparent),8px 8px 0 #000}
+.work img{width:100%;aspect-ratio:16/9;object-fit:cover;pointer-events:none}
 .work::before{content:'';position:absolute;inset:-3px;border:3px solid var(--gc);opacity:0;transition:opacity .3s;pointer-events:none;z-index:1}
-.work:hover::before{opacity:1}
-.work.lit{box-shadow:0 0 26px color-mix(in srgb,var(--gc) 30%,transparent),8px 8px 0 rgba(0,0,0,.4)}
-.work:hover{box-shadow:0 0 44px color-mix(in srgb,var(--gc) 55%,transparent),8px 8px 0 #000;translate:0 -6px}
+.work.active::before{opacity:1}
 .work figcaption{display:flex;align-items:center;gap:10px;background:#000;color:#fff;padding:11px 14px;font-family:var(--fd);font-size:.7rem;letter-spacing:.15em}
 .work .dot{width:10px;height:10px;background:var(--gc);flex:0 0 auto;animation:pulse 2.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 5px var(--gc)}50%{box-shadow:0 0 16px var(--gc)}}
-.work .eye{margin-left:auto;opacity:0;transition:.3s;color:var(--gc)}
-.work:hover .eye{opacity:1}
+.work .eye{margin-left:auto;color:var(--gc)}
+.car-ui{display:flex;align-items:center;gap:16px;margin-top:18px}
+.car-btn{width:52px;height:52px;background:#000;color:#fff;border:3px solid #000;box-shadow:5px 5px 0 var(--btnsh);cursor:pointer;font-size:1.2rem;transition:translate .2s,box-shadow .2s;touch-action:manipulation}
+.car-btn:hover{translate:-3px -3px;box-shadow:8px 8px 0 var(--btnsh),var(--glow)}
+.car-btn:active{translate:2px 2px;box-shadow:2px 2px 0 var(--btnsh)}
+.car-count{font-family:var(--fd);color:var(--muted);letter-spacing:.2em;font-size:.85rem}
 
 .lb{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;gap:18px;padding:4vh 4vw;--gc:rgb(22,224,224)}
 .lb.open{display:flex}
@@ -217,8 +226,12 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .btn .rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.6);transform:scale(0);animation:rip .6s linear forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(4);opacity:0}}
 
+/* ссылки с иконками */
 .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:16px;margin-top:30px}
 .link-card{position:relative;background:var(--panel);border:2px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:6px;transition:border-color .25s,box-shadow .25s,translate .25s}
+.link-card .lic{width:28px;height:28px;margin-bottom:6px;transition:transform .3s}
+.link-card .lic .a{fill:var(--cy)}
+.link-card:hover .lic{transform:scale(1.15) rotate(-6deg)}
 .link-card b{font-family:var(--fd);font-size:1rem}
 .link-card span{color:var(--muted);font-size:.85rem}
 .link-card i{position:absolute;right:16px;top:16px;font-style:normal;transition:.25s}
@@ -266,13 +279,15 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   .sec{padding:46px 0}
   .hero{padding:110px 6vw 70px}
   .page-hero{padding:120px 6vw 20px}
-  .cards,.cards.proj,.works,.links{grid-template-columns:1fr}
+  .cards,.cards.proj,.links{grid-template-columns:1fr}
   .plate{padding:24px}
   .plate p{font-size:1rem}
   .end-wrap img{max-height:240px;max-width:70%;margin-bottom:-36px}
   .over-png{max-height:130px;top:-60px;max-width:50vw}
   .duo{padding-top:120px}
   .duo-png{max-height:170px;max-width:60vw}
+  .work{width:88vw}
+  .car-btn{width:46px;height:46px}
   .tl{padding-left:38px}
   .tl-item::before{left:-32px}
   .btn{padding:12px 20px;font-size:.78rem}
@@ -295,7 +310,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   [data-reveal]{opacity:1;transform:none}
   .tl-item{opacity:1;translate:0 0}
   .tl-line i{transform:scaleY(1)!important}
-  .crossw{opacity:1!important;transform:none!important}
+  .work{opacity:1;transform:none}
 }
 </style>
 </head>
@@ -384,28 +399,51 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Мои площадки</h2>
     <div class="links">
-      <a class="link-card" data-reveal="left" href="https://www.youtube.com/@Fel_iks" target="_blank"><b>YOUTUBE</b><span>ролики</span><i>↗</i></a>
-      <a class="link-card" data-reveal="right" style="--d:.05s" href="https://www.twitch.tv/fel_1kss" target="_blank"><b>TWITCH</b><span>стримы</span><i>↗</i></a>
-      <a class="link-card" data-reveal="left" style="--d:.1s" href="https://boosty.to/Fel_iks" target="_blank"><b>BOOSTY</b><span>эксклюзив и поддержка</span><i>↗</i></a>
-      <a class="link-card" data-reveal="right" style="--d:.15s" href="https://t.me/kladovka_fela" target="_blank"><b>TELEGRAM</b><span>кладовка фела</span><i>↗</i></a>
-      <a class="link-card" data-reveal="left" style="--d:.2s" href="https://www.tiktok.com/@fel_iks" target="_blank"><b>TIKTOK</b><span>короткие ролики</span><i>↗</i></a>
-      <a class="link-card" data-reveal="right" style="--d:.25s" href="https://www.donationalerts.com/r/fel_iks" target="_blank"><b>DONATIONALERTS</b><span>поддержка</span><i>↗</i></a>
-      <a class="link-card" data-reveal="left" style="--d:.3s" href="https://yoomoney.ru/to/4100117818574710" target="_blank"><b>YOOMONEY</b><span>поддержать</span><i>↗</i></a>
-      <a class="link-card" data-reveal="right" style="--d:.35s" href="https://dalink.to/fel_iks" target="_blank"><b>DALINK</b><span>все ссылки</span><i>↗</i></a>
+      <a class="link-card" data-reveal="left" href="https://www.youtube.com/@Fel_iks" target="_blank">
+        <svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M2 6c0-1.7 1.3-3 3-3h14c1.7 0 3 1.3 3 3v12c0 1.7-1.3 3-3 3H5c-1.7 0-3-1.3-3-3V6z"/><path class="a" d="M10 8.5v7l6-3.5-6-3.5z"/></svg>
+        <b>YOUTUBE</b><span>ролики</span><i>↗</i></a>
+      <a class="link-card" data-reveal="right" style="--d:.05s" href="https://www.twitch.tv/fel_1kss" target="_blank">
+        <svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M4 2h18v12l-6 6h-4l-3 3v-3H4V2z"/><path class="a" d="M11 6h2v6h-2zM16 6h2v6h-2z"/></svg>
+        <b>TWITCH</b><span>стримы</span><i>↗</i></a>
+      <a class="link-card" data-reveal="left" style="--d:.1s" href="https://boosty.to/Fel_iks" target="_blank">
+        <svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s-8-5.3-8-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.7-8 11-8 11z"/><path class="a" d="m12 6.5 1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z"/></svg>
+        <b>BOOSTY</b><span>эксклюзив и поддержка</span><i>↗</i></a>
+      <a class="link-card" data-reveal="right" style="--d:.15s" href="https://t.me/kladovka_fela" target="_blank">
+        <svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="m22 3-20 8 6 2 2 6 4-4 5 3 3-15z"/><path class="a" d="M8 13l9-7-7 8-1 3z"/></svg>
+        <b>TELEGRAM</b><span>кладовка фела</span><i>↗</i></a>
+      <a class="link-card" data-reveal="left" style="--d:.2s" href="https://www.tiktok.com/@fel_iks" target="_blank">
+        <svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M14 3h2c.4 2.4 2.3 4.3 5 4.7v2.1c-2 0-3.8-.6-5-1.6v6.3a4.5 4.5 0 1 1-4.5-4.5c.3 0 .7 0 1 .1v2.2a2.4 2.4 0 1 0 1.5 2.2V3z"/><circle class="a" cx="11.5" cy="14.5" r="1.4"/></svg>
+        <b>TIKTOK</b><span>короткие ролики</span><i>↗</i></a>
+      <a class="link-card" data-reveal="right" style="--d:.25s" href="https://www.donationalerts.com/r/fel_iks" target="_blank">
+        <svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a6 6 0 0 0-6 6v4l-2 4h16l-2-4V8a6 6 0 0 0-6-6z"/><path class="a" d="M10 18a2 2 0 0 0 4 0h-4z"/></svg>
+        <b>DONATIONALERTS</b><span>поддержка</span><i>↗</i></a>
+      <a class="link-card" data-reveal="left" style="--d:.3s" href="https://yoomoney.ru/to/4100117818574710" target="_blank">
+        <svg class="lic" viewBox="0 0 24 24"><circle fill="currentColor" cx="12" cy="12" r="9"/><path class="a" d="M9 7h2l1.5 2.5L14 7h2l-2.7 4.5L16 16h-2l-1.5-2.6L11 16H9l2.7-4.5L9 7z"/></svg>
+        <b>YOOMONEY</b><span>поддержать</span><i>↗</i></a>
+      <a class="link-card" data-reveal="right" style="--d:.35s" href="https://dalink.to/fel_iks" target="_blank">
+        <svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M9.5 14.5a4 4 0 0 1 0-5.7l2.8-2.8a4 4 0 0 1 5.7 5.7l-1.4 1.4-1.4-1.4 1.4-1.4a2 2 0 0 0-2.9-2.9l-2.8 2.8a2 2 0 0 0 0 2.9l-1.4 1.4z"/><path class="a" d="M14.5 9.5a4 4 0 0 1 0 5.7l-2.8 2.8a4 4 0 0 1-5.7-5.7l1.4-1.4 1.4 1.4-1.4 1.4a2 2 0 0 0 2.9 2.9l2.8-2.8a2 2 0 0 0 0-2.9l1.4-1.4z"/></svg>
+        <b>DALINK</b><span>все ссылки</span><i>↗</i></a>
     </div>
   </div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Работы</h2>
-    <p class="lead" data-reveal>Кликни, чтобы рассмотреть. Свечение вокруг — основной цвет работы.</p>
-    <div class="works">
-      <figure class="work" data-reveal="pop"><img loading="lazy" src="img/prev3.png" alt="Превью STREAM"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚ STRIM<span class="eye">⤢</span></figcaption></figure>
-      <figure class="work" data-reveal="pop" style="--d:.06s"><img loading="lazy" src="img/prev1.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚ Ч/Б<span class="eye">⤢</span></figcaption></figure>
-      <figure class="work" data-reveal="pop" style="--d:.12s"><img loading="lazy" src="img/prev2.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚ КОМПАНИЯ<span class="eye">⤢</span></figcaption></figure>
-      <figure class="work" data-reveal="pop" style="--d:.18s"><img loading="lazy" src="img/prev7.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚ НЕБО<span class="eye">⤢</span></figcaption></figure>
-      <figure class="work" data-reveal="pop" style="--d:.24s"><img loading="lazy" src="img/banner.png" alt="Шапка канала"><figcaption><span class="dot"></span>ОФОРМЛЕНИЕ ✚ ШАПКА<span class="eye">⤢</span></figcaption></figure>
-      <figure class="work" data-reveal="pop" style="--d:.3s"><img loading="lazy" src="img/prev5.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚ ???<span class="eye">⤢</span></figcaption></figure>
-      <figure class="work" data-reveal="pop" style="--d:.36s"><img loading="lazy" src="img/prev4.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚ ПОХОД<span class="eye">⤢</span></figcaption></figure>
-      <figure class="work" data-reveal="pop" style="--d:.42s"><img loading="lazy" src="img/prev6.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚ СКИНЫ<span class="eye">⤢</span></figcaption></figure>
+    <p class="lead" data-reveal>Листай стрелками или пальцем. Клик — рассмотреть ближе. Свечение — основной цвет работы.</p>
+    <div class="car" data-reveal="zoom">
+      <div class="car-track" id="carTrack">
+        <figure class="work"><img loading="lazy" src="img/prev3.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><img loading="lazy" src="img/prev1.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><img loading="lazy" src="img/prev2.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><img loading="lazy" src="img/prev7.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><img loading="lazy" src="img/banner.png" alt="Шапка канала"><figcaption><span class="dot"></span>ОФОРМЛЕНИЕ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><img loading="lazy" src="img/prev5.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><img loading="lazy" src="img/prev4.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><img loading="lazy" src="img/prev6.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+      </div>
+      <div class="car-ui">
+        <button class="car-btn" id="carPrev" aria-label="назад">←</button>
+        <span class="car-count" id="carCount">01 / 08</span>
+        <button class="car-btn" id="carNext" aria-label="вперёд">→</button>
+      </div>
     </div>
   </div>
   <div class="wrap sec">
@@ -554,7 +592,7 @@ addEventListener('hashchange',()=>go(routeName()));
 $$('.menu a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('menu-open')));
 $$('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
 
-/* кнопка-ник: клякса → шторка → портфолио */
+/* ник-кнопка: клякса → шторка */
 $$('[data-splat]').forEach(a=>a.addEventListener('click',e=>{
   e.preventDefault();
   if(a._busy)return;a._busy=true;
@@ -590,9 +628,8 @@ const title=$('#splitTitle');
   title.innerHTML=[...t].map(c=>`<span data-dx="${(Math.random()*2-1).toFixed(2)}" data-dy="${(Math.random()*2-1).toFixed(2)}" data-dr="${(Math.random()*2-1).toFixed(2)}">${c}</span>`).join('');
 }
 
-/* кресты: больше, ярче, заметный въезд при скролле */
+/* кресты: статично дышат, без скролл-анимации */
 const bg=$('#bg');
-const crosses=[];
 const CROSS_N=coarse?14:26;
 for(let i=0;i<CROSS_N;i++){
   const w=document.createElement('i'),s=document.createElement('b');
@@ -602,7 +639,6 @@ for(let i=0;i<CROSS_N;i++){
   w.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px`;
   s.style.cssText=`--r:${Math.random()*360|0}deg;animation-delay:-${Math.random()*12}s`;
   w.appendChild(s);bg.appendChild(w);
-  crosses.push({w,f:Math.random(),dx:(Math.random()*2-1),dy:(Math.random()*2-1)});
 }
 
 /* reveal туда-обратно */
@@ -610,7 +646,6 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{
   const el=e.target;
   if(e.isIntersecting){
     el.classList.add('in');
-    if(el.classList.contains('work'))el.classList.add('lit');
     clearTimeout(el._dt);
     el._dt=setTimeout(()=>el.classList.add('done'),1200);
   }else{
@@ -620,7 +655,7 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{
 }),{threshold:.08,rootMargin:'0px 0px -6% 0px'});
 $$('[data-reveal]').forEach(el=>io.observe(el));
 
-/* цвет свечения из превью */
+/* цвет свечения работ */
 function glowColor(img,cb){
   try{
     const c=document.createElement('canvas'),x=c.getContext('2d');
@@ -640,6 +675,38 @@ works.forEach(w=>{
   const set=()=>glowColor(im,c=>w.style.setProperty('--gc',c));
   im.complete?set():im.addEventListener('load',set);
 });
+
+/* ===== карусель работ ===== */
+const track=$('#carTrack');
+if(track){
+  const slides=$$('.work',track),count=$('#carCount');
+  const GAP=24;let ci=0,drag=0,dragging=false,sx=0,moved=0;
+  const metrics=()=>{
+    const s=slides[0].getBoundingClientRect().width;
+    const cw=track.parentElement.getBoundingClientRect().width;
+    return {s,cw};
+  };
+  function render(){
+    const {s,cw}=metrics();
+    const off=ci*(s+GAP)-(cw-s)/2;
+    track.style.transform=`translateX(${-(off-drag)}px)`;
+    slides.forEach((sl,i)=>sl.classList.toggle('active',i===ci));
+    count.textContent=String(ci+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+  }
+  const goS=i=>{ci=clamp(i,0,slides.length-1);render();};
+  $('#carPrev').addEventListener('click',()=>goS(ci-1));
+  $('#carNext').addEventListener('click',()=>goS(ci+1));
+  track.addEventListener('pointerdown',e=>{dragging=true;sx=e.clientX;moved=0;track.classList.add('drag');track.setPointerCapture(e.pointerId);});
+  track.addEventListener('pointermove',e=>{if(!dragging)return;drag=e.clientX-sx;moved=Math.max(moved,Math.abs(drag));render();});
+  const up=()=>{if(!dragging)return;dragging=false;track.classList.remove('drag');
+    if(drag<-60)goS(ci+1);else if(drag>60)goS(ci-1);else goS(ci);
+    drag=0;render();};
+  track.addEventListener('pointerup',up);
+  track.addEventListener('pointercancel',up);
+  track.addEventListener('click',e=>{if(moved>8){e.stopPropagation();e.preventDefault();moved=0;}},true);
+  addEventListener('resize',render);
+  render();
+}
 
 /* лайтбокс */
 const lb=$('#lb'),lbImg=$('#lbImg'),lbCap=$('#lbCap');
@@ -671,13 +738,6 @@ function update(){
   tick=false;const y=scrollY,vw=innerWidth,vh=innerHeight;
   const docH=document.documentElement.scrollHeight-vh;
   progress.style.transform=`scaleX(${docH?y/docH:0})`;
-  crosses.forEach(c=>{
-    const d=Math.abs(y-c.f*docH);
-    const p=clamp(1-d/(vh*1.8),0,1);
-    const e=p*p*(3-2*p);
-    c.w.style.opacity=(.3+.7*e).toFixed(2);
-    c.w.style.transform=`translate(${((1-e)*c.dx*180).toFixed(1)}px,${((1-e)*c.dy*180).toFixed(1)}px) scale(${(.2+.8*e).toFixed(2)})`;
-  });
   $$('[data-plx]').forEach(el=>{el.style.transform=`translateY(${y*parseFloat(el.dataset.plx)}px)`;});
   const t=clamp(y/(vh*.7),0,1);
   $$('#splitTitle span').forEach(sp=>{
