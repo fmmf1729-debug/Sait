@@ -62,7 +62,6 @@ a{color:inherit;text-decoration:none}
 .splat::after{width:11%;height:11%;right:-4%;top:4%}
 .splat.go{transition:transform .45s cubic-bezier(.2,.8,.2,1);transform:translate(-50%,-50%) scale(1)}
 #bg{position:fixed;inset:-10%;z-index:0;pointer-events:none}
-/* кресты: только плавное дыхание */
 .crossw{position:absolute}
 .crossw.w{color:var(--crossA)} .crossw.k{color:var(--crossB)} .crossw.c{color:var(--crossC)}
 .cross{display:block;width:100%;height:100%;background:currentColor;clip-path:polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%);animation:floaty 12s ease-in-out infinite alternate}
@@ -153,17 +152,20 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .end-wrap{display:flex;justify-content:center;position:relative;z-index:1;margin-top:30px}
 .end-wrap img{width:auto;height:auto;max-height:min(46vh,380px);max-width:min(90%,430px);margin-bottom:-64px;filter:drop-shadow(0 0 26px rgba(22,224,224,.2))}
 
-/* ===== карусель работ ===== */
-.car{position:relative;z-index:2;margin-top:26px;overflow:hidden}
-.car-track{display:flex;gap:24px;padding:24px 0;cursor:grab;touch-action:pan-y;user-select:none;
-  transition:transform .65s cubic-bezier(.2,.8,.2,1);will-change:transform}
-.car-track.drag{transition:none;cursor:grabbing}
-.work{position:relative;flex:0 0 auto;width:min(720px,86vw);background:var(--panel);border:3px solid #000;
-  box-shadow:8px 8px 0 rgba(0,0,0,.4);cursor:pointer;--gc:rgb(22,224,224);
-  opacity:.45;transform:scale(.92) translateY(14px);
-  transition:transform .65s cubic-bezier(.2,.8,.2,1),opacity .5s,box-shadow .4s}
-.work.active{opacity:1;transform:scale(1) translateY(0);
-  box-shadow:0 0 38px color-mix(in srgb,var(--gc) 40%,transparent),8px 8px 0 rgba(0,0,0,.4)}
+/* ===== карусель: нативный скролл + snap + доводка ===== */
+.car{position:relative;z-index:2;margin-top:26px}
+.car-track{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:44px calc((100% - min(720px,86vw))/2);margin:-14px 0;
+  cursor:grab;user-select:none;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;scroll-behavior:smooth}
+.car-track::-webkit-scrollbar{display:none}
+.car-track.drag{scroll-snap-type:none;scroll-behavior:auto;cursor:grabbing}
+.work{position:relative;flex:0 0 auto;width:min(720px,86vw);scroll-snap-align:center;scroll-snap-stop:always;
+  background:var(--panel);border:3px solid #000;box-shadow:8px 8px 0 rgba(0,0,0,.4);cursor:pointer;--gc:rgb(22,224,224);
+  opacity:.45;transform:scale(.92) rotate(1.5deg) translateY(14px);
+  transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .5s,box-shadow .4s}
+.work.active{opacity:1;transform:scale(1) rotate(0deg) translateY(0);
+  box-shadow:0 0 34px color-mix(in srgb,var(--gc) 40%,transparent),8px 8px 0 rgba(0,0,0,.4)}
 .work:hover{box-shadow:0 0 44px color-mix(in srgb,var(--gc) 55%,transparent),8px 8px 0 #000}
 .work img{width:100%;aspect-ratio:16/9;object-fit:cover;pointer-events:none}
 .work::before{content:'';position:absolute;inset:-3px;border:3px solid var(--gc);opacity:0;transition:opacity .3s;pointer-events:none;z-index:1}
@@ -172,7 +174,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .work .dot{width:10px;height:10px;background:var(--gc);flex:0 0 auto;animation:pulse 2.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 5px var(--gc)}50%{box-shadow:0 0 16px var(--gc)}}
 .work .eye{margin-left:auto;color:var(--gc)}
-.car-ui{display:flex;align-items:center;gap:16px;margin-top:18px}
+.car-ui{display:flex;align-items:center;gap:16px;margin-top:14px}
 .car-btn{width:52px;height:52px;background:#000;color:#fff;border:3px solid #000;box-shadow:5px 5px 0 var(--btnsh);cursor:pointer;font-size:1.2rem;transition:translate .2s,box-shadow .2s;touch-action:manipulation}
 .car-btn:hover{translate:-3px -3px;box-shadow:8px 8px 0 var(--btnsh),var(--glow)}
 .car-btn:active{translate:2px 2px;box-shadow:2px 2px 0 var(--btnsh)}
@@ -201,11 +203,17 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:22px;margin-top:34px}
 .cards.proj{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
-.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;background:var(--panel);border:2px solid var(--line);padding:26px;transition:border-color .3s,box-shadow .3s,translate .3s;overflow:hidden}
-.card::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),var(--glowbg),transparent 70%);opacity:0;transition:opacity .3s}
+/* карточки без overflow:hidden — кнопки и тени больше не обрезаются */
+.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;background:var(--panel);border:2px solid var(--line);padding:26px;transition:border-color .3s,box-shadow .3s,translate .3s}
+.card>*{position:relative;z-index:1}
+.card::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),var(--glowbg),transparent 70%);opacity:0;transition:opacity .3s}
 .card:hover::after{opacity:1}
-.card::before{content:'';position:absolute;top:0;left:0;height:3px;width:100%;background:linear-gradient(90deg,transparent,var(--cy),transparent);transform:translateX(-100%);transition:transform .6s ease;pointer-events:none}
-.card:hover::before{transform:translateX(100%)}
+/* блик-полоса через background-position — ничего не вылезает и не режется */
+.card::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(105deg,transparent 35%,var(--cy) 50%,transparent 65%) no-repeat;
+  background-size:250% 100%;background-position:130% 0;opacity:.55;transition:background-position .7s ease}
+.card:hover::before{background-position:-30% 0}
 .card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -6px}
 .card .ico{font-size:1.5rem;color:var(--muted);display:inline-block;transition:.3s;margin-bottom:6px}
 .card:hover .ico{color:var(--cy);transform:scale(1.25) rotate(-10deg);text-shadow:var(--glow)}
@@ -215,9 +223,11 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .card .go{position:absolute;right:18px;top:18px;font-size:1.3rem;transition:.3s}
 .card:hover .go{color:var(--cy);transform:translateX(8px) scale(1.2)}
 
-.btn{position:relative;display:inline-block;overflow:hidden;background:#000;color:#fff;border:3px solid #000;padding:14px 26px;font-family:var(--fd);font-weight:700;text-transform:uppercase;font-size:.85rem;letter-spacing:.08em;cursor:pointer;box-shadow:6px 6px 0 var(--btnsh);transition:translate .2s,box-shadow .2s;touch-action:manipulation}
-.btn::before{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);transition:left .5s ease;pointer-events:none}
-.btn:hover::before{left:120%}
+.btn{position:relative;z-index:1;display:inline-block;overflow:hidden;background:#000;color:#fff;border:3px solid #000;padding:14px 26px;font-family:var(--fd);font-weight:700;text-transform:uppercase;font-size:.85rem;letter-spacing:.08em;cursor:pointer;box-shadow:6px 6px 0 var(--btnsh);transition:translate .2s,box-shadow .2s;touch-action:manipulation}
+.btn::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%) no-repeat;
+  background-size:250% 100%;background-position:130% 0;transition:background-position .5s ease;pointer-events:none}
+.btn:hover::before{background-position:-30% 0}
 .btn:hover{translate:-3px -3px;box-shadow:9px 9px 0 var(--btnsh),var(--glow)}
 .btn:active{translate:2px 2px;box-shadow:2px 2px 0 var(--btnsh)}
 .btn-accent{background:var(--cy);color:var(--oncy)}
@@ -226,7 +236,6 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .btn .rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.6);transform:scale(0);animation:rip .6s linear forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(4);opacity:0}}
 
-/* ссылки с иконками */
 .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:16px;margin-top:30px}
 .link-card{position:relative;background:var(--panel);border:2px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:6px;transition:border-color .25s,box-shadow .25s,translate .25s}
 .link-card .lic{width:28px;height:28px;margin-bottom:6px;transition:transform .3s}
@@ -287,6 +296,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   .duo{padding-top:120px}
   .duo-png{max-height:170px;max-width:60vw}
   .work{width:88vw}
+  .work.active{box-shadow:0 0 22px color-mix(in srgb,var(--gc) 40%,transparent),8px 8px 0 rgba(0,0,0,.4)}
   .car-btn{width:46px;height:46px}
   .tl{padding-left:38px}
   .tl-item::before{left:-32px}
@@ -311,6 +321,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   .tl-item{opacity:1;translate:0 0}
   .tl-line i{transform:scaleY(1)!important}
   .work{opacity:1;transform:none}
+  .car-track{scroll-behavior:auto}
 }
 </style>
 </head>
@@ -427,7 +438,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   </div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Работы</h2>
-    <p class="lead" data-reveal>Листай стрелками или пальцем. Клик — рассмотреть ближе. Свечение — основной цвет работы.</p>
+    <p class="lead" data-reveal>Листай пальцем, мышью или стрелками. Клик — рассмотреть ближе. Свечение — основной цвет работы.</p>
     <div class="car" data-reveal="zoom">
       <div class="car-track" id="carTrack">
         <figure class="work"><img loading="lazy" src="img/prev3.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
@@ -628,7 +639,7 @@ const title=$('#splitTitle');
   title.innerHTML=[...t].map(c=>`<span data-dx="${(Math.random()*2-1).toFixed(2)}" data-dy="${(Math.random()*2-1).toFixed(2)}" data-dr="${(Math.random()*2-1).toFixed(2)}">${c}</span>`).join('');
 }
 
-/* кресты: статично дышат, без скролл-анимации */
+/* кресты */
 const bg=$('#bg');
 const CROSS_N=coarse?14:26;
 for(let i=0;i<CROSS_N;i++){
@@ -676,36 +687,43 @@ works.forEach(w=>{
   im.complete?set():im.addEventListener('load',set);
 });
 
-/* ===== карусель работ ===== */
+/* ===== карусель: нативный скролл + snap + доводка ===== */
 const track=$('#carTrack');
 if(track){
   const slides=$$('.work',track),count=$('#carCount');
-  const GAP=24;let ci=0,drag=0,dragging=false,sx=0,moved=0;
-  const metrics=()=>{
-    const s=slides[0].getBoundingClientRect().width;
-    const cw=track.parentElement.getBoundingClientRect().width;
-    return {s,cw};
+  const step=()=>slides[0].getBoundingClientRect().width+24;
+  let dragging=false,sx=0,sl=0,moved=0;
+  track.addEventListener('pointerdown',e=>{
+    dragging=true;moved=0;sx=e.clientX;sl=track.scrollLeft;
+    track.classList.add('drag');
+  });
+  addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const dx=e.clientX-sx;
+    moved=Math.max(moved,Math.abs(dx));
+    track.scrollLeft=sl-dx;
+  });
+  const finish=()=>{
+    if(!dragging)return;
+    dragging=false;track.classList.remove('drag');
+    const i=clamp(Math.round(track.scrollLeft/step()),0,slides.length-1);
+    track.scrollTo({left:i*step(),behavior:'smooth'});
   };
-  function render(){
-    const {s,cw}=metrics();
-    const off=ci*(s+GAP)-(cw-s)/2;
-    track.style.transform=`translateX(${-(off-drag)}px)`;
-    slides.forEach((sl,i)=>sl.classList.toggle('active',i===ci));
-    count.textContent=String(ci+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
-  }
-  const goS=i=>{ci=clamp(i,0,slides.length-1);render();};
-  $('#carPrev').addEventListener('click',()=>goS(ci-1));
-  $('#carNext').addEventListener('click',()=>goS(ci+1));
-  track.addEventListener('pointerdown',e=>{dragging=true;sx=e.clientX;moved=0;track.classList.add('drag');track.setPointerCapture(e.pointerId);});
-  track.addEventListener('pointermove',e=>{if(!dragging)return;drag=e.clientX-sx;moved=Math.max(moved,Math.abs(drag));render();});
-  const up=()=>{if(!dragging)return;dragging=false;track.classList.remove('drag');
-    if(drag<-60)goS(ci+1);else if(drag>60)goS(ci-1);else goS(ci);
-    drag=0;render();};
-  track.addEventListener('pointerup',up);
-  track.addEventListener('pointercancel',up);
-  track.addEventListener('click',e=>{if(moved>8){e.stopPropagation();e.preventDefault();moved=0;}},true);
-  addEventListener('resize',render);
-  render();
+  addEventListener('pointerup',finish);
+  addEventListener('pointercancel',finish);
+  $('#carPrev').addEventListener('click',()=>track.scrollBy({left:-step(),behavior:'smooth'}));
+  $('#carNext').addEventListener('click',()=>track.scrollBy({left:step(),behavior:'smooth'}));
+  const onScr=()=>{
+    const i=clamp(Math.round(track.scrollLeft/step()),0,slides.length-1);
+    slides.forEach((s2,j)=>s2.classList.toggle('active',j===i));
+    count.textContent=String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+  };
+  track.addEventListener('scroll',()=>requestAnimationFrame(onScr),{passive:true});
+  /* клик по карточке не срабатывает после свайпа */
+  track.addEventListener('click',e=>{
+    if(moved>8){e.stopPropagation();e.preventDefault();moved=0;}
+  },true);
+  onScr();
 }
 
 /* лайтбокс */
