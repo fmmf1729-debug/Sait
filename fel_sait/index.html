@@ -121,7 +121,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .hero-title{font-family:var(--fd);font-weight:900;font-size:clamp(3rem,12vw,9rem);line-height:.95;text-transform:uppercase;position:relative;z-index:1}
 .hero-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
 .hero-sub{margin-top:28px;color:var(--muted);font-size:clamp(.9rem,2vw,1.2rem);letter-spacing:.15em;text-transform:uppercase;position:relative;z-index:1}
-.hero-actions{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap;position:relative;z-index:1}
+.hero-actions{display:flex;gap:18px;margin-top:34px;flex-wrap:wrap;position:relative;z-index:1}
 .scroll-hint{position:absolute;bottom:18px;left:8vw;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px}
 .scroll-hint span{width:60px;height:2px;background:var(--cy);display:inline-block;animation:hint 1.4s ease-in-out infinite}
 @keyframes hint{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0)}}
@@ -157,7 +157,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .end-wrap{display:flex;justify-content:center;position:relative;z-index:1;margin-top:30px}
 .end-wrap img{width:auto;height:auto;max-height:min(46vh,380px);max-width:min(90%,430px);margin-bottom:-64px;filter:drop-shadow(0 0 26px rgba(22,224,224,.2))}
 
-/* ===== карусель v3: непрерывная анимация + прогресс ===== */
+/* ===== карусель ===== */
 .car{position:relative;z-index:2;margin-top:26px}
 .car-track{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;
   padding:44px calc((100% - min(720px,86vw))/2);margin:-14px 0;
@@ -170,6 +170,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   transition:box-shadow .4s;will-change:transform,opacity}
 .work.active{box-shadow:0 0 34px color-mix(in srgb,var(--gc) 40%,transparent),8px 8px 0 rgba(0,0,0,.4)}
 .work:hover{box-shadow:0 0 44px color-mix(in srgb,var(--gc) 55%,transparent),8px 8px 0 #000;z-index:6}
+.wm{overflow:hidden;position:relative}
 .work img{width:100%;aspect-ratio:16/9;object-fit:cover;pointer-events:none;will-change:transform}
 .work::before{content:'';position:absolute;inset:-3px;border:3px solid var(--gc);opacity:0;transition:opacity .3s;pointer-events:none;z-index:1}
 .work.active::before{opacity:1}
@@ -393,7 +394,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <img src="img/stand.png" class="duo-png" alt="">
       <div class="duo-card" data-reveal>
         <h2 class="h2" data-reveal="mask">Без шаблонов</h2>
-        <a href="#/portfolio" data-splat class="btn btn-accent nick" data-reveal="pop" style="--d:.15s">FEL_IKS ✚</a>
+        <a href="#/portfolio" data-splat class="btn btn-accent nick magnet" data-reveal="pop" style="--d:.15s">FEL_IKS ✚</a>
         <p class="lead" style="margin-top:16px">Не использую заготовки. Каждый проект собирается с нуля под задачу: стиль, цвета, детали — всё обсуждаемо. <a class="inline" href="#/orders">Обсудить заказ →</a></p>
       </div>
     </div>
@@ -445,14 +446,14 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     <p class="lead" data-reveal>Листай пальцем, мышью или стрелками. Клик — рассмотреть ближе. Свечение — основной цвет работы.</p>
     <div class="car" data-reveal="zoom">
       <div class="car-track" id="carTrack">
-        <figure class="work"><img loading="lazy" src="img/prev3.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
-        <figure class="work"><img loading="lazy" src="img/prev1.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
-        <figure class="work"><img loading="lazy" src="img/prev2.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
-        <figure class="work"><img loading="lazy" src="img/prev7.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
-        <figure class="work"><img loading="lazy" src="img/banner.png" alt="Шапка канала"><figcaption><span class="dot"></span>ОФОРМЛЕНИЕ ✚<span class="eye">⤢</span></figcaption></figure>
-        <figure class="work"><img loading="lazy" src="img/prev5.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
-        <figure class="work"><img loading="lazy" src="img/prev4.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
-        <figure class="work"><img loading="lazy" src="img/prev6.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><div class="wm"><img loading="lazy" src="img/prev3.png" alt="Превью"></div><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><div class="wm"><img loading="lazy" src="img/prev1.png" alt="Превью"></div><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><div class="wm"><img loading="lazy" src="img/prev2.png" alt="Превью"></div><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><div class="wm"><img loading="lazy" src="img/prev7.png" alt="Превью"></div><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><div class="wm"><img loading="lazy" src="img/banner.png" alt="Шапка канала"></div><figcaption><span class="dot"></span>ОФОРМЛЕНИЕ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><div class="wm"><img loading="lazy" src="img/prev5.png" alt="Превью"></div><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><div class="wm"><img loading="lazy" src="img/prev4.png" alt="Превью"></div><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
+        <figure class="work"><div class="wm"><img loading="lazy" src="img/prev6.png" alt="Превью"></div><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
       </div>
       <div class="car-bar"><i id="carBar"></i></div>
       <div class="car-ui">
@@ -554,21 +555,9 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <!-- RANTA -->
 <section class="page" id="page-ranta">
   <div class="page-hero"><h1 class="page-title" data-scramble>RANTA</h1></div>
-  <div class="wrap sec over-sec">
-    <img class="over-png" src="img/stand.png" alt="">
-    <div class="panel-box" data-reveal>
-      <h2 class="h2" data-reveal="mask">Майн-сервер контентмейкеров</h2>
-      <p class="lead"><b>Ranta</b> — мой сервер для тех, кто снимает и стримит. Ивенты, комьюнити и место, где рождаются ролики. Страница ещё оформляется — скоро здесь будет красиво.</p>
-      <div class="chips" data-reveal style="--d:.2s">
-        <span class="chip">Ивенты</span><span class="chip">Комьюнити</span>
-        <span class="chip">Выживание</span><span class="chip">Контент</span>
-      </div>
-    </div>
-  </div>
   <div class="wrap sec">
     <div class="cards">
       <div class="card" data-tilt data-reveal="left"><span class="ico">⛏</span><span class="num">01</span><h3>Скоро</h3><p>Сейчас мы оформляем эту страницу. Загляни позже — тут появятся новости, правила и вайтлист.</p></div>
-      <div class="card" data-tilt data-reveal="right" style="--d:.15s"><span class="ico">✉</span><span class="num">02</span><h3>Хочешь на сервер?</h3><p>Пиши в телеграм — расскажу, как попасть, и отвечу на вопросы.</p><a class="btn btn-accent magnet" href="https://t.me/kladovka_fela" target="_blank">Написать</a></div>
     </div>
   </div>
 </section>
@@ -714,7 +703,7 @@ works.forEach(w=>{
   im.complete?set():im.addEventListener('load',set);
 });
 
-/* ===== карусель v3 ===== */
+/* ===== карусель ===== */
 const track=$('#carTrack'),bar=$('#carBar');
 if(track){
   const slides=$$('.work',track),count=$('#carCount');
@@ -851,11 +840,13 @@ $$('[data-tilt]').forEach(el=>{
   el.addEventListener('mouseleave',()=>el.style.transform='');
 });
 
-/* магнит */
+/* магнит: ограничен ±6px — тянется за курсором, но не наезжает на соседей и не режется */
 $$('.magnet').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
-    el.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.15}px,${(e.clientY-r.top-r.height/2)*.2}px)`;
+    const dx=clamp((e.clientX-r.left-r.width/2)*.12,-6,6);
+    const dy=clamp((e.clientY-r.top-r.height/2)*.16,-6,6);
+    el.style.transform=`translate(${dx}px,${dy}px)`;
   });
   el.addEventListener('mouseleave',()=>el.style.transform='');
 });
