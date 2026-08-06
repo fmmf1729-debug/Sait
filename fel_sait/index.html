@@ -140,6 +140,9 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 .nick{rotate:-2deg;margin-top:4px}
 
+/* бейдж «в разработке» */
+.dev{display:inline-block;margin-left:10px;padding:4px 10px;border:2px solid var(--cy);color:var(--cy);font-family:var(--fd);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;vertical-align:middle;translate:0 -2px}
+
 .chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
 .chip{border:2px solid var(--line);padding:10px 16px;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s}
 .chip:hover{border-color:var(--cy);color:var(--cy);box-shadow:var(--glow);translate:0 -3px}
@@ -272,8 +275,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 .ftr{position:relative;z-index:2;border-top:2px solid var(--line);background:var(--bg);padding:22px 8vw;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
 
-/* reveal: clip-path ТОЛЬКО у mask-заголовков и с отступом наружу —
-   больше ничего не обрезает тени и ховеры */
 [data-reveal]{opacity:0;transform:translateY(46px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1),clip-path .8s cubic-bezier(.2,.8,.2,1)}
 [data-reveal="left"]{transform:translateX(-70px)}
 [data-reveal="right"]{transform:translateX(70px)}
@@ -316,6 +317,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .ftr{padding:18px 6vw}
   .menu{padding:8vh 8vw}
   #head{filter:none}
+  .dev{margin-left:0;margin-top:8px}
 }
 @media(pointer:coarse){
   #head{filter:none}
@@ -389,7 +391,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <a href="#/orders" class="card" data-tilt data-reveal style="--d:.1s"><span class="ico">✚</span><span class="num">02</span><h3>Заказы</h3><p>Превью, оформление, скины и сайты — беру в работу.</p><span class="go">→</span></a>
       <a href="#/opensource" class="card" data-tilt data-reveal style="--d:.2s"><span class="ico">⚙</span><span class="num">03</span><h3>Опенсурс</h3><p>Бесплатные программы, которые я разработал.</p><span class="go">→</span></a>
       <a href="#/ranta" class="card" data-tilt data-reveal style="--d:.25s"><span class="ico">⛏</span><span class="num">04</span><h3>Ranta</h3><p>Мой майн-сервер для контентмейкеров.</p><span class="go">→</span></a>
-      <a href="#/feedback" class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✉</span><span class="num">05</span><h3>Обратная связь</h3><p>Раздел готовится. Пока проще всего написать в Telegram.</p><span class="go">→</span></a>
+      <a href="#/feedback" class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✉</span><span class="num">05</span><h3>Обратная связь</h3><p>Вопросы, идеи и предложения — пиши, я на связи.</p><span class="go">→</span></a>
     </div>
   </div>
   <div class="wrap sec">
@@ -446,7 +448,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   </div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Работы</h2>
-    <p class="lead" data-reveal>Работы будут обновляться, сейчас сюда добавлена мелкая часть существующих  работ!</p>
+    <p class="lead" data-reveal>Здесь пока небольшая часть всех работ — раздел будет пополняться и обновляться. Клик — рассмотреть ближе.</p>
     <div class="car" data-reveal="zoom">
       <div class="car-track" id="carTrack">
         <figure class="work"><div class="wm"><img loading="lazy" src="img/prev3.png" alt="Превью"></div><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
@@ -524,31 +526,29 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     <img class="over-png" src="img/hero.png" alt="">
     <div class="panel-box" data-reveal>
       <h2 class="h2" data-reveal="mask">Открытые проекты</h2>
-      <p class="lead">Программы, которые я разработал. Бесплатно, без подписок и регистраций — скачал и пользуешься.</p>
+      <p class="lead">Программы, которые я разработал. Бесплатно, без подписок и регистраций — скачал и пользуешься. Формат файла выбирается при скачивании.</p>
     </div>
   </div>
   <div class="wrap sec">
     <div class="cards proj">
-      <div class="card" data-tilt data-reveal="left"><span class="num">EXE</span><h3>PNGTuber.exe</h3>
+      <div class="card" data-tilt data-reveal="left"><span class="num">EXE</span><h3>PNGTuber.exe <span class="dev">в разработке</span></h3>
         <p>Живой PNG-аватар для стримов и роликов: реагирует на микрофон и оживляет образ. Настройка занимает пару минут.</p>
-        <!-- ⬇️ ВСТАВЬ ССЫЛКУ НА РЕЛИЗ GitHub (PNGTuber.exe) -->
-        <a class="btn btn-accent magnet" href="#" target="_blank">Скачать .EXE</a>
-        <a class="btn btn-ghost magnet" href="#" target="_blank">.APK — скоро</a>
+        <!-- ⬇️ ВСТАВЬ ССЫЛКУ НА РЕЛИЗ GitHub (PNGTuber) -->
+        <a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a>
       </div>
-      <div class="card" data-tilt data-reveal="right" style="--d:.15s"><span class="num">EXE</span><h3>JARVIS.exe</h3>
+      <div class="card" data-tilt data-reveal="right" style="--d:.15s"><span class="num">EXE</span><h3>JARVIS.exe <span class="dev">в разработке</span></h3>
         <p>Компактный помощник для ПК: голосовые команды и автоматизация повседневных задач. Делал для себя — открыл для всех.</p>
-        <!-- ⬇️ ВСТАВЬ ССЫЛКУ НА РЕЛИЗ GitHub (JARVIS.exe) -->
-        <a class="btn btn-accent magnet" href="#" target="_blank">Скачать .EXE</a>
-        <a class="btn btn-ghost magnet" href="#" target="_blank">.APK — скоро</a>
+        <!-- ⬇️ ВСТАВЬ ССЫЛКУ НА РЕЛИЗ GitHub (JARVIS) -->
+        <a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a>
       </div>
     </div>
-    <p class="note" data-reveal>✚ Если что-то не скачивается или работает не так — напиши в Telegram, я исправлю.</p>
+    <p class="note" data-reveal>✚ Оба проекта в активной разработке и регулярно обновляются. Если что-то не скачивается или работает не так — напиши в Telegram, я исправлю.</p>
   </div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Как установить</h2>
     <div class="tl">
       <div class="tl-line"><i></i></div>
-      <div class="tl-item"><b>01</b><h3>Скачай</h3><p>Выбери .exe или .apk в карточке выше.</p></div>
+      <div class="tl-item"><b>01</b><h3>Скачай</h3><p>Выбери нужный формат файла при скачивании.</p></div>
       <div class="tl-item"><b>02</b><h3>Запусти</h3><p>Распакуй архив и открой файл. Установка не нужна.</p></div>
       <div class="tl-item"><b>03</b><h3>Пользуйся</h3><p>Вопросы и идеи — пиши в Telegram.</p></div>
     </div>
@@ -711,7 +711,8 @@ const track=$('#carTrack'),bar=$('#carBar');
 if(track){
   const slides=$$('.work',track),count=$('#carCount');
   const GAP=24;
-  const step=()=>slides[0].getBoundingClientRect().width+GAP;
+  /* offsetWidth — честная ширина без scale, поэтому счётчик не врёт на 7/8 */
+  const step=()=>slides[0].offsetWidth+GAP;
   let dragging=false,sx=0,sl=0,moved=0;
   const paint=()=>{
     const cw=track.clientWidth;
