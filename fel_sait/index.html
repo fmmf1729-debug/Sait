@@ -596,8 +596,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   /* 1) Лок домена. ПОКА CANONICAL ПУСТОЙ — защита не активна, ничего не сломается.
      После деплоя впиши сюда свои домены (vercel и github.io) — и любая копия,
      размещённая на чужом домене, сама перенаправит посетителей на твой сайт. */
-  var ALLOWED=['localhost','127.0.0.1'];   // сюда: 'fel-iks.vercel.app','твойник.github.io'
-  var CANONICAL='';                        // сюда: 'https://fel-iks.vercel.app'
+var ALLOWED=['localhost','127.0.0.1','kladovka-fela.vercel.app'];
+var CANONICAL='https://kladovka-fela.vercel.app';
   var host=location.hostname;
   var ok=!CANONICAL||host==='localhost'||host==='127.0.0.1'||ALLOWED.indexOf(host)>-1;
   if(!ok){setTimeout(function(){location.replace(CANONICAL);},1200);}
