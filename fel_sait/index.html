@@ -76,11 +76,11 @@ a{color:inherit;text-decoration:none}
 .logo{font-family:var(--fd);font-weight:900;font-size:1.2rem;letter-spacing:.06em}
 .logo:hover{color:#16e0e0;text-shadow:var(--glow)}
 .themes{margin-left:auto;display:flex;gap:6px}
-.tbtn{width:22px;height:22px;border:2px solid var(--line);cursor:pointer;transition:.2s;touch-action:manipulation}
+.tbtn{position:relative;width:22px;height:22px;border:2px solid var(--line);cursor:pointer;transition:.2s;touch-action:manipulation}
 .tbtn[data-set="dark"]{background:#0a0d0f}
 .tbtn[data-set="light"]{background:#f2f6f6}
 .tbtn[data-set="cyan"]{background:#0fd6d6}
-.tbtn:hover{translate:0 -2px}
+.tbtn:hover{translate:0 -2px;z-index:6}
 .tbtn.on{border-color:#16e0e0;box-shadow:0 0 10px rgba(22,224,224,.6)}
 .burger{width:46px;height:44px;background:none;border:0;cursor:pointer;display:grid;place-items:center;gap:6px;position:relative;z-index:110;touch-action:manipulation}
 .burger span{display:block;width:26px;height:3px;background:var(--txt);transition:.35s cubic-bezier(.68,-.55,.27,1.55)}
@@ -105,6 +105,7 @@ body.menu-open .menu-links a:nth-child(2){transition-delay:.22s}
 body.menu-open .menu-links a:nth-child(3){transition-delay:.29s}
 body.menu-open .menu-links a:nth-child(4){transition-delay:.36s}
 body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
+body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .menu-soc{display:flex;gap:10px;flex-wrap:wrap}
 .menu-soc a{border:2px solid #1d2a2d;padding:8px 14px;font-size:.8rem;letter-spacing:.1em}
 .menu-soc a:hover{border-color:#16e0e0;color:#16e0e0;box-shadow:0 0 18px rgba(22,224,224,.55)}
@@ -115,7 +116,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .page.active .page-title{animation:titlein .7s cubic-bezier(.2,.8,.2,1)}
 @keyframes titlein{from{opacity:0;transform:translateY(26px);letter-spacing:.25em}}
 
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 8vw 80px;z-index:2;overflow:hidden}
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 8vw 80px;z-index:2}
 .hero-letters{position:absolute;top:6%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
 .hero-title{font-family:var(--fd);font-weight:900;font-size:clamp(3rem,12vw,9rem);line-height:.95;text-transform:uppercase;position:relative;z-index:1}
 .hero-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
@@ -139,6 +140,10 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 
 .nick{rotate:-2deg;margin-top:4px}
 
+.chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.chip{border:2px solid var(--line);padding:10px 16px;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s}
+.chip:hover{border-color:var(--cy);color:var(--cy);box-shadow:var(--glow);translate:0 -3px}
+
 .marquee{overflow:hidden;border-block:3px solid #000;background:var(--cy);color:var(--oncy);padding:12px 0;position:relative;z-index:2;box-shadow:0 0 30px rgba(22,224,224,.35)}
 .marquee .track{display:inline-block;white-space:nowrap;animation:mq 22s linear infinite;font-family:var(--fd);font-weight:900;font-size:1.1rem;letter-spacing:.1em}
 @keyframes mq{to{transform:translateX(-50%)}}
@@ -152,7 +157,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .end-wrap{display:flex;justify-content:center;position:relative;z-index:1;margin-top:30px}
 .end-wrap img{width:auto;height:auto;max-height:min(46vh,380px);max-width:min(90%,430px);margin-bottom:-64px;filter:drop-shadow(0 0 26px rgba(22,224,224,.2))}
 
-/* ===== карусель: нативный скролл + snap + доводка ===== */
+/* ===== карусель v3: непрерывная анимация + прогресс ===== */
 .car{position:relative;z-index:2;margin-top:26px}
 .car-track{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;
   padding:44px calc((100% - min(720px,86vw))/2);margin:-14px 0;
@@ -162,21 +167,21 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .car-track.drag{scroll-snap-type:none;scroll-behavior:auto;cursor:grabbing}
 .work{position:relative;flex:0 0 auto;width:min(720px,86vw);scroll-snap-align:center;scroll-snap-stop:always;
   background:var(--panel);border:3px solid #000;box-shadow:8px 8px 0 rgba(0,0,0,.4);cursor:pointer;--gc:rgb(22,224,224);
-  opacity:.45;transform:scale(.92) rotate(1.5deg) translateY(14px);
-  transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .5s,box-shadow .4s}
-.work.active{opacity:1;transform:scale(1) rotate(0deg) translateY(0);
-  box-shadow:0 0 34px color-mix(in srgb,var(--gc) 40%,transparent),8px 8px 0 rgba(0,0,0,.4)}
-.work:hover{box-shadow:0 0 44px color-mix(in srgb,var(--gc) 55%,transparent),8px 8px 0 #000}
-.work img{width:100%;aspect-ratio:16/9;object-fit:cover;pointer-events:none}
+  transition:box-shadow .4s;will-change:transform,opacity}
+.work.active{box-shadow:0 0 34px color-mix(in srgb,var(--gc) 40%,transparent),8px 8px 0 rgba(0,0,0,.4)}
+.work:hover{box-shadow:0 0 44px color-mix(in srgb,var(--gc) 55%,transparent),8px 8px 0 #000;z-index:6}
+.work img{width:100%;aspect-ratio:16/9;object-fit:cover;pointer-events:none;will-change:transform}
 .work::before{content:'';position:absolute;inset:-3px;border:3px solid var(--gc);opacity:0;transition:opacity .3s;pointer-events:none;z-index:1}
 .work.active::before{opacity:1}
 .work figcaption{display:flex;align-items:center;gap:10px;background:#000;color:#fff;padding:11px 14px;font-family:var(--fd);font-size:.7rem;letter-spacing:.15em}
 .work .dot{width:10px;height:10px;background:var(--gc);flex:0 0 auto;animation:pulse 2.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 5px var(--gc)}50%{box-shadow:0 0 16px var(--gc)}}
 .work .eye{margin-left:auto;color:var(--gc)}
+.car-bar{height:3px;background:var(--line);position:relative;margin-top:6px}
+.car-bar i{position:absolute;inset:0;background:var(--cy);box-shadow:var(--glow);transform-origin:left;transform:scaleX(0)}
 .car-ui{display:flex;align-items:center;gap:16px;margin-top:14px}
-.car-btn{width:52px;height:52px;background:#000;color:#fff;border:3px solid #000;box-shadow:5px 5px 0 var(--btnsh);cursor:pointer;font-size:1.2rem;transition:translate .2s,box-shadow .2s;touch-action:manipulation}
-.car-btn:hover{translate:-3px -3px;box-shadow:8px 8px 0 var(--btnsh),var(--glow)}
+.car-btn{position:relative;width:52px;height:52px;background:#000;color:#fff;border:3px solid #000;box-shadow:5px 5px 0 var(--btnsh);cursor:pointer;font-size:1.2rem;transition:translate .2s,box-shadow .2s;touch-action:manipulation}
+.car-btn:hover{translate:-3px -3px;box-shadow:8px 8px 0 var(--btnsh),var(--glow);z-index:6}
 .car-btn:active{translate:2px 2px;box-shadow:2px 2px 0 var(--btnsh)}
 .car-count{font-family:var(--fd);color:var(--muted);letter-spacing:.2em;font-size:.85rem}
 
@@ -203,18 +208,16 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:22px;margin-top:34px}
 .cards.proj{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
-/* карточки без overflow:hidden — кнопки и тени больше не обрезаются */
 .card{position:relative;display:flex;flex-direction:column;align-items:flex-start;background:var(--panel);border:2px solid var(--line);padding:26px;transition:border-color .3s,box-shadow .3s,translate .3s}
 .card>*{position:relative;z-index:1}
 .card::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),var(--glowbg),transparent 70%);opacity:0;transition:opacity .3s}
 .card:hover::after{opacity:1}
-/* блик-полоса через background-position — ничего не вылезает и не режется */
 .card::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
   background:linear-gradient(105deg,transparent 35%,var(--cy) 50%,transparent 65%) no-repeat;
   background-size:250% 100%;background-position:130% 0;opacity:.55;transition:background-position .7s ease}
 .card:hover::before{background-position:-30% 0}
-.card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -6px}
+.card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -6px;z-index:6}
 .card .ico{font-size:1.5rem;color:var(--muted);display:inline-block;transition:.3s;margin-bottom:6px}
 .card:hover .ico{color:var(--cy);transform:scale(1.25) rotate(-10deg);text-shadow:var(--glow)}
 .card .num{font-family:var(--fd);color:var(--cy);font-size:.8rem;letter-spacing:.2em}
@@ -228,7 +231,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%) no-repeat;
   background-size:250% 100%;background-position:130% 0;transition:background-position .5s ease;pointer-events:none}
 .btn:hover::before{background-position:-30% 0}
-.btn:hover{translate:-3px -3px;box-shadow:9px 9px 0 var(--btnsh),var(--glow)}
+.btn:hover{translate:-3px -3px;box-shadow:9px 9px 0 var(--btnsh),var(--glow);z-index:6}
 .btn:active{translate:2px 2px;box-shadow:2px 2px 0 var(--btnsh)}
 .btn-accent{background:var(--cy);color:var(--oncy)}
 .btn-ghost{background:transparent;color:var(--muted);box-shadow:6px 6px 0 var(--line)}
@@ -244,12 +247,12 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 .link-card b{font-family:var(--fd);font-size:1rem}
 .link-card span{color:var(--muted);font-size:.85rem}
 .link-card i{position:absolute;right:16px;top:16px;font-style:normal;transition:.25s}
-.link-card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -4px}
+.link-card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -4px;z-index:6}
 .link-card:hover i{color:var(--cy);transform:translate(4px,-4px) rotate(45deg)}
 
 .ava-strip{display:flex;align-items:center;gap:14px;color:var(--muted);flex-wrap:wrap}
-.ava-strip img{width:64px;height:64px;object-fit:cover;border:3px solid #000;box-shadow:4px 4px 0 rgba(22,224,224,.7);transition:.25s}
-.ava-strip img:hover{translate:0 -5px;rotate:-3deg;box-shadow:4px 4px 0 #16e0e0,var(--glow)}
+.ava-strip img{position:relative;width:64px;height:64px;object-fit:cover;border:3px solid #000;box-shadow:4px 4px 0 rgba(22,224,224,.7);transition:.25s}
+.ava-strip img:hover{translate:0 -5px;rotate:-3deg;box-shadow:4px 4px 0 #16e0e0,var(--glow);z-index:6}
 
 .order-wrap{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding-top:140px}
 .plate{background:var(--plate-bg);color:var(--plate-txt);border:3px solid #000;box-shadow:12px 12px 0 var(--cy);padding:40px;max-width:760px;margin-top:36px}
@@ -296,7 +299,6 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   .duo{padding-top:120px}
   .duo-png{max-height:170px;max-width:60vw}
   .work{width:88vw}
-  .work.active{box-shadow:0 0 22px color-mix(in srgb,var(--gc) 40%,transparent),8px 8px 0 rgba(0,0,0,.4)}
   .car-btn{width:46px;height:46px}
   .tl{padding-left:38px}
   .tl-item::before{left:-32px}
@@ -320,7 +322,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   [data-reveal]{opacity:1;transform:none}
   .tl-item{opacity:1;translate:0 0}
   .tl-line i{transform:scaleY(1)!important}
-  .work{opacity:1;transform:none}
+  .work{opacity:1!important;transform:none!important}
   .car-track{scroll-behavior:auto}
 }
 </style>
@@ -347,7 +349,8 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
     <a href="#/portfolio"><i>02</i>Портфолио</a>
     <a href="#/orders"><i>03</i>Заказы</a>
     <a href="#/opensource"><i>04</i>Опенсурс</a>
-    <a href="#/feedback"><i>05</i>Обратная связь</a>
+    <a href="#/ranta"><i>05</i>Ranta</a>
+    <a href="#/feedback"><i>06</i>Обратная связь</a>
   </nav>
   <div class="menu-soc">
     <a href="https://www.youtube.com/@Fel_iks" target="_blank">YOUTUBE</a>
@@ -371,17 +374,18 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
     <div class="scroll-hint">СКРОЛЛЬ<span></span></div>
   </div>
   <div class="marquee" data-reveal><div class="track">
-    <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚&nbsp;</span>
-    <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚&nbsp;</span>
+    <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚ RANTA &nbsp;</span>
+    <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚ RANTA &nbsp;</span>
   </div></div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Что это за сайт</h2>
-    <p class="lead" data-reveal style="--d:.1s">Если коротко: здесь мои <b>открытые проекты</b>, <b>портфолио</b> и все ссылки на меня. Нужно превью, оформление или сайт — заказы тоже здесь.</p>
+    <p class="lead" data-reveal style="--d:.1s">Если коротко: здесь мои <b>открытые проекты</b>, <b>портфолио</b>, мой сервер и все ссылки на меня. Нужно превью, оформление или сайт — заказы тоже здесь.</p>
     <div class="cards">
       <a href="#/portfolio" class="card" data-tilt data-reveal="left"><span class="ico">▶</span><span class="num">01</span><h3>Портфолио</h3><p>Все работы и площадки, где я публикуюсь.</p><span class="go">→</span></a>
       <a href="#/orders" class="card" data-tilt data-reveal style="--d:.1s"><span class="ico">✚</span><span class="num">02</span><h3>Заказы</h3><p>Превью, оформление, скины и сайты — беру в работу.</p><span class="go">→</span></a>
       <a href="#/opensource" class="card" data-tilt data-reveal style="--d:.2s"><span class="ico">⚙</span><span class="num">03</span><h3>Опенсурс</h3><p>Бесплатные программы, которые я разработал.</p><span class="go">→</span></a>
-      <a href="#/feedback" class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✉</span><span class="num">04</span><h3>Обратная связь</h3><p>Раздел готовится. Пока проще всего написать в Telegram.</p><span class="go">→</span></a>
+      <a href="#/ranta" class="card" data-tilt data-reveal style="--d:.25s"><span class="ico">⛏</span><span class="num">04</span><h3>Ranta</h3><p>Мой майн-сервер для контентмейкеров.</p><span class="go">→</span></a>
+      <a href="#/feedback" class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✉</span><span class="num">05</span><h3>Обратная связь</h3><p>Раздел готовится. Пока проще всего написать в Telegram.</p><span class="go">→</span></a>
     </div>
   </div>
   <div class="wrap sec">
@@ -450,6 +454,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
         <figure class="work"><img loading="lazy" src="img/prev4.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
         <figure class="work"><img loading="lazy" src="img/prev6.png" alt="Превью"><figcaption><span class="dot"></span>ПРЕВЬЮ ✚<span class="eye">⤢</span></figcaption></figure>
       </div>
+      <div class="car-bar"><i id="carBar"></i></div>
       <div class="car-ui">
         <button class="car-btn" id="carPrev" aria-label="назад">←</button>
         <span class="car-count" id="carCount">01 / 08</span>
@@ -546,6 +551,28 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
   </div>
 </section>
 
+<!-- RANTA -->
+<section class="page" id="page-ranta">
+  <div class="page-hero"><h1 class="page-title" data-scramble>RANTA</h1></div>
+  <div class="wrap sec over-sec">
+    <img class="over-png" src="img/stand.png" alt="">
+    <div class="panel-box" data-reveal>
+      <h2 class="h2" data-reveal="mask">Майн-сервер контентмейкеров</h2>
+      <p class="lead"><b>Ranta</b> — мой сервер для тех, кто снимает и стримит. Ивенты, комьюнити и место, где рождаются ролики. Страница ещё оформляется — скоро здесь будет красиво.</p>
+      <div class="chips" data-reveal style="--d:.2s">
+        <span class="chip">Ивенты</span><span class="chip">Комьюнити</span>
+        <span class="chip">Выживание</span><span class="chip">Контент</span>
+      </div>
+    </div>
+  </div>
+  <div class="wrap sec">
+    <div class="cards">
+      <div class="card" data-tilt data-reveal="left"><span class="ico">⛏</span><span class="num">01</span><h3>Скоро</h3><p>Сейчас мы оформляем эту страницу. Загляни позже — тут появятся новости, правила и вайтлист.</p></div>
+      <div class="card" data-tilt data-reveal="right" style="--d:.15s"><span class="ico">✉</span><span class="num">02</span><h3>Хочешь на сервер?</h3><p>Пиши в телеграм — расскажу, как попасть, и отвечу на вопросы.</p><a class="btn btn-accent magnet" href="https://t.me/kladovka_fela" target="_blank">Написать</a></div>
+    </div>
+  </div>
+</section>
+
 <!-- ОБРАТНАЯ СВЯЗЬ -->
 <section class="page" id="page-feedback">
   <div class="wrap sec soon-wrap">
@@ -585,7 +612,7 @@ tbtns.forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.set)));
 setTheme(localStorage.getItem('theme')||'dark');
 
 /* роутер */
-const NAMES={'':'home',home:'home',portfolio:'portfolio',orders:'orders',order:'order',opensource:'opensource',feedback:'feedback'};
+const NAMES={'':'home',home:'home',portfolio:'portfolio',orders:'orders',order:'order',opensource:'opensource',ranta:'ranta',feedback:'feedback'};
 const routeName=()=>NAMES[location.hash.replace(/^#\/?/,'')]||'home';
 let current=null;
 function activate(n){
@@ -687,43 +714,47 @@ works.forEach(w=>{
   im.complete?set():im.addEventListener('load',set);
 });
 
-/* ===== карусель: нативный скролл + snap + доводка ===== */
-const track=$('#carTrack');
+/* ===== карусель v3 ===== */
+const track=$('#carTrack'),bar=$('#carBar');
 if(track){
   const slides=$$('.work',track),count=$('#carCount');
-  const step=()=>slides[0].getBoundingClientRect().width+24;
+  const GAP=24;
+  const step=()=>slides[0].getBoundingClientRect().width+GAP;
   let dragging=false,sx=0,sl=0,moved=0;
-  track.addEventListener('pointerdown',e=>{
-    dragging=true;moved=0;sx=e.clientX;sl=track.scrollLeft;
-    track.classList.add('drag');
-  });
-  addEventListener('pointermove',e=>{
-    if(!dragging)return;
-    const dx=e.clientX-sx;
-    moved=Math.max(moved,Math.abs(dx));
-    track.scrollLeft=sl-dx;
-  });
-  const finish=()=>{
-    if(!dragging)return;
-    dragging=false;track.classList.remove('drag');
+  const paint=()=>{
+    const cw=track.clientWidth;
+    const center=track.scrollLeft+cw/2;
+    slides.forEach(sl2=>{
+      const w=sl2.offsetWidth||1;
+      const c=sl2.offsetLeft+w/2;
+      const d=clamp(Math.abs(center-c)/w,0,1);
+      const e=1-d;
+      if(!reduced){
+        sl2.style.opacity=(0.4+0.6*e).toFixed(2);
+        sl2.style.transform=`scale(${(0.9+0.1*e).toFixed(3)}) rotate(${((1-e)*1.5).toFixed(2)}deg)`;
+        const img=sl2.querySelector('img');
+        img.style.transform=`translateX(${(((center-c)/w)*-6).toFixed(2)}%) scale(1.08)`;
+      }
+      sl2.classList.toggle('active',d<0.3);
+    });
+    const max=track.scrollWidth-cw;
+    if(bar)bar.style.transform=`scaleX(${max?clamp(track.scrollLeft/max,0,1):0})`;
     const i=clamp(Math.round(track.scrollLeft/step()),0,slides.length-1);
-    track.scrollTo({left:i*step(),behavior:'smooth'});
+    count.textContent=String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
   };
+  track.addEventListener('pointerdown',e=>{dragging=true;moved=0;sx=e.clientX;sl=track.scrollLeft;track.classList.add('drag');});
+  addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-sx;moved=Math.max(moved,Math.abs(dx));track.scrollLeft=sl-dx;});
+  const finish=()=>{if(!dragging)return;dragging=false;track.classList.remove('drag');
+    const i=clamp(Math.round(track.scrollLeft/step()),0,slides.length-1);
+    track.scrollTo({left:i*step(),behavior:'smooth'});};
   addEventListener('pointerup',finish);
   addEventListener('pointercancel',finish);
   $('#carPrev').addEventListener('click',()=>track.scrollBy({left:-step(),behavior:'smooth'}));
   $('#carNext').addEventListener('click',()=>track.scrollBy({left:step(),behavior:'smooth'}));
-  const onScr=()=>{
-    const i=clamp(Math.round(track.scrollLeft/step()),0,slides.length-1);
-    slides.forEach((s2,j)=>s2.classList.toggle('active',j===i));
-    count.textContent=String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
-  };
-  track.addEventListener('scroll',()=>requestAnimationFrame(onScr),{passive:true});
-  /* клик по карточке не срабатывает после свайпа */
-  track.addEventListener('click',e=>{
-    if(moved>8){e.stopPropagation();e.preventDefault();moved=0;}
-  },true);
-  onScr();
+  track.addEventListener('scroll',()=>requestAnimationFrame(paint),{passive:true});
+  track.addEventListener('click',e=>{if(moved>8){e.stopPropagation();e.preventDefault();moved=0;}},true);
+  addEventListener('resize',paint);
+  paint();
 }
 
 /* лайтбокс */
