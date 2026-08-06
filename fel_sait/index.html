@@ -1,3 +1,4 @@
+<!-- ✚ Дизайн и код: Fel_iks. Копирование без разрешения запрещено. -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -140,7 +141,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 .nick{rotate:-2deg;margin-top:4px}
 
-/* бейдж «в разработке» */
 .dev{display:inline-block;margin-left:10px;padding:4px 10px;border:2px solid var(--cy);color:var(--cy);font-family:var(--fd);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;vertical-align:middle;translate:0 -2px}
 
 .chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
@@ -591,6 +591,41 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 </div>
 
 <script>
+/* ===== ЗАЩИТА САЙТА ===== */
+(function(){
+  /* 1) Лок домена. ПОКА CANONICAL ПУСТОЙ — защита не активна, ничего не сломается.
+     После деплоя впиши сюда свои домены (vercel и github.io) — и любая копия,
+     размещённая на чужом домене, сама перенаправит посетителей на твой сайт. */
+  var ALLOWED=['localhost','127.0.0.1'];   // сюда: 'fel-iks.vercel.app','твойник.github.io'
+  var CANONICAL='';                        // сюда: 'https://fel-iks.vercel.app'
+  var host=location.hostname;
+  var ok=!CANONICAL||host==='localhost'||host==='127.0.0.1'||ALLOWED.indexOf(host)>-1;
+  if(!ok){setTimeout(function(){location.replace(CANONICAL);},1200);}
+
+  /* 2) Барьеры от ленивых: правая кнопка, devtools-сочетания, выделение, перетаскивание */
+  document.addEventListener('contextmenu',function(e){e.preventDefault();});
+  document.addEventListener('keydown',function(e){
+    var k=(e.key||'').toUpperCase();
+    if(e.key==='F12')e.preventDefault();
+    if(e.ctrlKey&&e.shiftKey&&(k==='I'||k==='J'||k==='C'||k==='K'))e.preventDefault();
+    if(e.ctrlKey&&(k==='U'||k==='S'||k==='P'))e.preventDefault();
+  });
+  document.addEventListener('dragstart',function(e){e.preventDefault();});
+  document.addEventListener('selectstart',function(e){
+    if(!e.target.closest('input,textarea'))e.preventDefault();
+  });
+
+  /* 3) Водяные знаки: скрытые, но фиксируют авторство */
+  document.documentElement.setAttribute('data-author','Fel_iks');
+  var wm=document.createElement('div');
+  wm.textContent='design & code © Fel_iks';
+  wm.style.cssText='position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;opacity:.01;pointer-events:none';
+  document.body.appendChild(wm);
+  try{console.log('%c✚ FEL_IKS','font-size:32px;color:#16e0e0;font-weight:900',
+    '\nДизайн и код — Fel_iks. Копирование без разрешения запрещено.');}catch(e){}
+})();
+/* ===== КОНЕЦ ЗАЩИТЫ ===== */
+
 const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
 const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
@@ -711,7 +746,7 @@ const track=$('#carTrack'),bar=$('#carBar');
 if(track){
   const slides=$$('.work',track),count=$('#carCount');
   const GAP=24;
-  /* offsetWidth — честная ширина без scale, поэтому счётчик не врёт на 7/8 */
+  /* offsetWidth — честная ширина без scale, счётчик не врёт */
   const step=()=>slides[0].offsetWidth+GAP;
   let dragging=false,sx=0,sl=0,moved=0;
   const paint=()=>{
