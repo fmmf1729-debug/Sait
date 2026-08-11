@@ -10,7 +10,7 @@
 <script>document.documentElement.dataset.theme=localStorage.getItem('theme')||'dark'</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0d0f; --panel:#0f1517; --line:#1d2a2d; --txt:#f2f6f6; --muted:#8fa3a6;
@@ -20,7 +20,7 @@
   --plate-bg:#f2f6f6; --plate-txt:#06090b;
   --crossA:rgba(255,255,255,.12); --crossB:rgba(0,0,0,.4); --crossC:rgba(22,224,224,.28);
   --glowbg:rgba(22,224,224,.10);
-  --fd:'Unbounded',sans-serif; --fb:'Rubik',sans-serif;
+  --fd:'Unbounded',sans-serif; --fb:'Rubik',sans-serif; --mono:'JetBrains Mono',monospace;
 }
 [data-theme="light"]{
   --bg:#eef3f3; --panel:#ffffff; --line:#d7e0e0; --txt:#0b1011; --muted:#5b6c6f;
@@ -46,12 +46,33 @@ body{background:var(--bg);color:var(--txt);font-family:var(--fb);overflow-x:hidd
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:48px 48px}
+/* зерно поверх всего — текстура как в референсах */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.04;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' frequency='0.9' numberOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/></svg>")}
 img{max-width:100%;display:block;-webkit-user-drag:none}
 a{color:inherit;text-decoration:none}
 ::selection{background:#16e0e0;color:#000}
 ::-webkit-scrollbar{width:10px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
+
+/* ===== HUD: служебные надписи по углам ===== */
+.hud{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-between;gap:10px;
+  padding:10px 16px;font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);z-index:90;pointer-events:none}
+.hud b{color:var(--cy);font-weight:400}
+
+/* ===== моно-подписи секций ===== */
+.mlabel{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.65rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.mlabel::after{content:'';flex:1;height:1px;background:var(--line)}
+.mlabel b{color:var(--cy);font-weight:400}
+
+/* ===== слова-призраки за заголовками ===== */
+.ghost{position:absolute;top:30px;left:0;right:0;font-family:var(--fd);font-weight:900;
+  font-size:clamp(4rem,15vw,13rem);line-height:1;letter-spacing:-.02em;text-transform:lowercase;
+  color:transparent;-webkit-text-stroke:1px var(--stroke);pointer-events:none;user-select:none;
+  white-space:nowrap;overflow:hidden;z-index:0}
 
 #progress{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:#16e0e0;z-index:150;box-shadow:0 0 12px rgba(22,224,224,.6)}
 #wipe{position:fixed;inset:0;background:#050708;z-index:200;transform:translateY(0);transition:transform .6s cubic-bezier(.8,0,.2,1)}
@@ -97,7 +118,7 @@ body.menu-open{overflow:hidden}
 body.menu-open .menu{clip-path:circle(150% at calc(100% - 45px) 35px)}
 .menu-links{display:flex;flex-direction:column;gap:8px}
 .menu-links a{font-family:var(--fd);font-weight:900;text-transform:uppercase;font-size:clamp(1.6rem,5vw,3.2rem);display:flex;gap:16px;align-items:baseline;opacity:0;transform:translateY(30px);transition:.5s}
-.menu-links a i{font-style:normal;color:#16e0e0;font-size:.9rem}
+.menu-links a i{font-style:normal;color:#16e0e0;font-size:.9rem;font-family:var(--mono)}
 .menu-links a:hover{color:#16e0e0;transform:translateX(14px)}
 .menu-links a.active{color:#16e0e0}
 body.menu-open .menu-links a{opacity:1;transform:none}
@@ -108,7 +129,7 @@ body.menu-open .menu-links a:nth-child(4){transition-delay:.36s}
 body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}
 body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .menu-soc{display:flex;gap:10px;flex-wrap:wrap}
-.menu-soc a{border:2px solid #1d2a2d;padding:8px 14px;font-size:.8rem;letter-spacing:.1em}
+.menu-soc a{border:2px solid #1d2a2d;padding:8px 14px;font-size:.8rem;letter-spacing:.1em;font-family:var(--mono)}
 .menu-soc a:hover{border-color:#16e0e0;color:#16e0e0;box-shadow:0 0 18px rgba(22,224,224,.55)}
 
 .page{display:none}
@@ -123,11 +144,11 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .hero-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
 .hero-sub{margin-top:28px;color:var(--muted);font-size:clamp(.9rem,2vw,1.2rem);letter-spacing:.15em;text-transform:uppercase;position:relative;z-index:1}
 .hero-actions{display:flex;gap:18px;margin-top:34px;flex-wrap:wrap;position:relative;z-index:1}
-.scroll-hint{position:absolute;bottom:18px;left:8vw;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px}
+.scroll-hint{position:absolute;bottom:34px;left:8vw;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px;font-family:var(--mono)}
 .scroll-hint span{width:60px;height:2px;background:var(--cy);display:inline-block;animation:hint 1.4s ease-in-out infinite}
 @keyframes hint{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0)}}
 
-.page-hero{position:relative;padding:150px 8vw 30px;z-index:2}
+.page-hero{position:relative;padding:150px 8vw 30px;z-index:2;overflow:hidden}
 .page-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.2rem,8vw,6rem);text-transform:uppercase;text-shadow:4px 4px 0 var(--sh1),8px 8px 0 var(--sh2);position:relative;z-index:1}
 
 .wrap{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 22px}
@@ -137,14 +158,14 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .lead{color:var(--muted);max-width:760px;font-size:1.05rem;line-height:1.7}
 .lead b{color:var(--txt)}
 .inline{color:var(--cy);border-bottom:2px solid var(--cy)}
-.note{margin-top:26px;color:var(--muted)}
+.note{margin-top:26px;color:var(--muted);font-family:var(--mono);font-size:.85rem}
 
 .nick{rotate:-2deg;margin-top:4px}
 
-.dev{display:inline-block;margin-left:10px;padding:4px 10px;border:2px solid var(--cy);color:var(--cy);font-family:var(--fd);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;vertical-align:middle;translate:0 -2px}
+.dev{display:inline-block;margin-left:10px;padding:4px 10px;border:2px solid var(--cy);color:var(--cy);font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;vertical-align:middle;translate:0 -2px}
 
 .chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
-.chip{border:2px solid var(--line);padding:10px 16px;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s}
+.chip{border:2px solid var(--line);padding:10px 16px;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;transition:.25s;font-family:var(--mono)}
 .chip:hover{border-color:var(--cy);color:var(--cy);box-shadow:var(--glow);translate:0 -3px}
 
 .marquee{overflow:hidden;border-block:3px solid #000;background:var(--cy);color:var(--oncy);padding:12px 0;position:relative;z-index:2;box-shadow:0 0 30px rgba(22,224,224,.35)}
@@ -177,7 +198,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .work img{width:100%;aspect-ratio:16/9;object-fit:cover;pointer-events:none;will-change:transform}
 .work::before{content:'';position:absolute;inset:-3px;border:3px solid var(--gc);opacity:0;transition:opacity .3s;pointer-events:none;z-index:1}
 .work.active::before{opacity:1}
-.work figcaption{display:flex;align-items:center;gap:10px;background:#000;color:#fff;padding:11px 14px;font-family:var(--fd);font-size:.7rem;letter-spacing:.15em}
+.work figcaption{display:flex;align-items:center;gap:10px;background:#000;color:#fff;padding:11px 14px;font-family:var(--mono);font-size:.7rem;letter-spacing:.15em}
 .work .dot{width:10px;height:10px;background:var(--gc);flex:0 0 auto;animation:pulse 2.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 5px var(--gc)}50%{box-shadow:0 0 16px var(--gc)}}
 .work .eye{margin-left:auto;color:var(--gc)}
@@ -187,14 +208,14 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .car-btn{position:relative;width:52px;height:52px;background:#000;color:#fff;border:3px solid #000;box-shadow:5px 5px 0 var(--btnsh);cursor:pointer;font-size:1.2rem;transition:translate .2s,box-shadow .2s;touch-action:manipulation}
 .car-btn:hover{translate:-3px -3px;box-shadow:8px 8px 0 var(--btnsh),var(--glow);z-index:6}
 .car-btn:active{translate:2px 2px;box-shadow:2px 2px 0 var(--btnsh)}
-.car-count{font-family:var(--fd);color:var(--muted);letter-spacing:.2em;font-size:.85rem}
+.car-count{font-family:var(--mono);color:var(--muted);letter-spacing:.2em;font-size:.85rem}
 
 .lb{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;gap:18px;padding:4vh 4vw;--gc:rgb(22,224,224)}
 .lb.open{display:flex}
 .lb figure{max-width:min(1100px,86vw);box-shadow:0 0 70px color-mix(in srgb,var(--gc) 45%,transparent);border:3px solid #000;animation:lbin .35s cubic-bezier(.2,.8,.2,1)}
 @keyframes lbin{from{transform:scale(.92);opacity:0}}
 .lb img{max-width:100%;max-height:78vh;width:auto;aspect-ratio:auto;object-fit:contain}
-.lb figcaption{background:#000;color:#fff;padding:12px 16px;font-family:var(--fd);font-size:.75rem;letter-spacing:.15em}
+.lb figcaption{background:#000;color:#fff;padding:12px 16px;font-family:var(--mono);font-size:.75rem;letter-spacing:.15em}
 .lb button{background:#000;color:#fff;border:2px solid #333;width:52px;height:52px;font-size:1.2rem;cursor:pointer;transition:.2s;flex:0 0 auto;touch-action:manipulation}
 .lb button:hover{border-color:var(--gc);color:var(--gc);box-shadow:0 0 18px color-mix(in srgb,var(--gc) 60%,transparent)}
 .lb-x{position:absolute;top:18px;right:18px}
@@ -206,7 +227,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .tl-item.on{opacity:1;translate:0 0}
 .tl-item::before{content:'';position:absolute;left:-40px;top:6px;width:13px;height:13px;background:var(--line);transition:.4s}
 .tl-item.on::before{background:var(--cy);box-shadow:var(--glow)}
-.tl-item b{font-family:var(--fd);color:var(--cy);font-size:.8rem;letter-spacing:.2em}
+.tl-item b{font-family:var(--mono);color:var(--cy);font-size:.8rem;letter-spacing:.2em}
 .tl-item h3{font-family:var(--fd);text-transform:uppercase;margin:8px 0 6px;font-size:1.05rem}
 .tl-item p{color:var(--muted);line-height:1.6}
 
@@ -224,7 +245,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -6px;z-index:6}
 .card .ico{font-size:1.5rem;color:var(--muted);display:inline-block;transition:.3s;margin-bottom:6px}
 .card:hover .ico{color:var(--cy);transform:scale(1.25) rotate(-10deg);text-shadow:var(--glow)}
-.card .num{font-family:var(--fd);color:var(--cy);font-size:.8rem;letter-spacing:.2em}
+.card .num{font-family:var(--mono);color:var(--cy);font-size:.8rem;letter-spacing:.2em}
 .card h3{font-family:var(--fd);font-weight:700;text-transform:uppercase;margin:10px 0 10px;font-size:1.05rem}
 .card p{color:var(--muted);line-height:1.6;font-size:.95rem;margin-bottom:16px;flex:1}
 .card .go{position:absolute;right:18px;top:18px;font-size:1.3rem;transition:.3s}
@@ -249,12 +270,12 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .link-card .lic .a{fill:var(--cy)}
 .link-card:hover .lic{transform:scale(1.15) rotate(-6deg)}
 .link-card b{font-family:var(--fd);font-size:1rem}
-.link-card span{color:var(--muted);font-size:.85rem}
-.link-card i{position:absolute;right:16px;top:16px;font-style:normal;transition:.25s}
+.link-card span{color:var(--muted);font-size:.8rem;font-family:var(--mono)}
+.link-card i{position:absolute;right:16px;top:16px;font-style:normal;transition:.25s;font-family:var(--mono)}
 .link-card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -4px;z-index:6}
 .link-card:hover i{color:var(--cy);transform:translate(4px,-4px) rotate(45deg)}
 
-.ava-strip{display:flex;align-items:center;gap:14px;color:var(--muted);flex-wrap:wrap}
+.ava-strip{display:flex;align-items:center;gap:14px;color:var(--muted);flex-wrap:wrap;font-family:var(--mono);font-size:.8rem}
 .ava-strip img{position:relative;width:64px;height:64px;object-fit:cover;border:3px solid #000;box-shadow:4px 4px 0 rgba(22,224,224,.7);transition:.25s}
 .ava-strip img:hover{translate:0 -5px;rotate:-3deg;box-shadow:4px 4px 0 #16e0e0,var(--glow);z-index:6}
 
@@ -262,7 +283,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .plate{background:var(--plate-bg);color:var(--plate-txt);border:3px solid #000;box-shadow:12px 12px 0 var(--cy);padding:40px;max-width:760px;margin-top:36px}
 .plate p{font-size:1.1rem;line-height:1.7;margin-bottom:28px}
 .plate .tg{color:#00c2cc;font-family:var(--fd)}
-.back{margin-top:26px;color:var(--muted)}
+.back{margin-top:26px;color:var(--muted);font-family:var(--mono);font-size:.85rem}
 .back:hover{color:var(--cy)}
 
 .soon-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center}
@@ -273,7 +294,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .soon p{color:var(--muted);margin-bottom:28px}
 .soon .hero-actions{justify-content:center}
 
-.ftr{position:relative;z-index:2;border-top:2px solid var(--line);background:var(--bg);padding:22px 8vw;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+.ftr{position:relative;z-index:2;border-top:2px solid var(--line);background:var(--bg);padding:22px 8vw 40px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.8rem;flex-wrap:wrap;font-family:var(--mono)}
 
 [data-reveal]{opacity:0;transform:translateY(46px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1),clip-path .8s cubic-bezier(.2,.8,.2,1)}
 [data-reveal="left"]{transform:translateX(-70px)}
@@ -287,6 +308,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 @media(max-width:800px){
   html,body{overflow-x:clip}
+  .hud{display:none}
   .hdr{padding:10px 14px;gap:10px}
   .logo{font-size:1rem}
   .themes{gap:4px}
@@ -314,7 +336,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .lb figure{max-width:92vw}
   .marquee .track{font-size:.9rem}
   .ava-strip img{width:56px;height:56px}
-  .ftr{padding:18px 6vw}
+  .ftr{padding:18px 6vw 30px}
   .menu{padding:8vh 8vw}
   #head{filter:none}
   .dev{margin-left:0;margin-top:8px}
@@ -336,6 +358,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <body>
 <div id="wipe"></div><div id="bg"></div><div id="progress"></div>
 <img id="head" src="img/golova.png" alt="">
+<div class="hud" aria-hidden="true"><span>© 2026 <b>✚</b> fel_iks</span><span>v1.0 // <b id="hudTime">00:00</b></span></div>
 <noscript><style>#wipe{display:none}.page{display:block!important}#head{display:none}</style></noscript>
 
 <header class="hdr">
@@ -371,19 +394,21 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <section class="page active" id="page-home">
   <div class="hero">
     <div class="hero-letters" data-plx="0.1">FEL</div>
+    <div class="mlabel" data-reveal><b>✚</b> fel_iks // system v1.0</div>
     <h1 class="hero-title" id="splitTitle">FEL_IKS</h1>
     <p class="hero-sub" data-reveal>ролики · стримы · разработка · скины</p>
     <div class="hero-actions" data-reveal style="--d:.15s">
       <a href="#/portfolio" class="btn btn-accent magnet">Смотреть работы</a>
       <a href="#/opensource" class="btn magnet">Открытые проекты</a>
     </div>
-    <div class="scroll-hint">СКРОЛЛЬ<span></span></div>
+    <div class="scroll-hint">scroll<span></span></div>
   </div>
   <div class="marquee" data-reveal><div class="track">
     <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚ RANTA &nbsp;</span>
     <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚ RANTA &nbsp;</span>
   </div></div>
   <div class="wrap sec">
+    <div class="mlabel" data-reveal><b>✚</b> 01 // о сайте</div>
     <h2 class="h2" data-reveal="mask">Что это за сайт</h2>
     <p class="lead" data-reveal style="--d:.1s">Если коротко: здесь мои <b>открытые проекты</b>, <b>портфолио</b>, мой сервер и все ссылки на меня. Нужно превью, оформление или сайт — заказы тоже здесь.</p>
     <div class="cards">
@@ -398,6 +423,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     <div class="duo">
       <img src="img/stand.png" class="duo-png" alt="">
       <div class="duo-card" data-reveal>
+        <div class="mlabel" data-reveal><b>✚</b> 02 // подход</div>
         <h2 class="h2" data-reveal="mask">Без шаблонов</h2>
         <a href="#/portfolio" data-splat class="btn btn-accent nick magnet" data-reveal="pop" style="--d:.15s">FEL_IKS ✚</a>
         <p class="lead" style="margin-top:16px">Не использую заготовки. Каждый проект собирается с нуля под задачу: стиль, цвета, детали — всё обсуждаемо. <a class="inline" href="#/orders">Обсудить заказ →</a></p>
@@ -409,15 +435,20 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 <!-- ПОРТФОЛИО -->
 <section class="page" id="page-portfolio">
-  <div class="page-hero"><h1 class="page-title" data-scramble>ПОРТФОЛИО</h1></div>
+  <div class="page-hero">
+    <div class="ghost">portfolio</div>
+    <h1 class="page-title" data-scramble>ПОРТФОЛИО</h1>
+  </div>
   <div class="wrap sec over-sec">
     <img class="over-png" src="img/golova.png" alt="">
     <div class="panel-box" data-reveal>
+      <div class="mlabel" data-reveal><b>✚</b> 01 // интро</div>
       <h2 class="h2" data-reveal="mask">Кто я</h2>
       <p class="lead">Привет, я <b>Fel_iks</b>. Снимаю ролики и стримлю, параллельно разрабатываю сайты, приложения и скины для Minecraft. Ниже — то, что уже сделано, и все мои площадки.</p>
     </div>
   </div>
   <div class="wrap sec">
+    <div class="mlabel" data-reveal><b>✚</b> 02 // ссылки</div>
     <h2 class="h2" data-reveal="mask">Мои площадки</h2>
     <div class="links">
       <a class="link-card" data-reveal="left" href="https://www.youtube.com/@Fel_iks" target="_blank">
@@ -447,6 +478,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     </div>
   </div>
   <div class="wrap sec">
+    <div class="mlabel" data-reveal><b>✚</b> 03 // работы</div>
     <h2 class="h2" data-reveal="mask">Работы</h2>
     <p class="lead" data-reveal>Здесь пока небольшая часть всех работ — раздел будет пополняться и обновляться. Клик — рассмотреть ближе.</p>
     <div class="car" data-reveal="zoom">
@@ -469,6 +501,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     </div>
   </div>
   <div class="wrap sec">
+    <div class="mlabel" data-reveal><b>✚</b> 04 // аватары</div>
     <div class="ava-strip" data-reveal>
       <img loading="lazy" src="img/ava1.png" alt=""><img loading="lazy" src="img/ava2.png" alt="">
       <img loading="lazy" src="img/ava3.png" alt=""><img loading="lazy" src="img/ava4.png" alt="">
@@ -479,10 +512,14 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 <!-- ЗАКАЗЫ -->
 <section class="page" id="page-orders">
-  <div class="page-hero"><h1 class="page-title" data-scramble>ЗАКАЗЫ</h1></div>
+  <div class="page-hero">
+    <div class="ghost">orders</div>
+    <h1 class="page-title" data-scramble>ЗАКАЗЫ</h1>
+  </div>
   <div class="wrap sec over-sec">
     <img class="over-png" src="img/stand.png" alt="">
     <div class="panel-box" data-reveal>
+      <div class="mlabel" data-reveal><b>✚</b> 01 // услуги</div>
       <h2 class="h2" data-reveal="mask">Что можно заказать</h2>
       <p class="lead">Выбирай направление. Если твоей задачи нет в списке — напиши, обсудим индивидуально.</p>
     </div>
@@ -496,6 +533,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     </div>
   </div>
   <div class="wrap sec">
+    <div class="mlabel" data-reveal><b>✚</b> 02 // процесс</div>
     <h2 class="h2" data-reveal="mask">Как проходит заказ</h2>
     <div class="tl">
       <div class="tl-line"><i></i></div>
@@ -510,6 +548,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <!-- ОФОРМЛЕНИЕ ЗАКАЗА -->
 <section class="page" id="page-order">
   <div class="wrap sec order-wrap">
+  <div class="mlabel" data-reveal><b>✚</b> order // заявка</div>
     <h1 class="page-title" data-scramble>ОФОРМЛЕНИЕ ЗАКАЗА</h1>
     <div class="plate" data-reveal="zoom">
       <p>Для заказа вам нужно написать сюда: <b class="tg">@zam_fela</b>, указав вид товара, все детали, нужные при работе, и стоимость, на которую вы рассчитываете (итоговая стоимость может отличаться от той, которую вы хотите, — все это будет обговариваться в чате с продавцом).</p>
@@ -521,10 +560,14 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 <!-- ОПЕНСУРС -->
 <section class="page" id="page-opensource">
-  <div class="page-hero"><h1 class="page-title" data-scramble>ОПЕНСУРС</h1></div>
+  <div class="page-hero">
+    <div class="ghost">code</div>
+    <h1 class="page-title" data-scramble>ОПЕНСУРС</h1>
+  </div>
   <div class="wrap sec over-sec">
     <img class="over-png" src="img/hero.png" alt="">
     <div class="panel-box" data-reveal>
+      <div class="mlabel" data-reveal><b>✚</b> 01 // проекты</div>
       <h2 class="h2" data-reveal="mask">Открытые проекты</h2>
       <p class="lead">Программы, которые я разработал. Бесплатно, без подписок и регистраций — скачал и пользуешься. Формат файла выбирается при скачивании.</p>
     </div>
@@ -542,9 +585,10 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
         <a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a>
       </div>
     </div>
-    <p class="note" data-reveal>✚ Оба проекта в активной разработке и регулярно обновляются. Если что-то не скачивается или работает не так — напиши в Telegram, я исправлю.</p>
+    <p class="note" data-reveal>✚ оба проекта в активной разработке и регулярно обновляются. если что-то не скачивается или работает не так — напиши в telegram, я исправлю.</p>
   </div>
   <div class="wrap sec">
+    <div class="mlabel" data-reveal><b>✚</b> 02 // установка</div>
     <h2 class="h2" data-reveal="mask">Как установить</h2>
     <div class="tl">
       <div class="tl-line"><i></i></div>
@@ -557,8 +601,12 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 <!-- RANTA -->
 <section class="page" id="page-ranta">
-  <div class="page-hero"><h1 class="page-title" data-scramble>RANTA</h1></div>
+  <div class="page-hero">
+    <div class="ghost">ranta</div>
+    <h1 class="page-title" data-scramble>RANTA</h1>
+  </div>
   <div class="wrap sec">
+    <div class="mlabel" data-reveal><b>✚</b> 01 // сервер</div>
     <div class="cards">
       <div class="card" data-tilt data-reveal="left"><span class="ico">⛏</span><span class="num">01</span><h3>Скоро</h3><p>Сейчас мы оформляем эту страницу. Загляни позже — тут появятся новости, правила и вайтлист.</p></div>
     </div>
@@ -567,6 +615,10 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 <!-- ОБРАТНАЯ СВЯЗЬ -->
 <section class="page" id="page-feedback">
+  <div class="page-hero">
+    <div class="ghost">feedback</div>
+    <h1 class="page-title" data-scramble>ОБРАТНАЯ СВЯЗЬ</h1>
+  </div>
   <div class="wrap sec soon-wrap">
     <div class="soon" data-reveal="zoom">
       <div class="q">???</div>
@@ -581,7 +633,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 </section>
 </main>
 
-<footer class="ftr"><span>© 2026 FEL_IKS</span><span>сделал сам, от и до</span></footer>
+<footer class="ftr"><span>© 2026 FEL_IKS</span><span>сделал сам, от и до ✚</span></footer>
 
 <div class="lb" id="lb">
   <button class="lb-x" aria-label="закрыть">✕</button>
@@ -593,16 +645,11 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <script>
 /* ===== ЗАЩИТА САЙТА ===== */
 (function(){
-  /* 1) Лок домена. ПОКА CANONICAL ПУСТОЙ — защита не активна, ничего не сломается.
-     После деплоя впиши сюда свои домены (vercel и github.io) — и любая копия,
-     размещённая на чужом домене, сама перенаправит посетителей на твой сайт. */
-var ALLOWED=['localhost','127.0.0.1','kladovka-fela.vercel.app'];
-var CANONICAL='https://kladovka-fela.vercel.app';
+  var ALLOWED=['localhost','127.0.0.1','kladovka-fela.vercel.app'];
+  var CANONICAL='https://kladovka-fela.vercel.app';
   var host=location.hostname;
   var ok=!CANONICAL||host==='localhost'||host==='127.0.0.1'||ALLOWED.indexOf(host)>-1;
   if(!ok){setTimeout(function(){location.replace(CANONICAL);},1200);}
-
-  /* 2) Барьеры от ленивых: правая кнопка, devtools-сочетания, выделение, перетаскивание */
   document.addEventListener('contextmenu',function(e){e.preventDefault();});
   document.addEventListener('keydown',function(e){
     var k=(e.key||'').toUpperCase();
@@ -614,8 +661,6 @@ var CANONICAL='https://kladovka-fela.vercel.app';
   document.addEventListener('selectstart',function(e){
     if(!e.target.closest('input,textarea'))e.preventDefault();
   });
-
-  /* 3) Водяные знаки: скрытые, но фиксируют авторство */
   document.documentElement.setAttribute('data-author','Fel_iks');
   var wm=document.createElement('div');
   wm.textContent='design & code © Fel_iks';
@@ -631,6 +676,10 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
 const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
+
+/* HUD-часы */
+const ht=$('#hudTime');
+if(ht){const f=()=>{const d=new Date();ht.textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};f();setInterval(f,10000);}
 
 /* темы */
 const tbtns=$$('.tbtn');
@@ -746,7 +795,6 @@ const track=$('#carTrack'),bar=$('#carBar');
 if(track){
   const slides=$$('.work',track),count=$('#carCount');
   const GAP=24;
-  /* offsetWidth — честная ширина без scale, счётчик не врёт */
   const step=()=>slides[0].offsetWidth+GAP;
   let dragging=false,sx=0,sl=0,moved=0;
   const paint=()=>{
