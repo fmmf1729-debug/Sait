@@ -11,7 +11,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --bg:#0a0d0f; --panel:#0f1517; --line:#1d2a2d; --txt:#f2f6f6; --muted:#8fa3a6;
@@ -21,6 +20,7 @@
   --plate-bg:#f2f6f6; --plate-txt:#06090b;
   --crossA:rgba(255,255,255,.12); --crossB:rgba(0,0,0,.4); --crossC:rgba(22,224,224,.28);
   --glowbg:rgba(22,224,224,.10);
+  --ghost-shine:rgba(22,224,224,.28);
   --fd:'Unbounded',sans-serif; --fb:'Rubik',sans-serif; --mono:'JetBrains Mono',monospace;
 }
 [data-theme="light"]{
@@ -31,6 +31,7 @@
   --plate-bg:#0b1011; --plate-txt:#f2f6f6;
   --crossA:rgba(0,0,0,.10); --crossB:rgba(0,0,0,.18); --crossC:rgba(0,191,201,.30);
   --glowbg:rgba(0,191,201,.08);
+  --ghost-shine:rgba(0,191,201,.30);
 }
 [data-theme="cyan"]{
   --bg:#0fd6d6; --panel:#ffffff; --line:rgba(0,0,0,.25); --txt:#032a2e; --muted:#075058;
@@ -40,6 +41,7 @@
   --plate-bg:#0b1011; --plate-txt:#f2f6f6;
   --crossA:rgba(255,255,255,.35); --crossB:rgba(0,0,0,.22); --crossC:rgba(255,255,255,.5);
   --glowbg:rgba(255,255,255,.18);
+  --ghost-shine:rgba(255,255,255,.45);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -56,19 +58,17 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
-input,textarea,select{background:var(--panel);color:var(--txt);border:2px solid var(--line);padding:12px 14px;font-family:var(--fb);font-size:.95rem;width:100%;transition:.2s;outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--cy);box-shadow:0 0 0 3px var(--glowbg)}
-textarea{min-height:110px;resize:vertical;font-family:var(--fb)}
-label{display:block;font-family:var(--mono);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.form-row{margin-bottom:20px}
-.form-row-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px}
+/* вертикальная боковая надпись */
+.side-label{position:fixed;left:12px;top:50%;translate:0 -50%;writing-mode:vertical-rl;rotate:180deg;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);
+  z-index:5;pointer-events:none;opacity:.55}
+.side-label b{color:var(--cy);font-weight:400}
 
-/* статусные цвета */
-.status-new{color:#8fa3a6;border-color:#8fa3a6}
-.status-accepted{color:#16e0e0;border-color:#16e0e0}
-.status-progress{color:#ffb800;border-color:#ffb800}
-.status-done{color:#16e0e0;border-color:#16e0e0}
-.status-rejected{color:#ff4466;border-color:#ff4466}
+/* живая линия-разделитель с бегущим крестом */
+.div-line{position:relative;height:2px;background:var(--line)}
+.div-line::after{content:'✚';position:absolute;top:50%;left:0;translate:0 -52%;color:var(--cy);
+  font-size:.8rem;text-shadow:var(--glow);animation:slidecross 9s linear infinite}
+@keyframes slidecross{0%{left:0;opacity:0}8%{opacity:1}92%{opacity:1}100%{left:calc(100% - 12px);opacity:0}}
 
 #progress{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:#16e0e0;z-index:150;box-shadow:0 0 12px rgba(22,224,224,.6)}
 #wipe{position:fixed;inset:0;background:#050708;z-index:200;transform:translateY(0);transition:transform .6s cubic-bezier(.8,0,.2,1)}
@@ -146,10 +146,16 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 .page-hero{position:relative;padding:150px 8vw 30px;z-index:2;overflow:hidden}
 .page-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.2rem,8vw,6rem);text-transform:uppercase;text-shadow:4px 4px 0 var(--sh1),8px 8px 0 var(--sh2);position:relative;z-index:1}
+
+/* призраки с переливаниями */
 .ghost{position:absolute;top:30px;left:0;right:0;font-family:var(--fd);font-weight:900;
   font-size:clamp(4rem,15vw,13rem);line-height:1;letter-spacing:-.02em;text-transform:lowercase;
   color:transparent;-webkit-text-stroke:1px var(--stroke);pointer-events:none;user-select:none;
-  white-space:nowrap;overflow:hidden;z-index:0}
+  white-space:nowrap;overflow:hidden;z-index:0;
+  background:linear-gradient(110deg,transparent 42%,var(--ghost-shine) 50%,transparent 58%) no-repeat;
+  background-size:250% 100%;-webkit-background-clip:text;background-clip:text;
+  animation:ghostshine 7s linear infinite}
+@keyframes ghostshine{0%{background-position:130% 0}100%{background-position:-130% 0}}
 
 .wrap{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 22px}
 .sec{padding:60px 0}
@@ -247,12 +253,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .card .go{position:absolute;right:18px;top:18px;font-size:1.3rem;transition:.3s}
 .card:hover .go{color:var(--cy);transform:translateX(8px) scale(1.2)}
 
-/* карточка услуги для выбора на странице заказов — кликабельная */
-.svc-card{cursor:pointer;transition:border-color .3s,translate .3s,box-shadow .3s}
-.svc-card.selected{border-color:var(--cy);box-shadow:var(--glow);translate:0 -4px}
-.svc-card .price{font-family:var(--fd);color:var(--cy);font-size:1.3rem;margin-top:6px}
-.svc-card .price span{color:var(--muted);font-size:.85rem;font-family:var(--mono)}
-
 .btn{position:relative;z-index:1;display:inline-block;overflow:hidden;background:#000;color:#fff;border:3px solid #000;padding:14px 26px;font-family:var(--fd);font-weight:700;text-transform:uppercase;font-size:.85rem;letter-spacing:.08em;cursor:pointer;box-shadow:6px 6px 0 var(--btnsh);transition:translate .2s,box-shadow .2s;touch-action:manipulation}
 .btn::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;
   background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%) no-repeat;
@@ -260,10 +260,9 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .btn:hover::before{background-position:-30% 0}
 .btn:hover{translate:-3px -3px;box-shadow:9px 9px 0 var(--btnsh),var(--glow);z-index:6}
 .btn:active{translate:2px 2px;box-shadow:2px 2px 0 var(--btnsh)}
-.btn:disabled{opacity:.5;cursor:not-allowed;translate:0;box-shadow:6px 6px 0 var(--btnsh)}
 .btn-accent{background:var(--cy);color:var(--oncy)}
 .btn-ghost{background:transparent;color:var(--muted);box-shadow:6px 6px 0 var(--line)}
-.btn-big{font-size:1.05rem;padding:18px 34px}
+.btn.big{font-size:1.05rem;padding:18px 34px}
 .btn .rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.6);transform:scale(0);animation:rip .6s linear forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(4);opacity:0}}
 
@@ -282,89 +281,22 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .ava-strip img{position:relative;width:64px;height:64px;object-fit:cover;border:3px solid #000;box-shadow:4px 4px 0 rgba(22,224,224,.7);transition:.25s}
 .ava-strip img:hover{translate:0 -5px;rotate:-3deg;box-shadow:4px 4px 0 #16e0e0,var(--glow);z-index:6}
 
-/* ===== ВИЗАРД ЗАКАЗА ===== */
-.wizard{display:flex;gap:8px;margin:30px 0;flex-wrap:wrap}
-.wizard .step{flex:1;min-width:120px;padding:10px;border:2px solid var(--line);font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:center;transition:.3s}
-.wizard .step.active{border-color:var(--cy);color:var(--cy);box-shadow:0 0 12px var(--glowbg)}
-.wizard .step.done{border-color:var(--cy);color:var(--muted);opacity:.5}
+.order-wrap{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding-top:140px}
+.plate{background:var(--plate-bg);color:var(--plate-txt);border:3px solid #000;box-shadow:12px 12px 0 var(--cy);padding:40px;max-width:760px;margin-top:36px}
+.plate p{font-size:1.1rem;line-height:1.7;margin-bottom:28px}
+.plate .tg{color:#00c2cc;font-family:var(--fd)}
+.back{margin-top:26px;color:var(--muted);font-family:var(--mono);font-size:.85rem}
+.back:hover{color:var(--cy)}
 
-.step-box{background:var(--panel);border:2px solid var(--line);padding:30px;margin-bottom:30px}
-.step-box h3{font-family:var(--fd);text-transform:uppercase;margin-bottom:18px;font-size:1.1rem}
+.soon-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.soon{text-align:center}
+.soon .q{font-family:var(--fd);font-weight:900;font-size:clamp(4rem,16vw,10rem);color:var(--cy);text-shadow:var(--glow);animation:glitch 2s steps(2) infinite}
+@keyframes glitch{0%,90%{transform:none;opacity:1}92%{transform:translateX(6px) skewX(10deg);opacity:.6}94%{transform:translateX(-6px)}96%{transform:none}}
+.soon h1{font-family:var(--fd);margin:10px 0 14px}
+.soon p{color:var(--muted);margin-bottom:28px}
+.soon .hero-actions{justify-content:center}
 
-.summary{background:var(--panel);border:2px solid var(--cy);padding:24px;margin-top:24px}
-.summary-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.9rem}
-.summary-row:last-child{border-bottom:none}
-.summary-row.total{font-family:var(--fd);font-size:1.3rem;color:var(--cy);padding-top:14px;margin-top:8px;border-top:2px solid var(--line);border-bottom:none}
-
-/* ===== Страница "мой заказ" ===== */
-.my-order{max-width:800px;margin:0 auto}
-.my-order .status-line{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border:2px solid;margin-bottom:12px;transition:.3s}
-.my-order .status-line.current{box-shadow:0 0 18px var(--glowbg)}
-.my-order .status-line .mark{font-family:var(--mono);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase}
-.my-order .status-line .note{font-size:.85rem;color:var(--muted);margin-top:4px}
-
-.chat-box{background:var(--panel);border:2px solid var(--line);padding:20px;max-height:300px;overflow-y:auto;margin:20px 0}
-.chat-msg{padding:10px 14px;margin-bottom:10px;border-left:3px solid var(--cy);background:var(--bg);font-size:.9rem}
-.chat-msg.admin{border-left-color:var(--cy)}
-.chat-msg b{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;color:var(--cy);text-transform:uppercase;display:block;margin-bottom:4px}
-.chat-msg .ts{font-family:var(--mono);font-size:.65rem;color:var(--muted);float:right;margin-top:4px}
-
-.review-form{margin-top:20px}
-
-/* ===== ПАНЕЛЬ АДМИНА ===== */
-.admin-login{max-width:400px;margin:80px auto;text-align:center}
-.admin-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:24px}
-.admin-tabs button{background:transparent;border:2px solid var(--line);color:var(--muted);padding:10px 16px;font-family:var(--mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:.2s}
-.admin-tabs button.active{border-color:var(--cy);color:var(--cy)}
-.admin-tabs button:hover{border-color:var(--cy)}
-
-.admin-order{background:var(--panel);border:2px solid var(--line);padding:20px;margin-bottom:16px}
-.admin-order .head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.admin-order .code{font-family:var(--fd);font-size:1.1rem;color:var(--cy)}
-.admin-order .svc{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.admin-order .total{font-family:var(--fd);color:var(--cy);font-size:1.1rem}
-.admin-order .meta{font-family:var(--mono);font-size:.75rem;color:var(--muted);margin:10px 0}
-.admin-order .details{background:var(--bg);padding:14px;margin:12px 0;border:1px solid var(--line);font-size:.9rem;line-height:1.5}
-.admin-order .details b{color:var(--cy);font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
-.admin-order .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.admin-order .actions .btn{padding:8px 14px;font-size:.72rem}
-
-.admin-review{background:var(--panel);border:2px solid var(--line);padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
-.admin-review .body{flex:1;min-width:240px}
-.admin-review .author{font-family:var(--fd);color:var(--cy);margin-bottom:4px}
-.admin-review .stars{color:#ffb800;letter-spacing:2px;margin-bottom:6px}
-.admin-review .text{font-size:.95rem;line-height:1.5}
-.admin-review .pending{font-family:var(--mono);font-size:.65rem;color:#ffb800;letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
-.admin-review .approved{font-family:var(--mono);font-size:.65rem;color:var(--cy);letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
-.admin-review .btns{display:flex;gap:6px;flex-wrap:wrap}
-.admin-review .btns button{background:transparent;border:2px solid var(--line);color:var(--muted);padding:6px 10px;font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:.2s}
-.admin-review .btns button:hover{border-color:var(--cy);color:var(--cy)}
-.admin-review .btns button.del:hover{border-color:#ff4466;color:#ff4466}
-
-.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:20px}
-.settings-grid .cell{background:var(--panel);border:2px solid var(--line);padding:14px}
-.settings-grid label{margin-bottom:6px}
-
-.promo-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.promo-chip{background:var(--bg);border:2px solid var(--line);padding:6px 12px;font-family:var(--mono);font-size:.75rem;display:inline-flex;gap:8px;align-items:center}
-.promo-chip button{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1}
-.promo-chip button:hover{color:#ff4466}
-
-/* Отзывы в портфолио */
-.reviews-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:20px;margin-top:30px}
-.review-card{background:var(--panel);border:2px solid var(--line);padding:22px}
-.review-card .author{font-family:var(--fd);font-size:.85rem;text-transform:uppercase;color:var(--cy);margin-bottom:6px}
-.review-card .stars{color:#ffb800;letter-spacing:2px;margin-bottom:10px;font-size:1.1rem}
-.review-card .text{color:var(--txt);font-size:.95rem;line-height:1.6;font-style:italic}
-.review-card .meta{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:12px}
-
-.footer-admin{text-align:center;margin-top:40px}
-.footer-admin a{color:var(--muted);opacity:.3;font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;transition:opacity .2s}
-.footer-admin a:hover{opacity:1;color:var(--cy)}
-
-/* toast */
-.toast{position:fixed;left:50%;bottom:30px;translate:-50% 0;z-index:996;background:#000;color:#fff;border:2px solid var(--cy);box-shadow:0 0 18px rgba(22,224,224,.55);padding:12px 22px;font-family:var(--fd);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;animation:toastin .4s}
-@keyframes toastin{from{translate:-50% 20px;opacity:0}}
+.ftr{position:relative;z-index:2;border-top:2px solid var(--line);background:var(--bg);padding:22px 8vw;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.8rem;flex-wrap:wrap;font-family:var(--mono)}
 
 [data-reveal]{opacity:0;transform:translateY(46px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1),clip-path .8s cubic-bezier(.2,.8,.2,1)}
 [data-reveal="left"]{transform:translateX(-70px)}
@@ -378,6 +310,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 @media(max-width:800px){
   html,body{overflow-x:clip}
+  .side-label{display:none}
   .hdr{padding:10px 14px;gap:10px}
   .logo{font-size:1rem}
   .themes{gap:4px}
@@ -388,6 +321,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .hero{padding:110px 6vw 70px}
   .page-hero{padding:120px 6vw 20px}
   .cards,.cards.proj,.links{grid-template-columns:1fr}
+  .plate{padding:24px}
+  .plate p{font-size:1rem}
   .end-wrap img{max-height:240px;max-width:70%;margin-bottom:-36px}
   .over-png{max-height:130px;top:-60px;max-width:50vw}
   .duo{padding-top:120px}
@@ -397,12 +332,13 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .tl{padding-left:38px}
   .tl-item::before{left:-32px}
   .btn{padding:12px 20px;font-size:.78rem}
-  .btn-big{padding:15px 26px;font-size:.95rem}
+  .btn.big{padding:15px 26px;font-size:.95rem}
   .lb{gap:8px;padding:3vh 3vw}
   .lb button{width:42px;height:42px}
   .lb figure{max-width:92vw}
   .marquee .track{font-size:.9rem}
   .ava-strip img{width:56px;height:56px}
+  .ftr{padding:18px 6vw}
   .menu{padding:8vh 8vw}
   #head{filter:none}
   .dev{margin-left:0;margin-top:8px}
@@ -424,6 +360,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <body>
 <div id="wipe"></div><div id="bg"></div><div id="progress"></div>
 <img id="head" src="img/golova.png" alt="">
+<div class="side-label" aria-hidden="true">fel_iks <b>✚</b> 2026 <b>✚</b> portfolio</div>
 <noscript><style>#wipe{display:none}.page{display:block!important}#head{display:none}</style></noscript>
 
 <header class="hdr">
@@ -463,7 +400,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     <p class="hero-sub" data-reveal>ролики · стримы · разработка · скины</p>
     <div class="hero-actions" data-reveal style="--d:.15s">
       <a href="#/portfolio" class="btn btn-accent magnet">Смотреть работы</a>
-      <a href="#/orders" class="btn magnet">Заказать</a>
+      <a href="#/opensource" class="btn magnet">Открытые проекты</a>
     </div>
     <div class="scroll-hint">scroll<span></span></div>
   </div>
@@ -482,6 +419,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <a href="#/feedback" class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✉</span><span class="num">05</span><h3>Обратная связь</h3><p>Вопросы, идеи и предложения — пиши, я на связи.</p><span class="go">→</span></a>
     </div>
   </div>
+  <div class="wrap"><div class="div-line" data-reveal></div></div>
   <div class="wrap sec">
     <div class="duo">
       <img src="img/stand.png" class="duo-png" alt="">
@@ -508,6 +446,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <p class="lead">Привет, я <b>Fel_iks</b>. Снимаю ролики и стримлю, параллельно разрабатываю сайты, приложения и скины для Minecraft. Ниже — то, что уже сделано, и все мои площадки.</p>
     </div>
   </div>
+  <div class="wrap"><div class="div-line" data-reveal></div></div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Мои площадки</h2>
     <div class="links">
@@ -537,6 +476,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
         <b>DALINK</b><span>все ссылки</span><i>↗</i></a>
     </div>
   </div>
+  <div class="wrap"><div class="div-line" data-reveal></div></div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Работы</h2>
     <p class="lead" data-reveal>Здесь пока небольшая часть всех работ — раздел будет пополняться и обновляться. Клик — рассмотреть ближе.</p>
@@ -567,256 +507,50 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <span>✚ и аватары</span>
     </div>
   </div>
-  <!-- ОТЗЫВЫ -->
-  <div class="wrap sec" id="reviewsBlock">
-    <h2 class="h2" data-reveal="mask">Отзывы</h2>
-    <div class="reviews-list" id="reviewsList">
-      <p class="lead" id="reviewsEmpty" data-reveal>Отзывы появятся здесь после первых выполненных заказов.</p>
-    </div>
-  </div>
 </section>
 
-<!-- ЗАКАЗЫ (визард) -->
+<!-- ЗАКАЗЫ -->
 <section class="page" id="page-orders">
   <div class="page-hero">
     <div class="ghost">orders</div>
     <h1 class="page-title" data-scramble>ЗАКАЗЫ</h1>
   </div>
-
-  <!-- Уже есть заказ? -->
-  <div class="wrap sec">
-    <div class="panel-box" data-reveal style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-      <div style="flex:1;min-width:200px">
-        <label>Уже есть заказ?</label>
-        <input id="myOrderCode" placeholder="F-0001" maxlength="10" style="font-family:var(--mono);text-transform:uppercase">
-      </div>
-      <button class="btn btn-accent magnet" id="myOrderBtn" style="margin-top:22px">Открыть</button>
+  <div class="wrap sec over-sec">
+    <img class="over-png" src="img/stand.png" alt="">
+    <div class="panel-box" data-reveal>
+      <h2 class="h2" data-reveal="mask">Что можно заказать</h2>
+      <p class="lead">Выбирай направление. Если твоей задачи нет в списке — напиши, обсудим индивидуально.</p>
     </div>
-  </div>
-
-  <!-- Визард -->
-  <div class="wrap sec">
-    <div class="wizard" data-reveal>
-      <div class="step active" data-ws="1">01. Услуга</div>
-      <div class="step" data-ws="2">02. Детали</div>
-      <div class="step" data-ws="3">03. Контакт</div>
-      <div class="step" data-ws="4">04. Оплата</div>
-    </div>
-
-    <!-- STEP 1 -->
-    <div class="wstep" data-ws="1" data-reveal>
-      <div class="step-box">
-        <h3>Выбери услугу</h3>
-        <div class="cards" id="svcList">
-          <div class="svc-card card" data-tilt data-svc="preview">
-            <span class="ico">✚</span><span class="num">01</span>
-            <h3>Превью</h3>
-            <p>Превью для роликов, которые хочется кликнуть.</p>
-            <div class="price" data-price="preview">—</div>
-          </div>
-          <div class="svc-card card" data-tilt data-svc="channel">
-            <span class="ico">▶</span><span class="num">02</span>
-            <h3>Оформление канала</h3>
-            <p>Шапки, аватары и единый стиль.</p>
-            <div class="price" data-price="channel">—</div>
-          </div>
-          <div class="svc-card card" data-tilt data-svc="skin">
-            <span class="ico">⛏</span><span class="num">03</span>
-            <h3>Решейд скина</h3>
-            <p>Новые цвета, детали, аккуратные переходы.</p>
-            <div class="price" data-price="skin">—</div>
-          </div>
-          <div class="svc-card card" data-tilt data-svc="site">
-            <span class="ico">⚙</span><span class="num">04</span>
-            <h3>Сайт</h3>
-            <p>Сайт под ключ с анимациями и своим стилем.</p>
-            <div class="price" data-price="site">—</div>
-          </div>
-        </div>
-      </div>
-      <button class="btn btn-accent" id="wizNext1" disabled>Далее →</button>
-    </div>
-
-    <!-- STEP 2 -->
-    <div class="wstep" data-ws="2" data-reveal style="display:none">
-      <div class="step-box">
-        <h3>Детали заказа</h3>
-        <div class="form-row">
-          <label>Опиши что нужно (текстом)</label>
-          <textarea id="wDetails" placeholder="Концепция, настроение, что должно быть на картинке / сайте..."></textarea>
-        </div>
-        <div class="form-row">
-          <label>Ссылки на референсы (каждая с новой строки)</label>
-          <textarea id="wRefs" placeholder="https://...\nhttps://..." style="min-height:80px;font-family:var(--mono)"></textarea>
-        </div>
-        <div class="form-row-grid">
-          <div>
-            <label>Палитра (если есть)</label>
-            <input id="wPalette" placeholder="#000, #fff, #16e0e0">
-          </div>
-          <div>
-            <label>Сроки</label>
-            <input id="wDeadline" placeholder="до пятницы / не срочно">
-          </div>
-        </div>
-        <div class="form-row">
-          <label>Промокод (если есть)</label>
-          <input id="wPromo" placeholder="FRIEND10" style="font-family:var(--mono);text-transform:uppercase">
-        </div>
-      </div>
-      <button class="btn btn-ghost" onclick="goStep(1)">← Назад</button>
-      <button class="btn btn-accent" id="wizNext2" style="margin-left:10px">Далее →</button>
-    </div>
-
-    <!-- STEP 3 -->
-    <div class="wstep" data-ws="3" data-reveal style="display:none">
-      <div class="step-box">
-        <h3>Как с тобой связаться</h3>
-        <div class="form-row-grid">
-          <div>
-            <label>Telegram или email</label>
-            <input id="wContact" placeholder="@username или email">
-          </div>
-        </div>
-        <p class="note">После оплаты ты получишь номер заказа и личный ключ. Сохрани их — без них статус не посмотришь.</p>
-      </div>
-      <button class="btn btn-ghost" onclick="goStep(2)">← Назад</button>
-      <button class="btn btn-accent" id="wizNext3" style="margin-left:10px">Далее →</button>
-    </div>
-
-    <!-- STEP 4 -->
-    <div class="wstep" data-ws="4" data-reveal style="display:none">
-      <div class="step-box">
-        <h3>Сводка и оплата</h3>
-        <div class="summary" id="wSummary"></div>
-        <p class="note" style="margin-top:20px">
-          ✚ Переведи точную сумму на DonationAlerts или YooMoney.<br>
-          ✚ <b>В комментарии к переводу обязательно укажи номер заказа</b>, который появится после создания.<br>
-          ✚ Комиссия DA ~10%, YM ~2% — её нужно добавить сверху к цене.
-        </p>
-      </div>
-      <button class="btn btn-ghost" onclick="goStep(3)">← Назад</button>
-      <button class="btn btn-accent" id="wizSubmit" style="margin-left:10px">Создать заказ</button>
-    </div>
-
-    <!-- Результат -->
-    <div class="wstep" data-ws="done" data-reveal style="display:none">
-      <div class="step-box" style="text-align:center">
-        <h3 style="color:var(--cy)">✚ Заказ создан</h3>
-        <p class="lead" style="max-width:none;margin:20px 0">Сохрани номер и ключ — без них статус не посмотришь. Ссылка на твой заказ ниже.</p>
-        <div style="font-family:var(--mono);font-size:1.2rem;color:var(--cy);margin:20px 0" id="doneCode"></div>
-        <div style="font-family:var(--mono);font-size:.8rem;color:var(--muted);word-break:break-all;margin-bottom:20px" id="doneSecret"></div>
-        <button class="btn btn-accent" id="doneOpen">Открыть заказ</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-admin" data-reveal>
-    <a href="#/admin">✚ admin</a>
-  </div>
-</section>
-
-<!-- МОЙ ЗАКАЗ -->
-<section class="page" id="page-myorder">
-  <div class="page-hero">
-    <div class="ghost">order</div>
-    <h1 class="page-title" data-scramble id="myOrderTitle">МОЙ ЗАКАЗ</h1>
   </div>
   <div class="wrap sec">
-    <div class="my-order" id="myOrderBody">
-      <p class="lead">Загрузка...</p>
+    <div class="cards">
+      <div class="card" data-tilt data-reveal="left"><span class="ico">✚</span><span class="num">01</span><h3>Оформление канала / страницы</h3><p>Шапки, аватары и единый стиль для канала или страницы.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div>
+      <div class="card" data-tilt data-reveal style="--d:.1s"><span class="ico">✚</span><span class="num">02</span><h3>Решейд скина</h3><p>Переработаю скин: новые цвета, детали, аккуратные переходы.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div>
+      <div class="card" data-tilt data-reveal style="--d:.2s"><span class="ico">✚</span><span class="num">03</span><h3>Превью</h3><p>Превью для роликов, которые хочется кликнуть.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div>
+      <div class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✚</span><span class="num">04</span><h3>Сайт</h3><p>Сайт под ключ: от идеи до деплоя. С анимациями и своим стилем.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div>
+    </div>
+  </div>
+  <div class="wrap sec">
+    <h2 class="h2" data-reveal="mask">Как проходит заказ</h2>
+    <div class="tl">
+      <div class="tl-line"><i></i></div>
+      <div class="tl-item"><b>01</b><h3>Заявка</h3><p>Пишешь в Telegram: что нужно, детали, желаемый бюджет.</p></div>
+      <div class="tl-item"><b>02</b><h3>Обсуждение</h3><p>Уточняем сроки и итоговую стоимость.</p></div>
+      <div class="tl-item"><b>03</b><h3>Работа</h3><p>Делаю и показываю промежуточные варианты.</p></div>
+      <div class="tl-item"><b>04</b><h3>Результат</h3><p>Получаешь файлы и исходники, если нужны.</p></div>
     </div>
   </div>
 </section>
 
-<!-- АДМИН -->
-<section class="page" id="page-admin">
-  <div class="page-hero">
-    <h1 class="page-title" data-scramble>ПАНЕЛЬ ВЛАДЕЛЬЦА</h1>
-  </div>
-  <div class="wrap sec">
-    <div class="admin-login" id="adminLogin" data-reveal>
-      <h2 class="h2" data-reveal="mask">Вход</h2>
-      <div class="form-row">
-        <label>Пароль</label>
-        <input type="password" id="adminPwd" placeholder="•••••">
-      </div>
-      <button class="btn btn-accent" id="adminLoginBtn">Войти</button>
-    </div>
-
-    <div id="adminPanel" style="display:none">
-      <div class="admin-tabs">
-        <button class="active" data-tab="orders">Заказы</button>
-        <button data-tab="reviews">Отзывы</button>
-        <button data-tab="settings">Настройки</button>
-        <button data-tab="pwd">Пароль</button>
-        <button data-tab="logout" id="adminLogout">Выйти</button>
-      </div>
-
-      <div class="admin-tab" data-tab="orders">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <h2 class="h2" style="margin:0">Активные заказы</h2>
-          <button class="btn btn-ghost" id="adminRefresh">↻ обновить</button>
-          <button class="btn btn-ghost" id="adminCleanup">Уборка</button>
-        </div>
-        <div id="adminOrders"></div>
-      </div>
-
-      <div class="admin-tab" data-tab="reviews" style="display:none">
-        <h2 class="h2">Отзывы</h2>
-        <div id="adminReviews"></div>
-      </div>
-
-      <div class="admin-tab" data-tab="settings" style="display:none">
-        <h2 class="h2">Цены</h2>
-        <div class="settings-grid" id="priceGrid"></div>
-
-        <h2 class="h2" style="margin-top:30px">Комиссии (процент сверху)</h2>
-        <div class="settings-grid" id="commGrid"></div>
-
-        <h2 class="h2" style="margin-top:30px">Промокоды</h2>
-        <div class="settings-grid">
-          <div class="cell">
-            <label>Код</label>
-            <input id="promoCode" placeholder="FRIEND10" style="font-family:var(--mono);text-transform:uppercase">
-          </div>
-          <div class="cell">
-            <label>Скидка, %</label>
-            <input type="number" id="promoDiscount" placeholder="10">
-          </div>
-          <div class="cell" style="display:flex;align-items:flex-end">
-            <button class="btn btn-accent" id="promoAdd">Добавить</button>
-          </div>
-        </div>
-        <div class="promo-list" id="promoList"></div>
-      </div>
-
-      <div class="admin-tab" data-tab="pwd" style="display:none">
-        <h2 class="h2">Смена пароля</h2>
-        <div class="settings-grid">
-          <div class="cell">
-            <label>Текущий пароль</label>
-            <input type="password" id="pwdOld">
-          </div>
-          <div class="cell">
-            <label>Новый пароль</label>
-            <input type="password" id="pwdNew">
-          </div>
-          <div class="cell" style="display:flex;align-items:flex-end">
-            <button class="btn btn-accent" id="pwdChange">Сменить</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ОФОРМЛЕНИЕ ЗАКАЗА (устаревшая страница — теперь редирект на /orders) -->
+<!-- ОФОРМЛЕНИЕ ЗАКАЗА -->
 <section class="page" id="page-order">
-  <div class="wrap sec" style="text-align:center;padding-top:200px">
+  <div class="wrap sec order-wrap">
     <h1 class="page-title" data-scramble>ОФОРМЛЕНИЕ ЗАКАЗА</h1>
-    <p class="lead" style="margin:20px auto">Теперь заказ оформляется на странице «Заказы» через визард.</p>
-    <a class="btn btn-accent magnet" href="#/orders">К заказам →</a>
+    <div class="plate" data-reveal="zoom">
+      <p>Для заказа вам нужно написать сюда: <b class="tg">@zam_fela</b>, указав вид товара, все детали, нужные при работе, и стоимость, на которую вы рассчитываете (итоговая стоимость может отличаться от той, которую вы хотите, — все это будет обговариваться в чате с продавцом).</p>
+      <a class="btn btn-accent big magnet" href="https://t.me/zam_fela" target="_blank">НАПИСАТЬ В ЛС ✚</a>
+    </div>
+    <a class="back" href="#/orders">← назад к заказам</a>
   </div>
 </section>
 
@@ -830,21 +564,23 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     <img class="over-png" src="img/hero.png" alt="">
     <div class="panel-box" data-reveal>
       <h2 class="h2" data-reveal="mask">Открытые проекты</h2>
-      <p class="lead">Программы, которые я разработал. Бесплатно, без подписок и регистраций — скачал и пользуешься.</p>
+      <p class="lead">Программы, которые я разработал. Бесплатно, без подписок и регистраций — скачал и пользуешься. Формат файла выбирается при скачивании.</p>
     </div>
   </div>
   <div class="wrap sec">
     <div class="cards proj">
       <div class="card" data-tilt data-reveal="left"><span class="num">EXE</span><h3>PNGTuber.exe <span class="dev">в разработке</span></h3>
         <p>Живой PNG-аватар для стримов и роликов: реагирует на микрофон и оживляет образ. Настройка занимает пару минут.</p>
+        <!-- ⬇️ ВСТАВЬ ССЫЛКУ НА РЕЛИЗ GitHub (PNGTuber) -->
         <a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a>
       </div>
       <div class="card" data-tilt data-reveal="right" style="--d:.15s"><span class="num">EXE</span><h3>JARVIS.exe <span class="dev">в разработке</span></h3>
         <p>Компактный помощник для ПК: голосовые команды и автоматизация повседневных задач. Делал для себя — открыл для всех.</p>
+        <!-- ⬇️ ВСТАВЬ ССЫЛКУ НА РЕЛИЗ GitHub (JARVIS) -->
         <a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a>
       </div>
     </div>
-    <p class="note" data-reveal>✚ оба проекта в активной разработке и регулярно обновляются.</p>
+    <p class="note" data-reveal>✚ оба проекта в активной разработке и регулярно обновляются. если что-то не скачивается или работает не так — напиши в telegram, я исправлю.</p>
   </div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Как установить</h2>
@@ -924,54 +660,26 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 })();
 /* ===== КОНЕЦ ЗАЩИТЫ ===== */
 
-/* ===== SUPABASE ===== */
-/* ВСТАВЬ СЮДА СВОИ URL И KEY: */
-const SUPABASE_URL = '';
-const SUPABASE_KEY = '';
-const sb = (SUPABASE_URL && SUPABASE_KEY) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-
-/* ===== УТИЛИТЫ ===== */
 const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
 const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
-function toast(msg){
-  const t=document.createElement('div');t.className='toast';t.textContent=msg;
-  document.body.appendChild(t);setTimeout(()=>t.remove(),3500);
-}
-
-async function sha256(text){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
-  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-async function rpc(fn, args={}){
-  if(!sb){return {error:'Supabase не настроен'};}
-  const {data, error}=await sb.rpc(fn, args);
-  return {data, error};
-}
-
-/* ===== ТЕМЫ, РОУТЕР ===== */
+/* темы */
 const tbtns=$$('.tbtn');
 function setTheme(t){document.documentElement.dataset.theme=t;localStorage.setItem('theme',t);tbtns.forEach(b=>b.classList.toggle('on',b.dataset.set===t));}
 tbtns.forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.set)));
 setTheme(localStorage.getItem('theme')||'dark');
 
-const NAMES={'':'home',home:'home',portfolio:'portfolio',orders:'orders',order:'order',myorder:'myorder',opensource:'opensource',ranta:'ranta',feedback:'feedback',admin:'admin'};
-function routeName(){
-  const h=location.hash.replace(/^#\/?/,'');
-  if(h.startsWith('myorder/')) return 'myorder';
-  return NAMES[h]||'home';
-}
+/* роутер */
+const NAMES={'':'home',home:'home',portfolio:'portfolio',orders:'orders',order:'order',opensource:'opensource',ranta:'ranta',feedback:'feedback'};
+const routeName=()=>NAMES[location.hash.replace(/^#\/?/,'')]||'home';
 let current=null;
 function activate(n){
   $$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+n));
   $$('.menu-links a').forEach(a=>{const h=a.getAttribute('href').replace(/^#\/?/,'');a.classList.toggle('active',(h||'home')===n);});
   current=n;window.scrollTo(0,0);update();
-  if(n==='myorder') loadMyOrder();
-  if(n==='portfolio') loadPublicReviews();
 }
 function go(n){
   document.body.classList.remove('menu-open');
@@ -1032,7 +740,7 @@ for(let i=0;i<CROSS_N;i++){
   w.appendChild(s);bg.appendChild(w);
 }
 
-/* reveal */
+/* reveal туда-обратно */
 const io=new IntersectionObserver(es=>es.forEach(e=>{
   const el=e.target;
   if(e.isIntersecting){
@@ -1134,537 +842,7 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')lbOpen(lbI+1);
 });
 
-/* ===== ОТЗЫВЫ В ПОРТФОЛИО ===== */
-async function loadPublicReviews(){
-  const list=$('#reviewsList'), empty=$('#reviewsEmpty');
-  if(!sb){empty.textContent='Отзывы пока недоступны (Supabase не настроен)';return;}
-  const {data}=await rpc('public_reviews');
-  list.innerHTML='';
-  if(!data||data.length===0){
-    const p=document.createElement('p');p.className='lead';p.textContent='Отзывы появятся здесь после первых выполненных заказов.';
-    list.appendChild(p);return;
-  }
-  data.forEach(r=>{
-    const el=document.createElement('div');
-    el.className='review-card';
-    el.innerHTML=`
-      <div class="author">${r.author||'Клиент'}</div>
-      <div class="stars">${'★'.repeat(r.rating||5)}${'☆'.repeat(5-(r.rating||5))}</div>
-      <div class="text">«${r.text}»</div>
-      <div class="meta">${r.order_code} · ${new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
-    `;
-    list.appendChild(el);
-  });
-}
-
-/* ===== ВИЗАРД ЗАКАЗА ===== */
-let WIZ={svc:null, details:'', refs:[], palette:'', deadline:'', contact:'', promo:'', settings:null};
-
-async function loadSettings(){
-  if(!sb){
-    WIZ.settings={prices:{preview:50,channel:50,skin:70,site:300},commissions:{da:10,ym:2},promos:[]};
-    return;
-  }
-  const {data}=await rpc('public_settings');
-  WIZ.settings=data||{prices:{preview:50,channel:50,skin:70,site:300},commissions:{da:10,ym:2},promos:[]};
-}
-
-async function renderSvcPrices(){
-  await loadSettings();
-  const p=WIZ.settings.prices;
-  $$('[data-price]').forEach(el=>{
-    const k=el.dataset.price;
-    if(p[k]!==undefined) el.innerHTML=`от ${p[k]}₽ <span>мин.</span>`;
-  });
-}
-renderSvcPrices();
-
-$$('.svc-card').forEach(card=>{
-  card.addEventListener('click',()=>{
-    $$('.svc-card').forEach(c=>c.classList.remove('selected'));
-    card.classList.add('selected');
-    WIZ.svc=card.dataset.svc;
-    $('#wizNext1').disabled=false;
-  });
-});
-
-function goStep(n){
-  $$('.wstep').forEach(s=>s.style.display='none');
-  $(`.wstep[data-ws="${n}"]`).style.display='block';
-  $$('.wizard .step').forEach(s=>{
-    const sn=parseInt(s.dataset.ws);
-    s.classList.remove('active','done');
-    if(sn<n)s.classList.add('done');
-    if(sn===n)s.classList.add('active');
-  });
-  window.scrollTo({top:$('#page-orders').offsetTop-60,behavior:'smooth'});
-  if(n===4) renderSummary();
-}
-window.goStep=goStep;
-
-$('#wizNext1').addEventListener('click',()=>{if(WIZ.svc)goStep(2);else toast('Выбери услугу');});
-$('#wizNext2').addEventListener('click',()=>{
-  WIZ.details=$('#wDetails').value.trim();
-  WIZ.refs=$('#wRefs').value.split('\n').map(s=>s.trim()).filter(Boolean);
-  WIZ.palette=$('#wPalette').value.trim();
-  WIZ.deadline=$('#wDeadline').value.trim();
-  WIZ.promo=$('#wPromo').value.trim().toUpperCase();
-  if(!WIZ.details){toast('Опиши задачу');return;}
-  goStep(3);
-});
-$('#wizNext3').addEventListener('click',()=>{
-  WIZ.contact=$('#wContact').value.trim();
-  if(!WIZ.contact){toast('Оставь контакт');return;}
-  goStep(4);
-});
-
-function calcTotal(){
-  const base=WIZ.settings.prices[WIZ.svc]||0;
-  let discounted=base;
-  const promos=WIZ.settings.promos||[];
-  const promoObj=promos.find(p=>p.code===WIZ.promo);
-  let discount=0;
-  if(promoObj){discount=Math.round(base*promoObj.discount/100);discounted=base-discount;}
-  // комиссия DA (выбираем максимальную из двух, для простоты)
-  const commPct=Math.max(WIZ.settings.commissions.da||10, WIZ.settings.commissions.ym||2);
-  const comm=Math.round(discounted*commPct/100);
-  return {base, discount, discounted, commPct, comm, total:discounted+comm};
-}
-
-function renderSummary(){
-  const svcName={preview:'Превью',channel:'Оформление канала',skin:'Решейд скина',site:'Сайт'}[WIZ.svc]||'—';
-  const c=calcTotal();
-  const refs=WIZ.refs.length?WIZ.refs.map(r=>`<div style="font-family:var(--mono);font-size:.75rem;word-break:break-all">${r}</div>`).join(''):'';
-  $('#wSummary').innerHTML=`
-    <div class="summary-row"><span>Услуга</span><b>${svcName}</b></div>
-    <div class="summary-row"><span>Детали</span><span>${WIZ.details.slice(0,80)}${WIZ.details.length>80?'…':''}</span></div>
-    ${refs?`<div class="summary-row"><span>Референсы</span><span>${WIZ.refs.length} шт.</span></div>`:''}
-    ${WIZ.palette?`<div class="summary-row"><span>Палитра</span><span>${WIZ.palette}</span></div>`:''}
-    ${WIZ.deadline?`<div class="summary-row"><span>Сроки</span><span>${WIZ.deadline}</span></div>`:''}
-    <div class="summary-row"><span>Контакт</span><span>${WIZ.contact}</span></div>
-    <div class="summary-row"><span>Цена</span><span>${c.base}₽</span></div>
-    ${c.discount>0?`<div class="summary-row"><span>Скидка по промокоду ${WIZ.promo}</span><span style="color:#16e0e0">-${c.discount}₽</span></div>`:''}
-    <div class="summary-row"><span>Комиссия ~${c.commPct}% (DA/YM)</span><span>+${c.comm}₽</span></div>
-    <div class="summary-row total"><span>К ОПЛАТЕ</span><span>${c.total}₽</span></div>
-  `;
-}
-
-$('#wizSubmit').addEventListener('click',async()=>{
-  if(!sb){toast('Supabase не настроен');return;}
-  const btn=$('#wizSubmit');btn.disabled=true;btn.textContent='Создаём...';
-  const c=calcTotal();
-  const refsArr=WIZ.refs.map(r=>({url:r}));
-  const {data,error}=await rpc('create_order',{
-    p_service:WIZ.svc, p_details:WIZ.details, p_refs:refsArr,
-    p_palette:WIZ.palette, p_deadline:WIZ.deadline, p_contact:WIZ.contact,
-    p_promo:WIZ.promo, p_amount:c.base, p_commission:c.commPct, p_total:c.total
-  });
-  btn.disabled=false;btn.textContent='Создать заказ';
-  if(error){toast('Ошибка: '+error.message);return;}
-  // показать блок "done"
-  $$('.wstep').forEach(s=>s.style.display='none');
-  $(`.wstep[data-ws="done"]`).style.display='block';
-  $('#doneCode').textContent=data.code;
-  $('#doneSecret').textContent='ключ: '+data.secret;
-  $('#doneOpen').onclick=()=>{
-    localStorage.setItem('myOrder_'+data.code, data.secret);
-    location.hash='#/myorder/'+data.code;
-  };
-});
-
-/* ===== СТРАНИЦА "МОЙ ЗАКАЗ" ===== */
-let MY_SECRET=null;
-async function loadMyOrder(){
-  const hash=location.hash;
-  const m=hash.match(/myorder\/([A-Z0-9-]+)/i);
-  if(!m){$('#myOrderBody').innerHTML='<p class="lead">Неверная ссылка</p>';return;}
-  const code=m[1].toUpperCase();
-  $('#myOrderTitle').textContent='ЗАКАЗ '+code;
-  let secret=localStorage.getItem('myOrder_'+code);
-  if(!secret){
-    secret=prompt('Введите ключ заказа '+code+':');
-    if(!secret){location.hash='#/orders';return;}
-    localStorage.setItem('myOrder_'+code, secret);
-  }
-  MY_SECRET=secret;
-  const {data,error}=await rpc('get_my_order',{p_code:code, p_secret:secret});
-  if(error||!data){
-    $('#myOrderBody').innerHTML='<p class="lead">Заказ не найден или ключ неверный</p><button class="btn btn-accent" onclick="location.hash=\'#/orders\'">К заказам</button>';
-    localStorage.removeItem('myOrder_'+code);
-    return;
-  }
-  renderMyOrder(data);
-}
-
-function renderMyOrder(o){
-  const svcName={preview:'Превью',channel:'Оформление канала',skin:'Решейд скина',site:'Сайт'}[o.service]||o.service;
-  const statusText=['ждёт принятия','принят','в разработке','готов','отклонён'][o.status]||'—';
-  const statusClass=['status-new','status-accepted','status-progress','status-done','status-rejected'][o.status]||'';
-  
-  let html=`
-    <div class="panel-box">
-      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
-        <div>
-          <div style="font-family:var(--mono);font-size:.7rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase">Услуга</div>
-          <div style="font-family:var(--fd);font-size:1.3rem;color:var(--cy)">${svcName}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-family:var(--mono);font-size:.7rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase">К оплате</div>
-          <div style="font-family:var(--fd);font-size:1.3rem;color:var(--cy)">${o.total}₽</div>
-        </div>
-      </div>
-      
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
-        <a class="btn btn-accent" href="https://www.donationalerts.com/r/fel_iks" target="_blank">Оплатить через DA</a>
-        <a class="btn btn-accent" href="https://yoomoney.ru/to/4100117818574710" target="_blank">Оплатить через YM</a>
-      </div>
-      <p class="note">В комментарии к переводу укажи номер заказа: <b style="color:var(--cy)">${o.code}</b></p>
-    </div>
-
-    <h2 class="h2" style="margin-top:30px">Статус</h2>
-    <div class="status-line status-accepted ${o.status>=1?'current':''}">
-      <div>
-        <div class="mark">✓ Принят</div>
-        ${o.status>=1&&o.admin_notes?`<div class="note">${o.admin_notes}</div>`:''}
-      </div>
-      <div>${o.status>=1?'✓':'—'}</div>
-    </div>
-    <div class="status-line status-progress ${o.status>=2?'current':''}">
-      <div>
-        <div class="mark">⚙ В разработке</div>
-        ${o.status>=2&&o.admin_notes?`<div class="note">${o.admin_notes}</div>`:''}
-      </div>
-      <div>${o.status>=2?'✓':'—'}</div>
-    </div>
-    <div class="status-line status-done ${o.status>=3?'current':''}">
-      <div>
-        <div class="mark">✚ Готов</div>
-        ${o.status>=3&&o.admin_notes?`<div class="note">${o.admin_notes}</div>`:''}
-      </div>
-      <div>${o.status>=3?'✓':'—'}</div>
-    </div>
-    ${o.status===4?`
-      <div class="status-line status-rejected current">
-        <div>
-          <div class="mark">✕ Отклонён</div>
-          ${o.reject_reason?`<div class="note">Причина: ${o.reject_reason}</div>`:''}
-        </div>
-      </div>
-    `:''}
-  `;
-
-  // чат
-  if(o.chat&&o.chat.length>0){
-    html+=`<h2 class="h2" style="margin-top:30px">Сообщения</h2><div class="chat-box">`;
-    o.chat.forEach(m=>{
-      html+=`<div class="chat-msg ${m.who}"><b>${m.who==='admin'?'Fel_iks':'Ты'}</b>${m.text}<span class="ts">${new Date(m.ts).toLocaleString('ru-RU')}</span></div>`;
-    });
-    html+=`</div>`;
-  }
-
-  // форма отзыва — только если status=3 и отзыва ещё нет
-  if(o.status===3){
-    html+=`
-      <div class="review-form">
-        <h2 class="h2" style="margin-top:30px">Оставить отзыв</h2>
-        <div class="step-box">
-          <div class="form-row">
-            <label>Как тебя зовут (опционально)</label>
-            <input id="rvAuthor" placeholder="Имя или ник">
-          </div>
-          <div class="form-row">
-            <label>Оценка</label>
-            <select id="rvRating">
-              <option value="5">★★★★★ Отлично</option>
-              <option value="4">★★★★ Хорошо</option>
-              <option value="3">★★★ Нормально</option>
-              <option value="2">★★ Плохо</option>
-              <option value="1">★ Ужасно</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label>Текст отзыва</label>
-            <textarea id="rvText" placeholder="Что понравилось / не понравилось"></textarea>
-          </div>
-          <button class="btn btn-accent" id="rvSubmit">Отправить отзыв</button>
-        </div>
-      </div>
-    `;
-  }
-
-  $('#myOrderBody').innerHTML=html;
-
-  if(o.status===3){
-    $('#rvSubmit').addEventListener('click',async()=>{
-      const author=$('#rvAuthor').value.trim();
-      const text=$('#rvText').value.trim();
-      const rating=parseInt($('#rvRating').value);
-      if(!text){toast('Напиши отзыв');return;}
-      const btn=$('#rvSubmit');btn.disabled=true;
-      const {data,error}=await rpc('submit_review',{
-        p_code:o.code, p_secret:MY_SECRET,
-        p_author:author, p_text:text, p_rating:rating
-      });
-      btn.disabled=false;
-      if(error||!data){toast('Ошибка: '+(error?.message||'не удалось'));return;}
-      toast('Отзыв отправлен на модерацию ✚');
-      $('#rvSubmit').closest('.review-form').remove();
-    });
-  }
-}
-
-/* "Уже есть заказ?" */
-$('#myOrderBtn').addEventListener('click',()=>{
-  const code=$('#myOrderCode').value.trim().toUpperCase();
-  if(!code){toast('Введи номер заказа');return;}
-  if(!localStorage.getItem('myOrder_'+code)){
-    const secret=prompt('Введи ключ заказа '+code+':');
-    if(!secret)return;
-    localStorage.setItem('myOrder_'+code, secret);
-  }
-  location.hash='#/myorder/'+code;
-});
-
-/* ===== ПАНЕЛЬ АДМИНА ===== */
-let ADMIN_HASH=null;
-$('#adminLoginBtn').addEventListener('click',async()=>{
-  const pwd=$('#adminPwd').value;
-  if(!pwd){toast('Введи пароль');return;}
-  const hash=await sha256(pwd);
-  const {data,error}=await rpc('admin_check',{p_hash:hash});
-  if(error||!data){toast('Неверный пароль');return;}
-  ADMIN_HASH=hash;
-  sessionStorage.setItem('adminHash',hash);
-  $('#adminLogin').style.display='none';
-  $('#adminPanel').style.display='block';
-  renderAdmin();
-});
-
-$$('.admin-tabs button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    const tab=b.dataset.tab;
-    if(tab==='logout'){
-      sessionStorage.removeItem('adminHash');
-      ADMIN_HASH=null;
-      $('#adminLogin').style.display='block';
-      $('#adminPanel').style.display='none';
-      $('#adminPwd').value='';
-      return;
-    }
-    $$('.admin-tabs button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    $$('.admin-tab').forEach(t=>t.style.display=t.dataset.tab===tab?'block':'none');
-    if(tab==='orders') loadAdminOrders();
-    if(tab==='reviews') loadAdminReviews();
-    if(tab==='settings') renderAdminSettings();
-  });
-});
-
-// авто-вход
-if(sessionStorage.getItem('adminHash')){
-  ADMIN_HASH=sessionStorage.getItem('adminHash');
-  $('#adminLogin').style.display='none';
-  $('#adminPanel').style.display='block';
-  renderAdmin();
-}
-
-async function renderAdmin(){
-  await loadAdminOrders();
-}
-
-async function loadAdminOrders(){
-  const list=$('#adminOrders');
-  if(!ADMIN_HASH){list.innerHTML='<p class="lead">Не авторизован</p>';return;}
-  list.innerHTML='<p class="lead">Загрузка...</p>';
-  const {data,error}=await rpc('admin_list_orders',{p_hash:ADMIN_HASH});
-  if(error){list.innerHTML='<p class="lead">Ошибка: '+error.message+'</p>';return;}
-  if(!data||data.length===0){list.innerHTML='<p class="lead">Активных заказов нет ✚</p>';return;}
-  list.innerHTML='';
-  data.forEach(o=>list.appendChild(renderAdminOrder(o)));
-}
-
-function renderAdminOrder(o){
-  const svcName={preview:'Превью',channel:'Оформление канала',skin:'Решейд скина',site:'Сайт'}[o.service]||o.service;
-  const statusText=['ждёт','принят','в работе','готов','отклонён'][o.status];
-  const refs=(o.refs||[]).map(r=>r.url||r).join('\n');
-  const el=document.createElement('div');
-  el.className='admin-order';
-  el.innerHTML=`
-    <div class="head">
-      <div>
-        <div class="code">${o.code}</div>
-        <div class="svc">${svcName}</div>
-      </div>
-      <div class="total">${o.total}₽ ${o.promo?'· '+o.promo:''}</div>
-    </div>
-    <div class="meta">Контакт: ${o.contact} · Срок: ${o.deadline||'—'} · Палитра: ${o.palette||'—'}</div>
-    <div class="details">
-      <b>Детали</b>
-      ${o.details}
-      ${refs?`<b style="margin-top:10px">Референсы</b><div style="font-family:var(--mono);font-size:.75rem;word-break:break-all">${refs.replace(/\n/g,'<br>')}</div>`:''}
-    </div>
-    <div class="meta">Статус: <b>${statusText}</b></div>
-    <div class="actions">
-      <button class="btn" data-act="1">Принять</button>
-      <button class="btn" data-act="2">В работу</button>
-      <button class="btn btn-accent" data-act="3">Готов</button>
-      <button class="btn btn-ghost" data-act="msg">Сообщение</button>
-      <button class="btn" data-act="4" style="border-color:#ff4466;color:#ff4466">Отклонить</button>
-    </div>
-  `;
-  el.querySelectorAll('[data-act]').forEach(btn=>{
-    btn.addEventListener('click',async()=>{
-      const act=btn.dataset.act;
-      let notes='', reason='';
-      if(act==='msg'){
-        notes=prompt('Сообщение клиенту:');
-        if(!notes)return;
-        const {error}=await rpc('admin_chat_message',{p_hash:ADMIN_HASH,p_code:o.code,p_text:notes});
-        if(error){toast('Ошибка: '+error.message);return;}
-        toast('Сообщение отправлено');
-        loadAdminOrders();
-        return;
-      }
-      if(act==='4'){
-        reason=prompt('Причина отклонения:');
-        if(!reason)return;
-      }else{
-        notes=prompt('Подпись к статусу (опционально):')||'';
-      }
-      const {error}=await rpc('admin_set_status',{
-        p_hash:ADMIN_HASH, p_code:o.code, p_status:parseInt(act),
-        p_notes:notes, p_reject_reason:reason
-      });
-      if(error){toast('Ошибка: '+error.message);return;}
-      toast('Статус обновлён ✚');
-      loadAdminOrders();
-    });
-  });
-  return el;
-}
-
-$('#adminRefresh').addEventListener('click',loadAdminOrders);
-$('#adminCleanup').addEventListener('click',async()=>{
-  if(!confirm('Удалить выполненные заказы и отклонённые старше 3 дней?'))return;
-  const {data,error}=await rpc('admin_cleanup',{p_hash:ADMIN_HASH});
-  if(error){toast('Ошибка: '+error.message);return;}
-  toast(`Убрано: выполненных ${data.deleted_done}, отклонённых ${data.deleted_rejected}`);
-  loadAdminOrders();
-});
-
-async function loadAdminReviews(){
-  const list=$('#adminReviews');
-  if(!ADMIN_HASH){list.innerHTML='<p class="lead">Не авторизован</p>';return;}
-  list.innerHTML='<p class="lead">Загрузка...</p>';
-  const {data,error}=await rpc('admin_list_reviews',{p_hash:ADMIN_HASH});
-  if(error){list.innerHTML='<p class="lead">Ошибка: '+error.message+'</p>';return;}
-  if(!data||data.length===0){list.innerHTML='<p class="lead">Отзывов пока нет</p>';return;}
-  list.innerHTML='';
-  data.forEach(r=>{
-    const el=document.createElement('div');
-    el.className='admin-review';
-    el.innerHTML=`
-      <div class="body">
-        <div class="author">${r.author||'Аноним'} · ${r.order_code}</div>
-        <div class="stars">${'★'.repeat(r.rating||5)}${'☆'.repeat(5-(r.rating||5))}</div>
-        <div class="text">«${r.text}»</div>
-        <div class="${r.approved?'approved':'pending'}">${r.approved?'✓ опубликован':'· ожидает модерации'}</div>
-      </div>
-      <div class="btns">
-        ${r.approved?
-          `<button data-hide="${r.id}">скрыть</button>`:
-          `<button data-approve="${r.id}">опубликовать</button>`}
-        <button class="del" data-del="${r.id}">удалить</button>
-      </div>
-    `;
-    list.appendChild(el);
-  });
-  list.querySelectorAll('[data-approve]').forEach(b=>b.addEventListener('click',async()=>{
-    await rpc('admin_toggle_review',{p_hash:ADMIN_HASH,p_id:parseInt(b.dataset.approve),p_approved:true});
-    loadAdminReviews();
-  }));
-  list.querySelectorAll('[data-hide]').forEach(b=>b.addEventListener('click',async()=>{
-    await rpc('admin_toggle_review',{p_hash:ADMIN_HASH,p_id:parseInt(b.dataset.hide),p_approved:false});
-    loadAdminReviews();
-  }));
-  list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
-    if(!confirm('Удалить отзыв навсегда?'))return;
-    await rpc('admin_delete_review',{p_hash:ADMIN_HASH,p_id:parseInt(b.dataset.del)});
-    loadAdminReviews();
-  }));
-}
-
-async function renderAdminSettings(){
-  await loadSettings();
-  const s=WIZ.settings;
-  const priceGrid=$('#priceGrid');priceGrid.innerHTML='';
-  const priceLabels={preview:'Превью',channel:'Оформление канала',skin:'Решейд скина',site:'Сайт'};
-  Object.keys(s.prices).forEach(k=>{
-    const cell=document.createElement('div');cell.className='cell';
-    cell.innerHTML=`<label>${priceLabels[k]}</label><input type="number" data-pkey="${k}" value="${s.prices[k]}">`;
-    priceGrid.appendChild(cell);
-  });
-  priceGrid.querySelectorAll('[data-pkey]').forEach(inp=>inp.addEventListener('change',async()=>{
-    s.prices[inp.dataset.pkey]=parseInt(inp.value)||0;
-    await rpc('admin_set_setting',{p_hash:ADMIN_HASH,p_key:'prices',p_value:s.prices});
-    toast('Цены сохранены');
-  }));
-
-  const commGrid=$('#commGrid');commGrid.innerHTML='';
-  const commLabels={da:'DonationAlerts, %',ym:'YooMoney, %'};
-  Object.keys(s.commissions).forEach(k=>{
-    const cell=document.createElement('div');cell.className='cell';
-    cell.innerHTML=`<label>${commLabels[k]}</label><input type="number" data-ckey="${k}" value="${s.commissions[k]}">`;
-    commGrid.appendChild(cell);
-  });
-  commGrid.querySelectorAll('[data-ckey]').forEach(inp=>inp.addEventListener('change',async()=>{
-    s.commissions[inp.dataset.ckey]=parseInt(inp.value)||0;
-    await rpc('admin_set_setting',{p_hash:ADMIN_HASH,p_key:'commissions',p_value:s.commissions});
-    toast('Комиссии сохранены');
-  }));
-
-  renderPromoList();
-}
-
-function renderPromoList(){
-  const list=$('#promoList');list.innerHTML='';
-  (WIZ.settings.promos||[]).forEach(p=>{
-    const el=document.createElement('div');el.className='promo-chip';
-    el.innerHTML=`<span>${p.code} · -${p.discount}%</span><button data-del="${p.code}">✕</button>`;
-    list.appendChild(el);
-  });
-  list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
-    WIZ.settings.promos=WIZ.settings.promos.filter(x=>x.code!==b.dataset.del);
-    await rpc('admin_set_setting',{p_hash:ADMIN_HASH,p_key:'promos',p_value:WIZ.settings.promos});
-    renderPromoList();toast('Промокод удалён');
-  }));
-}
-
-$('#promoAdd').addEventListener('click',async()=>{
-  const code=$('#promoCode').value.trim().toUpperCase();
-  const discount=parseInt($('#promoDiscount').value)||0;
-  if(!code||!discount){toast('Введи код и %');return;}
-  if(!WIZ.settings.promos)WIZ.settings.promos=[];
-  if(WIZ.settings.promos.some(x=>x.code===code)){toast('Такой промокод уже есть');return;}
-  WIZ.settings.promos.push({code,discount});
-  await rpc('admin_set_setting',{p_hash:ADMIN_HASH,p_key:'promos',p_value:WIZ.settings.promos});
-  $('#promoCode').value='';$('#promoDiscount').value='';
-  renderPromoList();toast('Промокод добавлен ✚');
-});
-
-$('#pwdChange').addEventListener('click',async()=>{
-  const old=$('#pwdOld').value, nw=$('#pwdNew').value;
-  if(!old||!nw){toast('Заполни оба поля');return;}
-  if(nw.length<4){toast('Минимум 4 символа');return;}
-  const oldH=await sha256(old), nwH=await sha256(nw);
-  const {data,error}=await rpc('admin_change_password',{p_old_hash:oldH,p_new_hash:nwH});
-  if(error||!data){toast('Неверный текущий пароль');return;}
-  ADMIN_HASH=nwH;sessionStorage.setItem('adminHash',nwH);
-  $('#pwdOld').value='';$('#pwdNew').value='';
-  toast('Пароль изменён ✚');
-});
-
-/* ===== СКРОЛЛ-ЭФФЕКТЫ ===== */
+/* скролл-эффекты */
 let tick=false,lastY=0;
 function update(){
   tick=false;const y=scrollY,vw=innerWidth,vh=innerHeight;
@@ -1698,7 +876,6 @@ function headTarget(){
   const small=clamp(vw*.15,86,128);
   return {x:lerp(vw-big-vw*.06,vw-small-18,e),y:lerp(vh*.14,vh-small-20,e),size:lerp(big,small,e)};
 }
-
 (function loop(now){
   if(head){
     const t=headTarget();
@@ -1717,7 +894,7 @@ function headTarget(){
   requestAnimationFrame(loop);
 })(performance.now());
 
-/* прожектор */
+/* прожектор на карточках */
 $$('.card').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
@@ -1725,6 +902,7 @@ $$('.card').forEach(el=>{
     el.style.setProperty('--my',(e.clientY-r.top)+'px');
   });
 });
+/* тильт */
 $$('[data-tilt]').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
@@ -1733,6 +911,7 @@ $$('[data-tilt]').forEach(el=>{
   });
   el.addEventListener('mouseleave',()=>el.style.transform='');
 });
+/* магнит ±6px */
 $$('.magnet').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
@@ -1742,6 +921,7 @@ $$('.magnet').forEach(el=>{
   });
   el.addEventListener('mouseleave',()=>el.style.transform='');
 });
+/* ripple */
 document.addEventListener('click',e=>{
   const b=e.target.closest('.btn');if(!b)return;
   const r=b.getBoundingClientRect(),s=document.createElement('span');
