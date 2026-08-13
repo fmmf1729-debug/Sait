@@ -11,9 +11,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script type="importmap">
-{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
-</script>
 <style>
 :root{
   --bg:#0a0d0f; --panel:#0f1517; --line:#1d2a2d; --txt:#f2f6f6; --muted:#8fa3a6;
@@ -61,14 +58,8 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
-/* 3D-холст головы (ORYZO-стиль) */
-#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
-body.no3d #gl{display:none}
-#head{display:none}
-body.no3d #head{display:block;position:fixed;right:3vw;bottom:0;width:auto;max-height:55vh;z-index:1;pointer-events:none}
-
-[data-words] .w{display:inline-block;opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--wi)*.045s)}
-[data-words].in .w{opacity:1;transform:none}
+/* 2D-голова-компаньон */
+#head{position:fixed;left:0;top:0;width:600px;max-width:none;transform-origin:top left;z-index:60;pointer-events:none;will-change:transform}
 
 #progress{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:#16e0e0;z-index:150;box-shadow:0 0 12px rgba(22,224,224,.6)}
 #wipe{position:fixed;inset:0;background:#050708;z-index:200;transform:translateY(0);transition:transform .6s cubic-bezier(.8,0,.2,1)}
@@ -298,6 +289,10 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 [data-reveal].in{opacity:1;transform:none;transition-delay:var(--d,0s)}
 [data-reveal].done{transition:transform .15s ease-out,opacity .5s,clip-path .5s;transition-delay:0s}
 
+/* слова-каскадом (ORYZO-стиль) */
+[data-words] .w{display:inline-block;opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--wi)*.045s)}
+[data-words].in .w{opacity:1;transform:none}
+
 @media(max-width:800px){
   html,body{overflow-x:clip}
   .hdr{padding:10px 14px;gap:10px}
@@ -335,22 +330,22 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .ftr{padding:18px 6vw}
   .menu{padding:8vh 8vw}
 }
+@media(pointer:coarse){
+  .hdr{background:var(--bg)}
+}
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   [data-reveal]{opacity:1;transform:none;clip-path:none!important}
   [data-words] .w{opacity:1;transform:none}
   .tl-item{opacity:1;translate:0 0}
   .tl-line i{transform:scaleY(1)!important}
-  #gl{display:none}
-  #head{display:block;position:fixed;right:3vw;bottom:0;width:auto;max-height:55vh;z-index:1;pointer-events:none}
 }
 </style>
 </head>
 <body>
 <div id="wipe"></div><div id="bg"></div><div id="progress"></div>
-<canvas id="gl"></canvas>
 <img id="head" src="img/golova.png" alt="">
-<noscript><style>#wipe{display:none}.page{display:block!important}#gl{display:none}#head{display:block;position:fixed;right:3vw;bottom:0;width:auto;max-height:55vh;z-index:1;pointer-events:none}</style></noscript>
+<noscript><style>#wipe{display:none}.page{display:block!important}</style></noscript>
 
 <header class="hdr">
   <a class="logo" href="#/" data-scramble>FEL_IKS</a>
@@ -651,7 +646,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
-const wipe=$('#wipe'),progress=$('#progress');
+const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
@@ -829,14 +824,15 @@ area.addEventListener('touchstart',e=>{
 area.addEventListener('touchmove',e=>{
   if(!swiping)return;
   const x=e.touches[0].clientX,now=performance.now();
-  const dx=x-tX;tX=x;
-  const dt=now-tLast;if(dt>0)tVel=dx/dt;tLast=now;
+  const dx=x-tX;
+  const dt=now-tLast;if(dt>0)tVel=dx/dt;
+  tLast=now;
   tAcc+=dx;
   while(Math.abs(tAcc)>=45){stFlip(tAcc<0?1:-1,450);tAcc-=Math.sign(tAcc)*45;flipQ++;}
 },{passive:true});
 area.addEventListener('touchend',()=>{
   if(!swiping)return;swiping=false;
-  const extra=Math.min(Math.round(Math.abs(tVel)*6),8-flipQ>0?Math.min(Math.round(Math.abs(tVel)*6),8):0);
+  const extra=Math.max(0,Math.min(Math.round(Math.abs(tVel)*6),8-flipQ));
   const dir=tVel<0?1:-1;let i=0;
   const step=()=>{if(i<extra){stFlip(dir,450);i++;setTimeout(step,70+i*18);}};
   if(extra>0)step();
@@ -849,11 +845,11 @@ if(!coarse&&!reduced){
     const f=slots[stIndex].querySelector('.cardface');
     f.style.transform=`rotateX(${(-y*8).toFixed(2)}deg) rotateY(${(x*10).toFixed(2)}deg)`;
   });
+  area.addEventListener('mouseenter',()=>hoverPause=true);
   area.addEventListener('mouseleave',()=>{
+    hoverPause=false;
     slots.forEach(s=>s.querySelector('.cardface').style.transform='');
   });
-  area.addEventListener('mouseenter',()=>hoverPause=true);
-  area.addEventListener('mouseleave',()=>hoverPause=false);
 }
 /* автолистание 8–16 сек */
 function autoReset(){
@@ -919,6 +915,35 @@ function update(){
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update);}});
 
+/* 2D-голова-компаньон (летает за скроллом) */
+const HEAD_BASE=600;
+let hx=null,hy=null,hs=null,vel=0,lastLoopY=scrollY;
+function headTarget(){
+  const y=scrollY,vw=innerWidth,vh=innerHeight;
+  const p=current==='home'?clamp(y/(vh*.9),0,1):1;
+  const e=p*p*(3-2*p);
+  const big=Math.min(vh*.62,vw*.55,620);
+  const small=clamp(vw*.15,86,128);
+  return {x:lerp(vw-big-vw*.06,vw-small-18,e),y:lerp(vh*.14,vh-small-20,e),size:lerp(big,small,e)};
+}
+(function loop(now){
+  if(head){
+    const t=headTarget();
+    if(hx===null){hx=t.x;hy=t.y;hs=t.size;}
+    const k=reduced?1:0.09;
+    hx=lerp(hx,t.x,k);hy=lerp(hy,t.y,k);hs=lerp(hs,t.size,k);
+    const raw=scrollY-lastLoopY;lastLoopY=scrollY;
+    vel=lerp(vel,clamp(raw*.2,-9,9),.08);
+    const sm=hs<200?1:.25;
+    const bob=reduced?0:Math.sin(now*.0016)*7*sm;
+    const rot=reduced?0:Math.sin(now*.0011)*3*sm+vel*.6;
+    const X=clamp(hx,6,innerWidth-hs-6);
+    const Y=clamp(hy+bob,70,innerHeight-hs-8);
+    head.style.transform=`translate(${X}px,${Y}px) rotate(${rot}deg) scale(${hs/HEAD_BASE})`;
+  }
+  requestAnimationFrame(loop);
+})(performance.now());
+
 /* прожектор на карточках */
 $$('.card').forEach(el=>{
   el.addEventListener('mousemove',e=>{
@@ -958,96 +983,6 @@ document.addEventListener('click',e=>{
 addEventListener('load',()=>{activate(routeName());requestAnimationFrame(()=>wipe.classList.add('off'));});
 addEventListener('resize',update);
 update();
-</script>
-
-<!-- ===== 3D ГОЛОВА (three.js, ORYZO-скролл) ===== -->
-<script type="module">
-(async()=>{
-try{
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches) throw 0;
-  const THREE=await import('three');
-  const {OBJLoader}=await import('three/addons/loaders/OBJLoader.js');
-  const {MTLLoader}=await import('three/addons/loaders/MTLLoader.js');
-
-  const canvas=document.getElementById('gl');
-  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,coarse?1.5:1.75));
-  renderer.setSize(innerWidth,innerHeight);
-  renderer.setClearColor(0x000000,0);
-
-  const scene=new THREE.Scene();
-  const camera=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,.1,100);
-  camera.position.set(0,0,6);
-
-  scene.add(new THREE.HemisphereLight(0xffffff,0x0a0d0f,1.15));
-  const dir=new THREE.DirectionalLight(0xffffff,1.2);dir.position.set(2,3,2);scene.add(dir);
-  const cyan=new THREE.PointLight(0x16e0e0,14,12);cyan.position.set(-2.5,-1.5,2.5);scene.add(cyan);
-
-  const group=new THREE.Group();scene.add(group);
-
-  const mgr=new THREE.LoadingManager();
-  mgr.onError=()=>{};
-  const mtl=await new Promise(res=>{
-    new MTLLoader(mgr).setPath('img/').load('blockbench.mtl',m=>res(m),undefined,()=>res(null));
-  });
-  await new Promise((res,rej)=>{
-    const l=new OBJLoader(mgr);
-    if(mtl){mtl.preload();l.setMaterials(mtl);}
-    l.load('img/blockbench.obj',o=>res(o),undefined,()=>rej(new Error('obj')));
-  }).then(obj=>{
-    const box=new THREE.Box3().setFromObject(obj);
-    const size=box.getSize(new THREE.Vector3());
-    const center=box.getCenter(new THREE.Vector3());
-    obj.position.sub(center);
-    const scale=2.4/Math.max(size.x,size.y,size.z);
-    const wrap=new THREE.Group();wrap.add(obj);wrap.scale.setScalar(scale);
-    group.add(wrap);
-  });
-
-  /* ключевые точки скролла (как в ORYZO, но под наш стиль) */
-  const K=[
-    {x:1.5,y:.15,s:1.15,ry:-.7,rx:.10},
-    {x:-1.4,y:.35,s:.95,ry:.9,rx:.05},
-    {x:1.4,y:.45,s:.90,ry:-1.4,rx:-.05},
-    {x:-1.4,y:.30,s:1.0,ry:1.8,rx:.08},
-    {x:1.4,y:.55,s:.90,ry:-2.4,rx:-.06},
-    {x:0,y:.15,s:1.2,ry:3.4,rx:0}
-  ];
-  const smooth=t=>t*t*(3-2*t);
-  let mx=0,my=0,tmx=0,tmy=0;
-  addEventListener('mousemove',e=>{tmx=(e.clientX/innerWidth-.5);tmy=(e.clientY/innerHeight-.5);},{passive:true});
-
-  const clock=new THREE.Clock();
-  function frame(){
-    requestAnimationFrame(frame);
-    if(document.hidden)return;
-    const t=clock.getElapsedTime();
-    const docH=Math.max(1,document.documentElement.scrollHeight-innerHeight);
-    const p=clamp(scrollY/docH,0,1);
-    const n=(K.length-1)*p;
-    const i=Math.min(Math.floor(n),K.length-2);
-    const f=smooth(n-i);
-    const a=K[i],b=K[i+1];
-    const mob=coarse?.6:1;
-    mx=lerp(mx,tmx,.06);my=lerp(my,tmy,.06);
-    group.position.x=lerp(a.x,b.x,f)*mob;
-    group.position.y=lerp(a.y,b.y,f)+Math.sin(t*1.2)*.08;
-    const sc=lerp(a.s,b.s,f);
-    group.scale.setScalar(sc*(coarse?.8:1));
-    group.rotation.y=lerp(a.ry,b.ry,f)+t*.12+mx*.35;
-    group.rotation.x=lerp(a.rx,b.rx,f)+my*.2;
-    renderer.render(scene,camera);
-  }
-  frame();
-  addEventListener('resize',()=>{
-    camera.aspect=innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-  });
-}catch(e){
-  document.body.classList.add('no3d');
-}
-})();
 </script>
 </body>
 </html>
