@@ -11,6 +11,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
 <style>
 :root{
   --bg:#0a0d0f; --panel:#0f1517; --line:#1d2a2d; --txt:#f2f6f6; --muted:#8fa3a6;
@@ -58,18 +61,14 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
+/* 3D-холст головы (ORYZO-стиль) */
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+body.no3d #gl{display:none}
+#head{display:none}
+body.no3d #head{display:block;position:fixed;right:3vw;bottom:0;width:auto;max-height:55vh;z-index:1;pointer-events:none}
+
 [data-words] .w{display:inline-block;opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--wi)*.045s)}
 [data-words].in .w{opacity:1;transform:none}
-
-.side-label{position:fixed;left:12px;top:50%;translate:0 -50%;writing-mode:vertical-rl;rotate:180deg;
-  font-family:var(--mono);font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);
-  z-index:5;pointer-events:none;opacity:.55}
-.side-label b{color:var(--cy);font-weight:400}
-
-.div-line{position:relative;height:2px;background:var(--line)}
-.div-line::after{content:'✚';position:absolute;top:50%;left:0;translate:0 -52%;color:var(--cy);
-  font-size:.8rem;text-shadow:var(--glow);animation:slidecross 9s linear infinite}
-@keyframes slidecross{0%{left:0;opacity:0}8%{opacity:1}92%{opacity:1}100%{left:calc(100% - 12px);opacity:0}}
 
 #progress{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:#16e0e0;z-index:150;box-shadow:0 0 12px rgba(22,224,224,.6)}
 #wipe{position:fixed;inset:0;background:#050708;z-index:200;transform:translateY(0);transition:transform .6s cubic-bezier(.8,0,.2,1)}
@@ -86,9 +85,6 @@ a{color:inherit;text-decoration:none}
 .cross{display:block;width:100%;height:100%;background:currentColor;clip-path:polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%);animation:floaty 12s ease-in-out infinite alternate}
 .crossw.c .cross{filter:drop-shadow(0 0 12px rgba(22,224,224,.4))}
 @keyframes floaty{from{transform:rotate(var(--r)) translateY(0)}to{transform:rotate(calc(var(--r) + 20deg)) translateY(-30px)}}
-
-/* голова-компаньон: без дорогих фильтров */
-#head{position:fixed;left:0;top:0;width:600px;max-width:none;transform-origin:top left;z-index:60;pointer-events:none;will-change:transform}
 
 .hdr{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:14px;
   padding:12px 22px;padding-right:max(22px,env(safe-area-inset-right));
@@ -183,15 +179,16 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .end-wrap{display:flex;justify-content:center;position:relative;z-index:1;margin-top:30px}
 .end-wrap img{width:auto;height:auto;max-height:min(46vh,380px);max-width:min(90%,430px);margin-bottom:-64px}
 
-/* ===== СТОПКА РАБОТ: без светящихся обводок и фильтров ===== */
+/* ===== СТОПКА КАК В TOM II ===== */
 .stack{position:relative;max-width:960px;margin:34px auto 0;display:flex;align-items:center;gap:12px}
 .stack-area{position:relative;flex:1;height:clamp(240px,52vw,470px);perspective:1200px}
-.stack-slot{position:absolute;left:50%;top:50%;width:min(660px,84%);aspect-ratio:16/9;
-  transform:translate(-50%,-50%);transition:transform .55s cubic-bezier(.2,.8,.2,1),opacity .45s;
-  will-change:transform,opacity;cursor:pointer}
+.stack-slot{position:absolute;left:50%;top:50%;width:min(640px,84%);aspect-ratio:16/9;
+  transform:translate(-50%,-50%);cursor:pointer;
+  transition:transform var(--stack-ms,450ms) cubic-bezier(.2,.8,.2,1),opacity .45s;will-change:transform,opacity}
 .stack-slot .cardface{position:absolute;inset:0;background:var(--panel);border:3px solid #000;overflow:hidden;
   box-shadow:8px 8px 0 rgba(0,0,0,.4);transition:transform .2s ease;transform-style:preserve-3d}
 .stack-slot img{width:100%;height:100%;object-fit:cover}
+.stack-slot .tint{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
 .stack-slot .cap{position:absolute;left:0;right:0;bottom:0;background:#000;color:#fff;font-family:var(--mono);
   font-size:.7rem;letter-spacing:.15em;padding:10px 14px;display:flex;gap:10px;align-items:center}
 .stack-slot .dot{width:10px;height:10px;background:var(--cy);flex:0 0 auto;animation:pulse 2.2s infinite}
@@ -299,12 +296,10 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 [data-reveal="pop"]{transform:scale(.85) rotate(2.5deg)}
 [data-reveal="mask"]{clip-path:inset(0 0 100% 0);transform:translateY(30px)}
 [data-reveal].in{opacity:1;transform:none;transition-delay:var(--d,0s)}
-[data-reveal="mask"].in{clip-path:inset(-60px)}
 [data-reveal].done{transition:transform .15s ease-out,opacity .5s,clip-path .5s;transition-delay:0s}
 
 @media(max-width:800px){
   html,body{overflow-x:clip}
-  .side-label{display:none}
   .hdr{padding:10px 14px;gap:10px}
   .logo{font-size:1rem}
   .themes{gap:4px}
@@ -340,23 +335,22 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .ftr{padding:18px 6vw}
   .menu{padding:8vh 8vw}
 }
-@media(pointer:coarse){
-  .hdr{background:var(--bg)}
-}
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   [data-reveal]{opacity:1;transform:none;clip-path:none!important}
   [data-words] .w{opacity:1;transform:none}
   .tl-item{opacity:1;translate:0 0}
   .tl-line i{transform:scaleY(1)!important}
+  #gl{display:none}
+  #head{display:block;position:fixed;right:3vw;bottom:0;width:auto;max-height:55vh;z-index:1;pointer-events:none}
 }
 </style>
 </head>
 <body>
 <div id="wipe"></div><div id="bg"></div><div id="progress"></div>
+<canvas id="gl"></canvas>
 <img id="head" src="img/golova.png" alt="">
-<div class="side-label" aria-hidden="true">fel_iks <b>✚</b> 2026 <b>✚</b> portfolio</div>
-<noscript><style>#wipe{display:none}.page{display:block!important}#head{display:none}</style></noscript>
+<noscript><style>#wipe{display:none}.page{display:block!important}#gl{display:none}#head{display:block;position:fixed;right:3vw;bottom:0;width:auto;max-height:55vh;z-index:1;pointer-events:none}</style></noscript>
 
 <header class="hdr">
   <a class="logo" href="#/" data-scramble>FEL_IKS</a>
@@ -414,7 +408,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <a href="#/feedback" class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✉</span><span class="num">05</span><h3>Обратная связь</h3><p>Вопросы, идеи и предложения — пиши, я на связи.</p><span class="go">→</span></a>
     </div>
   </div>
-  <div class="wrap"><div class="div-line" data-reveal></div></div>
   <div class="wrap sec">
     <div class="duo">
       <img src="img/stand.png" class="duo-png" alt="">
@@ -441,7 +434,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <p class="lead" data-reveal data-words>Привет, я <b>Fel_iks</b>. Снимаю ролики и стримлю, параллельно разрабатываю сайты, приложения и скины для Minecraft. Ниже — то, что уже сделано, и все мои площадки.</p>
     </div>
   </div>
-  <div class="wrap"><div class="div-line" data-reveal></div></div>
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Мои площадки</h2>
     <div class="links">
@@ -476,9 +468,9 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     <p class="lead" data-reveal data-words>Листай стопку стрелками, колесом или свайпом. Клик по передней карточке — рассмотреть ближе.</p>
 
     <div class="stack" data-reveal="zoom">
-      <button class="stack-arrow" id="stPrev" aria-label="назад">‹</button>
-      <div class="stack-area" id="stArea"></div>
-      <button class="stack-arrow" id="stNext" aria-label="вперёд">›</button>
+      <button class="stack-arrow" id="stPrev" aria-label="предыдущий">‹</button>
+      <div class="stack-area" id="stArea" style="--stack-ms:450ms"></div>
+      <button class="stack-arrow" id="stNext" aria-label="следующий">›</button>
       <div class="stack-meta">
         <div class="nick-line" id="stNick"></div>
         <div id="stCount"></div>
@@ -659,7 +651,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
-const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
+const wipe=$('#wipe'),progress=$('#progress');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
@@ -772,69 +764,84 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{
 }),{threshold:.08,rootMargin:'0px 0px -6% 0px'});
 $$('[data-reveal]').forEach(el=>io.observe(el));
 
-/* ===== СТОПКА РАБОТ (TOM II-стиль, без светящихся обводок) ===== */
+/* ===== СТОПКА РАБОТ (механика TOM II) ===== */
 const WORKS=$$('#workData .work').map(f=>({
   src:f.querySelector('img').src,
   cap:f.querySelector('figcaption').textContent.trim()
 }));
 const area=$('#stArea');
+const POS=[
+  {x:0,y:0,rot:0,s:1,tint:0,z:60},
+  {x:15,y:5,rot:7,s:.95,tint:.44,z:50},
+  {x:-18,y:8,rot:-6,s:.92,tint:.62,z:40},
+  {x:5,y:15,rot:4,s:.9,tint:.8,z:30}
+];
+let stIndex=0,frontJit=-3,hoverPause=false,autoT=null;
+const depthOf=i=>((i-stIndex)%WORKS.length+WORKS.length)%WORKS.length;
 const slots=WORKS.map((w,i)=>{
   const s=document.createElement('div');s.className='stack-slot';
-  s.innerHTML=`<div class="cardface"><img src="${w.src}" alt=""><div class="cap"><span class="dot"></span>${w.cap}<span class="eye">⤢</span></div></div>`;
+  s.innerHTML=`<div class="cardface"><img src="${w.src}" alt=""><div class="tint"></div><div class="cap"><span class="dot"></span>${w.cap}<span class="eye">⤢</span></div></div>`;
   s.addEventListener('click',()=>{if(depthOf(i)===0)lbOpen(i);});
   area.appendChild(s);return s;
 });
-const POS=[
-  {x:0,y:0,r:0,s:1,z:60,tint:0},
-  {x:7,y:5,r:6,s:.93,z:50,tint:.35},
-  {x:-8,y:8,r:-6,s:.9,z:40,tint:.55},
-  {x:4,y:12,r:4,s:.87,z:30,tint:.7}
-];
-let stIndex=0,frontJit=0;
-const depthOf=i=>((i-stIndex)%WORKS.length+WORKS.length)%WORKS.length;
-function layout(){
+function stackLayout(){
+  const spread=(coarse||hoverPause)?1.4:1;
   slots.forEach((s,i)=>{
     const d=depthOf(i);
     if(d<4){
       const p=POS[d];
-      const jit=d===0?frontJit:0;
-      s.style.opacity=d===0?'1':String(1-p.tint*.55);
+      s.style.opacity=d===0?'1':String(1-p.tint*.7);
       s.style.zIndex=p.z;
-      s.style.transform=`translate(-50%,-50%) translate(${p.x}%,${p.y}%) rotate(${p.r+jit}deg) scale(${p.s})`;
-      s.classList.toggle('front',d===0);
+      s.style.transform=`translate(-50%,-50%) translate(${(p.x*spread).toFixed(1)}%,${p.y}%) rotate(${(d===0?frontJit:p.rot).toFixed(1)}deg) scale(${p.s})`;
+      s.querySelector('.tint').style.opacity=p.tint;
       s.style.pointerEvents='auto';
     }else{
       s.style.opacity='0';s.style.zIndex='0';
       s.style.transform='translate(-50%,-50%) scale(.8)';
       s.style.pointerEvents='none';
-      s.classList.remove('front');
     }
   });
   $('#stCount').textContent=String(stIndex+1).padStart(2,'0')+' / '+String(WORKS.length).padStart(2,'0');
   $('#stNick').innerHTML=`<b>✚</b> ${WORKS[stIndex].cap}`;
 }
-function stNext(){stIndex=(stIndex+1)%WORKS.length;frontJit=(Math.random()*6-3);layout();}
-function stPrev(){stIndex=(stIndex-1+WORKS.length)%WORKS.length;frontJit=(Math.random()*6-3);layout();}
-$('#stNext').addEventListener('click',()=>{stNext();autoReset();});
-$('#stPrev').addEventListener('click',()=>{stPrev();autoReset();});
+function stFlip(dir,ms){
+  stIndex=(stIndex+dir+WORKS.length)%WORKS.length;
+  frontJit=-3+(Math.random()*8-4);
+  area.style.setProperty('--stack-ms',(ms||450)+'ms');
+  stackLayout();autoReset();
+}
+$('#stNext').addEventListener('click',()=>stFlip(1,450));
+$('#stPrev').addEventListener('click',()=>stFlip(-1,450));
 /* колесо — листает стопку */
 let wheelLock=0;
 area.addEventListener('wheel',e=>{
   e.preventDefault();
   const now=performance.now();
-  if(now-wheelLock<250)return;
+  if(now-wheelLock<90)return;
   wheelLock=now;
-  e.deltaY>0?stNext():stPrev();
-  autoReset();
+  stFlip(e.deltaY>0?1:-1,900);
 },{passive:false});
-/* свайп */
-let tX=0,tY=0;
-area.addEventListener('touchstart',e=>{tX=e.touches[0].clientX;tY=e.touches[0].clientY;},{passive:true});
-area.addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-tX,dy=e.changedTouches[0].clientY-tY;
-  if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)){dx<0?stNext():stPrev();autoReset();}
+/* свайп с инерцией */
+let tX=0,tAcc=0,tLast=0,tVel=0,swiping=false,flipQ=0;
+area.addEventListener('touchstart',e=>{
+  swiping=true;tX=e.touches[0].clientX;tAcc=0;tVel=0;tLast=performance.now();flipQ=0;
 },{passive:true});
-/* тилт передней карточки — только мышь, только без reduced-motion */
+area.addEventListener('touchmove',e=>{
+  if(!swiping)return;
+  const x=e.touches[0].clientX,now=performance.now();
+  const dx=x-tX;tX=x;
+  const dt=now-tLast;if(dt>0)tVel=dx/dt;tLast=now;
+  tAcc+=dx;
+  while(Math.abs(tAcc)>=45){stFlip(tAcc<0?1:-1,450);tAcc-=Math.sign(tAcc)*45;flipQ++;}
+},{passive:true});
+area.addEventListener('touchend',()=>{
+  if(!swiping)return;swiping=false;
+  const extra=Math.min(Math.round(Math.abs(tVel)*6),8-flipQ>0?Math.min(Math.round(Math.abs(tVel)*6),8):0);
+  const dir=tVel<0?1:-1;let i=0;
+  const step=()=>{if(i<extra){stFlip(dir,450);i++;setTimeout(step,70+i*18);}};
+  if(extra>0)step();
+});
+/* тилт передней карточки */
 if(!coarse&&!reduced){
   area.addEventListener('mousemove',e=>{
     const r=area.getBoundingClientRect();
@@ -845,13 +852,15 @@ if(!coarse&&!reduced){
   area.addEventListener('mouseleave',()=>{
     slots.forEach(s=>s.querySelector('.cardface').style.transform='');
   });
+  area.addEventListener('mouseenter',()=>hoverPause=true);
+  area.addEventListener('mouseleave',()=>hoverPause=false);
 }
-/* автолистание */
-let autoT=null,hoverPause=false;
-function autoReset(){clearInterval(autoT);if(!reduced)autoT=setInterval(()=>{if(!hoverPause&&!document.hidden)stNext();},9000);}
-area.parentElement.addEventListener('mouseenter',()=>hoverPause=true);
-area.parentElement.addEventListener('mouseleave',()=>hoverPause=false);
-layout();autoReset();
+/* автолистание 8–16 сек */
+function autoReset(){
+  clearTimeout(autoT);
+  if(!reduced)autoT=setTimeout(()=>{if(!hoverPause&&!document.hidden)stFlip(1,450);},8000+Math.random()*8000);
+}
+stackLayout();autoReset();
 
 /* лайтбокс */
 const lb=$('#lb'),lbImg=$('#lbImg'),lbCap=$('#lbCap');
@@ -875,7 +884,7 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')lbOpen(lbI+1);
 });
 
-/* ===== скролл-эффекты (с кэшем DOM-списков) ===== */
+/* скролл-эффекты */
 let plxEls=[],splitSpans=[],tlCache=[];
 function cacheDom(){
   plxEls=$$('[data-plx]');
@@ -883,7 +892,6 @@ function cacheDom(){
   tlCache=$$('.tl').map(tl=>({el:tl,line:tl.querySelector('.tl-line i'),items:$$('.tl-item',tl)}));
 }
 cacheDom();
-
 let tick=false,lastY=0;
 function update(){
   tick=false;const y=scrollY,vw=innerWidth,vh=innerHeight;
@@ -910,35 +918,6 @@ function update(){
   }
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update);}});
-
-/* голова-компаньон */
-const HEAD_BASE=600;
-let hx=null,hy=null,hs=null,vel=0,lastLoopY=scrollY;
-function headTarget(){
-  const y=scrollY,vw=innerWidth,vh=innerHeight;
-  const p=current==='home'?clamp(y/(vh*.9),0,1):1;
-  const e=p*p*(3-2*p);
-  const big=Math.min(vh*.62,vw*.55,620);
-  const small=clamp(vw*.15,86,128);
-  return {x:lerp(vw-big-vw*.06,vw-small-18,e),y:lerp(vh*.14,vh-small-20,e),size:lerp(big,small,e)};
-}
-(function loop(now){
-  if(head){
-    const t=headTarget();
-    if(hx===null){hx=t.x;hy=t.y;hs=t.size;}
-    const k=reduced?1:0.09;
-    hx=lerp(hx,t.x,k);hy=lerp(hy,t.y,k);hs=lerp(hs,t.size,k);
-    const raw=scrollY-lastLoopY;lastLoopY=scrollY;
-    vel=lerp(vel,clamp(raw*.2,-9,9),.08);
-    const sm=hs<200?1:.25;
-    const bob=reduced?0:Math.sin(now*.0016)*7*sm;
-    const rot=reduced?0:Math.sin(now*.0011)*3*sm+vel*.6;
-    const X=clamp(hx,6,innerWidth-hs-6);
-    const Y=clamp(hy+bob,70,innerHeight-hs-8);
-    head.style.transform=`translate(${X}px,${Y}px) rotate(${rot}deg) scale(${hs/HEAD_BASE})`;
-  }
-  requestAnimationFrame(loop);
-})(performance.now());
 
 /* прожектор на карточках */
 $$('.card').forEach(el=>{
@@ -979,6 +958,96 @@ document.addEventListener('click',e=>{
 addEventListener('load',()=>{activate(routeName());requestAnimationFrame(()=>wipe.classList.add('off'));});
 addEventListener('resize',update);
 update();
+</script>
+
+<!-- ===== 3D ГОЛОВА (three.js, ORYZO-скролл) ===== -->
+<script type="module">
+(async()=>{
+try{
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) throw 0;
+  const THREE=await import('three');
+  const {OBJLoader}=await import('three/addons/loaders/OBJLoader.js');
+  const {MTLLoader}=await import('three/addons/loaders/MTLLoader.js');
+
+  const canvas=document.getElementById('gl');
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,coarse?1.5:1.75));
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setClearColor(0x000000,0);
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,.1,100);
+  camera.position.set(0,0,6);
+
+  scene.add(new THREE.HemisphereLight(0xffffff,0x0a0d0f,1.15));
+  const dir=new THREE.DirectionalLight(0xffffff,1.2);dir.position.set(2,3,2);scene.add(dir);
+  const cyan=new THREE.PointLight(0x16e0e0,14,12);cyan.position.set(-2.5,-1.5,2.5);scene.add(cyan);
+
+  const group=new THREE.Group();scene.add(group);
+
+  const mgr=new THREE.LoadingManager();
+  mgr.onError=()=>{};
+  const mtl=await new Promise(res=>{
+    new MTLLoader(mgr).setPath('img/').load('blockbench.mtl',m=>res(m),undefined,()=>res(null));
+  });
+  await new Promise((res,rej)=>{
+    const l=new OBJLoader(mgr);
+    if(mtl){mtl.preload();l.setMaterials(mtl);}
+    l.load('img/blockbench.obj',o=>res(o),undefined,()=>rej(new Error('obj')));
+  }).then(obj=>{
+    const box=new THREE.Box3().setFromObject(obj);
+    const size=box.getSize(new THREE.Vector3());
+    const center=box.getCenter(new THREE.Vector3());
+    obj.position.sub(center);
+    const scale=2.4/Math.max(size.x,size.y,size.z);
+    const wrap=new THREE.Group();wrap.add(obj);wrap.scale.setScalar(scale);
+    group.add(wrap);
+  });
+
+  /* ключевые точки скролла (как в ORYZO, но под наш стиль) */
+  const K=[
+    {x:1.5,y:.15,s:1.15,ry:-.7,rx:.10},
+    {x:-1.4,y:.35,s:.95,ry:.9,rx:.05},
+    {x:1.4,y:.45,s:.90,ry:-1.4,rx:-.05},
+    {x:-1.4,y:.30,s:1.0,ry:1.8,rx:.08},
+    {x:1.4,y:.55,s:.90,ry:-2.4,rx:-.06},
+    {x:0,y:.15,s:1.2,ry:3.4,rx:0}
+  ];
+  const smooth=t=>t*t*(3-2*t);
+  let mx=0,my=0,tmx=0,tmy=0;
+  addEventListener('mousemove',e=>{tmx=(e.clientX/innerWidth-.5);tmy=(e.clientY/innerHeight-.5);},{passive:true});
+
+  const clock=new THREE.Clock();
+  function frame(){
+    requestAnimationFrame(frame);
+    if(document.hidden)return;
+    const t=clock.getElapsedTime();
+    const docH=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+    const p=clamp(scrollY/docH,0,1);
+    const n=(K.length-1)*p;
+    const i=Math.min(Math.floor(n),K.length-2);
+    const f=smooth(n-i);
+    const a=K[i],b=K[i+1];
+    const mob=coarse?.6:1;
+    mx=lerp(mx,tmx,.06);my=lerp(my,tmy,.06);
+    group.position.x=lerp(a.x,b.x,f)*mob;
+    group.position.y=lerp(a.y,b.y,f)+Math.sin(t*1.2)*.08;
+    const sc=lerp(a.s,b.s,f);
+    group.scale.setScalar(sc*(coarse?.8:1));
+    group.rotation.y=lerp(a.ry,b.ry,f)+t*.12+mx*.35;
+    group.rotation.x=lerp(a.rx,b.rx,f)+my*.2;
+    renderer.render(scene,camera);
+  }
+  frame();
+  addEventListener('resize',()=>{
+    camera.aspect=innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+  });
+}catch(e){
+  document.body.classList.add('no3d');
+}
+})();
 </script>
 </body>
 </html>
