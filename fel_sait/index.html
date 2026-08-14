@@ -7,7 +7,7 @@
 <title>FEL_IKS — сайт-портфолио</title>
 <meta name="description" content="Открытые проекты, портфолио и заказы от Fel_iks.">
 <link rel="icon" href="img/golova.png">
-<script>document.documentElement.dataset.theme=localStorage.getItem('theme')||'dark'</script>
+<script>document.documentElement.dataset.theme=localStorage.getItem('theme')==='light'?'light':'dark'</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -33,16 +33,6 @@
   --glowbg:rgba(0,191,201,.08);
   --ghost-shine:rgba(0,191,201,.30);
 }
-[data-theme="cyan"]{
-  --bg:#0fd6d6; --panel:#ffffff; --line:rgba(0,0,0,.25); --txt:#032a2e; --muted:#075058;
-  --cy:#032a2e; --oncy:#7ff7f7; --glow:0 0 18px rgba(0,0,0,.35);
-  --grid:rgba(0,0,0,.06); --hdr:rgba(15,214,214,.94); --stroke:rgba(0,0,0,.12);
-  --sh1:#ffffff; --sh2:rgba(0,0,0,.25); --btnsh:#000;
-  --plate-bg:#0b1011; --plate-txt:#f2f6f6;
-  --crossA:rgba(255,255,255,.35); --crossB:rgba(0,0,0,.22); --crossC:rgba(255,255,255,.5);
-  --glowbg:rgba(255,255,255,.18);
-  --ghost-shine:rgba(255,255,255,.45);
-}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--txt);font-family:var(--fb);overflow-x:hidden;transition:background .4s,color .4s}
@@ -58,8 +48,11 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
-/* 2D-голова-компаньон */
-#head{position:fixed;left:0;top:0;width:600px;max-width:none;transform-origin:top left;z-index:60;pointer-events:none;will-change:transform}
+/* боковая надпись — теперь и на телефонах */
+.side-label{position:fixed;left:10px;top:50%;translate:0 -50%;writing-mode:vertical-rl;rotate:180deg;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);
+  z-index:5;pointer-events:none;opacity:.55}
+.side-label b{color:var(--cy);font-weight:400}
 
 #progress{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:#16e0e0;z-index:150;box-shadow:0 0 12px rgba(22,224,224,.6)}
 #wipe{position:fixed;inset:0;background:#050708;z-index:200;transform:translateY(0);transition:transform .6s cubic-bezier(.8,0,.2,1)}
@@ -77,16 +70,17 @@ a{color:inherit;text-decoration:none}
 .crossw.c .cross{filter:drop-shadow(0 0 12px rgba(22,224,224,.4))}
 @keyframes floaty{from{transform:rotate(var(--r)) translateY(0)}to{transform:rotate(calc(var(--r) + 20deg)) translateY(-30px)}}
 
+#head{position:fixed;left:0;top:0;width:600px;max-width:none;transform-origin:top left;z-index:60;pointer-events:none;will-change:transform}
+
 .hdr{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:14px;
   padding:12px 22px;padding-right:max(22px,env(safe-area-inset-right));
-  background:var(--hdr);border-bottom:2px solid var(--line)}
+  background:var(--hdr);backdrop-filter:blur(10px);border-bottom:2px solid var(--line)}
 .logo{font-family:var(--fd);font-weight:900;font-size:1.2rem;letter-spacing:.06em}
 .logo:hover{color:#16e0e0;text-shadow:var(--glow)}
 .themes{margin-left:auto;display:flex;gap:6px}
 .tbtn{position:relative;width:22px;height:22px;border:2px solid var(--line);cursor:pointer;transition:.2s;touch-action:manipulation}
 .tbtn[data-set="dark"]{background:#0a0d0f}
 .tbtn[data-set="light"]{background:#f2f6f6}
-.tbtn[data-set="cyan"]{background:#0fd6d6}
 .tbtn:hover{translate:0 -2px;z-index:6}
 .tbtn.on{border-color:#16e0e0;box-shadow:0 0 10px rgba(22,224,224,.6)}
 .burger{width:46px;height:44px;background:none;border:0;cursor:pointer;display:grid;place-items:center;gap:6px;position:relative;z-index:110;touch-action:manipulation}
@@ -170,7 +164,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .end-wrap{display:flex;justify-content:center;position:relative;z-index:1;margin-top:30px}
 .end-wrap img{width:auto;height:auto;max-height:min(46vh,380px);max-width:min(90%,430px);margin-bottom:-64px}
 
-/* ===== СТОПКА КАК В TOM II ===== */
+/* ===== СТОПКА РАБОТ (механика TOM II) ===== */
 .stack{position:relative;max-width:960px;margin:34px auto 0;display:flex;align-items:center;gap:12px}
 .stack-area{position:relative;flex:1;height:clamp(240px,52vw,470px);perspective:1200px}
 .stack-slot{position:absolute;left:50%;top:50%;width:min(640px,84%);aspect-ratio:16/9;
@@ -180,8 +174,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   box-shadow:8px 8px 0 rgba(0,0,0,.4);transition:transform .2s ease;transform-style:preserve-3d}
 .stack-slot img{width:100%;height:100%;object-fit:cover}
 .stack-slot .tint{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
-.stack-slot .cap{position:absolute;left:0;right:0;bottom:0;background:#000;color:#fff;font-family:var(--mono);
-  font-size:.7rem;letter-spacing:.15em;padding:10px 14px;display:flex;gap:10px;align-items:center}
+.stack-slot .cap{position:absolute;left:0;right:0;bottom:0;background:#000;color:#fff;padding:10px 14px;font-family:var(--mono);
+  font-size:.7rem;letter-spacing:.15em;display:flex;gap:10px;align-items:center}
 .stack-slot .dot{width:10px;height:10px;background:var(--cy);flex:0 0 auto;animation:pulse 2.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 5px var(--cy)}50%{box-shadow:0 0 16px var(--cy)}}
 .stack-slot .eye{margin-left:auto;color:var(--cy)}
@@ -289,10 +283,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 [data-reveal].in{opacity:1;transform:none;transition-delay:var(--d,0s)}
 [data-reveal].done{transition:transform .15s ease-out,opacity .5s,clip-path .5s;transition-delay:0s}
 
-/* слова-каскадом (ORYZO-стиль) */
-[data-words] .w{display:inline-block;opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--wi)*.045s)}
-[data-words].in .w{opacity:1;transform:none}
-
+/* ===== ТЕЛЕФОНЫ ===== */
 @media(max-width:800px){
   html,body{overflow-x:clip}
   .hdr{padding:10px 14px;gap:10px}
@@ -300,17 +291,24 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .themes{gap:4px}
   .tbtn{width:20px;height:20px}
   .hdr-cta{display:none}
-  .wrap{padding:0 18px}
+  .wrap{padding:0 20px}
   .sec{padding:46px 0}
-  .hero{padding:110px 6vw 70px}
-  .hero-sub{font-size:.78rem;letter-spacing:.1em}
+  /* текст по центру, чтобы не лип к краю */
+  .hero{padding:110px 6vw 70px;align-items:center;text-align:center}
+  .hero-actions{justify-content:center}
+  .scroll-hint{left:50%;translate:-50% 0}
+  .h2{text-align:center}
+  .lead{text-align:center;margin-left:auto;margin-right:auto}
+  .note{text-align:center}
+  /* боковая надпись на телефонах — тоньше и ближе к краю */
+  .side-label{left:4px;font-size:.52rem;opacity:.45;letter-spacing:.26em}
   .page-hero{padding:120px 6vw 20px}
   .page-title{font-size:clamp(1.7rem,9vw,6rem)}
   .h2{font-size:clamp(1.15rem,5.2vw,2.6rem)}
   .lead{font-size:.95rem}
   .cards,.cards.proj,.links{grid-template-columns:1fr}
   .plate{padding:24px}
-  .plate p{font-size:1rem}
+  .plate p{font-size:1rem;text-align:left}
   .end-wrap img{max-height:240px;max-width:70%;margin-bottom:-36px}
   .over-png{max-height:130px;top:-60px;max-width:50vw}
   .duo{padding-top:120px}
@@ -320,18 +318,20 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .stack-meta{bottom:-40px;font-size:.65rem;white-space:normal;justify-content:center;text-align:center}
   .tl{padding-left:38px}
   .tl-item::before{left:-32px}
+  .tl-item p{text-align:left}
   .btn{padding:12px 20px;font-size:.78rem}
   .btn.big{padding:15px 26px;font-size:.95rem}
   .lb{gap:8px;padding:3vh 3vw}
   .lb button{width:42px;height:42px}
   .lb figure{max-width:92vw}
   .marquee .track{font-size:.9rem}
+  .ava-strip{justify-content:center}
   .ava-strip img{width:56px;height:56px}
-  .ftr{padding:18px 6vw}
+  .ftr{padding:18px 6vw;justify-content:center;text-align:center}
   .menu{padding:8vh 8vw}
 }
 @media(pointer:coarse){
-  .hdr{background:var(--bg)}
+  .hdr{backdrop-filter:none;background:var(--bg)}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
@@ -339,12 +339,14 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   [data-words] .w{opacity:1;transform:none}
   .tl-item{opacity:1;translate:0 0}
   .tl-line i{transform:scaleY(1)!important}
+  .stack-slot{opacity:1;transform:translate(-50%,-50%)}
 }
 </style>
 </head>
 <body>
 <div id="wipe"></div><div id="bg"></div><div id="progress"></div>
 <img id="head" src="img/golova.png" alt="">
+<div class="side-label" aria-hidden="true">fel_iks <b>✚</b> 2026 <b>✚</b> portfolio</div>
 <noscript><style>#wipe{display:none}.page{display:block!important}</style></noscript>
 
 <header class="hdr">
@@ -352,7 +354,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   <div class="themes">
     <button class="tbtn" data-set="dark" aria-label="тёмная тема"></button>
     <button class="tbtn" data-set="light" aria-label="светлая тема"></button>
-    <button class="tbtn" data-set="cyan" aria-label="циановая тема"></button>
   </div>
   <a href="#/orders" class="btn btn-accent hdr-cta magnet">Заказать</a>
   <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
@@ -650,11 +651,11 @@ const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
-/* темы */
+/* темы: только тёмная и светлая */
 const tbtns=$$('.tbtn');
-function setTheme(t){document.documentElement.dataset.theme=t;localStorage.setItem('theme',t);tbtns.forEach(b=>b.classList.toggle('on',b.dataset.set===t));}
+function setTheme(t){if(t!=='light')t='dark';document.documentElement.dataset.theme=t;localStorage.setItem('theme',t);tbtns.forEach(b=>b.classList.toggle('on',b.dataset.set===t));}
 tbtns.forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.set)));
-setTheme(localStorage.getItem('theme')||'dark');
+setTheme(localStorage.getItem('theme')==='light'?'light':'dark');
 
 /* роутер */
 const NAMES={'':'home',home:'home',portfolio:'portfolio',orders:'orders',order:'order',opensource:'opensource',ranta:'ranta',feedback:'feedback'};
@@ -915,7 +916,7 @@ function update(){
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update);}});
 
-/* 2D-голова-компаньон (летает за скроллом) */
+/* голова-компаньон */
 const HEAD_BASE=600;
 let hx=null,hy=null,hs=null,vel=0,lastLoopY=scrollY;
 function headTarget(){
