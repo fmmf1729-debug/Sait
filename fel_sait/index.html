@@ -11,6 +11,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
 <style>
 :root{
   --bg:#0a0d0f; --panel:#0f1517; --line:#1d2a2d; --txt:#f2f6f6; --muted:#8fa3a6;
@@ -21,7 +27,6 @@
   --crossA:rgba(255,255,255,.12); --crossB:rgba(0,0,0,.4); --crossC:rgba(22,224,224,.28);
   --glowbg:rgba(22,224,224,.10);
   --ghost-shine:rgba(22,224,224,.28);
-  --fog1:rgba(238,244,244,.55); --fog2:rgba(238,244,244,.4);
   --fd:'Unbounded',sans-serif; --fb:'Rubik',sans-serif; --mono:'JetBrains Mono',monospace;
 }
 [data-theme="light"]{
@@ -33,7 +38,6 @@
   --crossA:rgba(0,0,0,.10); --crossB:rgba(0,0,0,.18); --crossC:rgba(0,191,201,.30);
   --glowbg:rgba(0,191,201,.08);
   --ghost-shine:rgba(0,191,201,.30);
-  --fog1:rgba(255,255,255,.7); --fog2:rgba(255,255,255,.55);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -142,36 +146,23 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .page.active .page-title{animation:titlein .7s cubic-bezier(.2,.8,.2,1)}
 @keyframes titlein{from{opacity:0;transform:translateY(26px);letter-spacing:.25em}}
 
-/* ===== СЦЕНА КАК НА IGLOO.INC: куб из кирпичей + туман ===== */
+/* ===== СЦЕНА ===== */
 .scene-wrap{height:230vh;position:relative;z-index:2}
-.scene{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.scene{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .hero-letters{position:absolute;top:4%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
-.scene-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.6rem,10vw,8rem);line-height:.95;text-transform:uppercase;position:relative;z-index:3;text-align:center}
+.scene-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.6rem,9vw,7.5rem);line-height:.95;text-transform:uppercase;position:relative;z-index:3;text-align:center}
 .scene-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
-.cube-stage{--cs:min(58vw,430px);width:var(--cs);height:var(--cs);perspective:1400px;position:relative;z-index:2;margin-top:10px}
-.cube{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
-.face{--half:calc(var(--cs)/2);position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:5px;padding:5px;
-  background:radial-gradient(circle at 50% 50%,rgba(22,224,224,.75),rgba(22,224,224,.25) 65%,rgba(22,224,224,.12));
-  box-shadow:0 0 40px rgba(22,224,224,.25)}
-.f-front {transform:rotateY(0deg) translateZ(var(--half))}
-.f-back  {transform:rotateY(180deg) translateZ(var(--half))}
-.f-right {transform:rotateY(90deg) translateZ(var(--half))}
-.f-left  {transform:rotateY(-90deg) translateZ(var(--half))}
-.f-top   {transform:rotateX(90deg) translateZ(var(--half))}
-.f-bottom{transform:rotateX(-90deg) translateZ(var(--half))}
-.cbrick{background:linear-gradient(180deg,#272e31,#14191b);border-radius:5px;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 -3px 0 rgba(0,0,0,.5);
-  transform:translateZ(0);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
-.cbrick:hover,.cbrick:active{transform:translateZ(30px);
-  box-shadow:0 0 20px var(--glow),inset 0 2px 0 rgba(255,255,255,.12),inset 0 -3px 0 rgba(0,0,0,.5)}
-[data-theme="light"] .cbrick{background:linear-gradient(180deg,#ffffff,#dfe7e7);box-shadow:inset 0 2px 0 rgba(255,255,255,.9),inset 0 -3px 0 rgba(0,0,0,.15)}
-/* туман-переход */
+.cube-stage{width:min(72vw,560px);aspect-ratio:1;position:relative;z-index:2}
+.cube-stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
+.scene-hud{position:absolute;left:6vw;bottom:90px;z-index:3;font-family:var(--mono);font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);line-height:2}
+.scene-hud b{color:var(--cy);font-weight:400}
 .fog{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
   background:
-   radial-gradient(55% 42% at 30% 58%,var(--fog1),transparent 70%),
-   radial-gradient(48% 40% at 72% 62%,var(--fog2),transparent 72%),
-   radial-gradient(70% 55% at 50% 70%,var(--fog2),transparent 75%),
+   radial-gradient(55% 42% at 30% 58%,var(--fog1,rgba(238,244,244,.55)),transparent 70%),
+   radial-gradient(48% 40% at 72% 62%,var(--fog2,rgba(238,244,244,.4)),transparent 72%),
+   radial-gradient(70% 55% at 50% 70%,var(--fog2,rgba(238,244,244,.4)),transparent 75%),
    linear-gradient(180deg,transparent 0%,var(--bg) 92%)}
+[data-theme="light"] .fog{--fog1:rgba(255,255,255,.7);--fog2:rgba(255,255,255,.55)}
 .scroll-hint{position:absolute;bottom:30px;left:50%;translate:-50% 0;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px;font-family:var(--mono);z-index:3}
 .scroll-hint span{width:60px;height:2px;background:var(--cy);display:inline-block;animation:hint 1.4s ease-in-out infinite}
 @keyframes hint{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0)}}
@@ -246,7 +237,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .lb img{max-width:100%;max-height:78vh;width:auto;aspect-ratio:auto;object-fit:contain}
 .lb figcaption{background:#000;color:#fff;padding:12px 16px;font-family:var(--mono);font-size:.75rem;letter-spacing:.15em}
 .lb button{background:#000;color:#fff;border:2px solid #333;width:52px;height:52px;font-size:1.2rem;cursor:pointer;transition:.2s;flex:0 0 auto;touch-action:manipulation}
-.lb button:hover{border-color:var(--cy);color:var(--cy);box-shadow:0 0 18px rgba(22,224,224,.5)}
+.lb button:hover{border-color:var(--gc,#16e0e0);color:var(--gc,#16e0e0);box-shadow:0 0 18px rgba(22,224,224,.5)}
 .lb-x{position:absolute;top:18px;right:18px}
 
 .tl{position:relative;padding-left:46px;margin-top:30px;max-width:760px}
@@ -326,7 +317,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 [data-reveal="zoom"]{transform:scale(.82)}
 [data-reveal="pop"]{transform:scale(.85) rotate(2.5deg)}
 [data-reveal="mask"]{clip-path:inset(0 0 100% 0);transform:translateY(30px)}
-[data-reveal="flip"]{transform:perspective(900px) rotateX(30deg) translateY(70px);transform-origin:top center}
 [data-reveal].in{opacity:1;transform:none;transition-delay:var(--d,0s)}
 [data-reveal].done{transition:transform .15s ease-out,opacity .5s,clip-path .5s;transition-delay:0s}
 
@@ -371,7 +361,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .ava-strip img{width:56px;height:56px}
   .ftr{padding:18px 6vw;justify-content:center;text-align:center}
   .menu{padding:8vh 8vw}
-  .cube-stage{--cs:min(74vw,430px)}
+  .scene-hud{display:none}
+  .cube-stage{width:min(88vw,560px)}
 }
 @media(pointer:coarse){
   .hdr{backdrop-filter:none;background:var(--bg)}
@@ -434,19 +425,21 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <main>
 <!-- ГЛАВНАЯ -->
 <section class="page active" id="page-home">
-
-  <!-- СЦЕНА: куб как на igloo.inc -->
   <div class="scene-wrap" id="sceneWrap">
     <div class="scene">
       <div class="hero-letters">FEL</div>
       <h1 class="scene-title" id="splitTitle">FEL_IKS</h1>
-      <div class="cube-stage"><div class="cube" id="cube"></div></div>
+      <div class="cube-stage" id="glStage"></div>
+      <div class="scene-hud">
+        <div><b>✚</b> куб собран кодом</div>
+        <div><b>✚</b> наведи курсор — кирпичи живые</div>
+        <div><b>✚</b> листай вниз — туман</div>
+      </div>
       <div class="fog" id="fog"></div>
       <div class="scroll-hint">scroll<span></span></div>
     </div>
   </div>
 
-  <!-- после тумана — старая главная -->
   <div class="wrap sec" style="padding-top:50px;text-align:center">
     <p class="hero-sub" data-reveal>ролики · стримы · разработка · скины</p>
     <div class="hero-actions" data-reveal style="--d:.1s;justify-content:center">
@@ -551,7 +544,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Аватары</h2>
     <div class="ava-strip" data-reveal>
-      <img loading="lazy" src="img/ava1.png" alt=""><img loading="lazy" src="img/ava2.png" alt="">
+      <img loading="lazy" src="img/ava1.png" alt=""><img loading="lazy" src="img/ava1.png" alt="" style="display:none">
+      <img loading="lazy" src="img/ava2.png" alt="">
       <img loading="lazy" src="img/ava3.png" alt=""><img loading="lazy" src="img/ava4.png" alt="">
       <span>✚ и аватары</span>
     </div>
@@ -684,6 +678,129 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   <button class="lb-n" aria-label="вперёд">→</button>
 </div>
 
+<!-- ===== WebGL-КУБ ПО СХЕМЕ CRYO: кирпичи с фасками, свет изнутри, bloom ===== -->
+<script type="module">
+import * as THREE from 'three';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+
+const stage=document.getElementById('glStage');
+const coarse=matchMedia('(pointer:coarse)').matches;
+try{
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,coarse?1.25:1.75));
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.15;
+  stage.appendChild(renderer.domElement);
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(35,1,0.1,60);
+  camera.position.set(0,0.4,8.2);
+
+  /* свет: как в CRYO — тусклый внешний + яркий изнутри */
+  scene.add(new THREE.AmbientLight(0x9fc6c9,0.5));
+  const dir=new THREE.DirectionalLight(0xdfeff2,1.6);dir.position.set(4,6,3);scene.add(dir);
+  const inner=new THREE.PointLight(0x16e0e0,40,14,2);scene.add(inner);
+
+  const group=new THREE.Group();scene.add(group);
+
+  /* ядро ярче белого (×5) — bloom соберёт ореол */
+  const S=3.0;
+  const core=new THREE.Mesh(
+    new THREE.BoxGeometry(S*0.82,S*0.82,S*0.82),
+    new THREE.MeshBasicMaterial({color:new THREE.Color(0.06,4.6,4.6)}));
+  group.add(core);
+
+  /* кирпичи: 6 граней × 4×4, фаска 0.09 как у CRYO (0.36 от толщины) */
+  const N=4,GAP=0.075;
+  const bw=(S-(N+1)*GAP)/N;
+  const geo=new RoundedBoxGeometry(bw,bw,0.34,4,0.09);
+  const mat=new THREE.MeshPhysicalMaterial({
+    color:0x161d20,roughness:0.5,metalness:0.15,
+    sheen:1,sheenColor:new THREE.Color(0.5,1,1),sheenRoughness:0.35});
+  const faces=[
+    {n:[0,0,1],u:[0,1,0]},{n:[0,0,-1],u:[0,1,0]},
+    {n:[1,0,0],u:[0,1,0]},{n:[-1,0,0],u:[0,1,0]},
+    {n:[0,1,0],u:[0,0,-1]},{n:[0,-1,0],u:[0,0,1]}];
+  const bricks=[];
+  const M4=new THREE.Matrix4();
+  faces.forEach(f=>{
+    const n=new THREE.Vector3(...f.n).normalize();
+    const u=new THREE.Vector3(...f.u).normalize();
+    const t1=new THREE.Vector3().crossVectors(u,n).normalize();
+    const t2=new THREE.Vector3().crossVectors(n,t1).normalize();
+    for(let i=0;i<N;i++)for(let j=0;j<N;j++){
+      const m=new THREE.Mesh(geo,mat);
+      const x=-S/2+GAP+bw/2+i*(bw+GAP);
+      const y=-S/2+GAP+bw/2+j*(bw+GAP);
+      const base=new THREE.Vector3().addScaledVector(t1,x).addScaledVector(t2,y).addScaledVector(n,S/2-0.12);
+      M4.makeBasis(t1,t2,n);m.quaternion.setFromMatrix4(M4);
+      m.position.copy(base);
+      group.add(m);
+      bricks.push({m,base,n:n.clone(),cur:0,tgt:0,ph:Math.random()*6.28});
+    }
+  });
+
+  const composer=new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene,camera));
+  const bloom=new UnrealBloomPass(new THREE.Vector2(512,512),0.85,0.5,0.9);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  function size(){
+    const w=stage.clientWidth,h=stage.clientHeight;
+    renderer.setSize(w,h,false);composer.setSize(w,h);
+    camera.aspect=w/h;camera.updateProjectionMatrix();
+  }
+  size();addEventListener('resize',size);
+
+  /* курсор */
+  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(-2,-2);
+  let mx=0,my=0,pmx=0,pmy=0;
+  addEventListener('pointermove',e=>{
+    mx=(e.clientX/innerWidth-.5)*2;my=(e.clientY/innerHeight-.5)*2;
+    const r=stage.getBoundingClientRect();
+    ndc.set(((e.clientX-r.left)/r.width)*2-1,-(((e.clientY-r.top)/r.height)*2-1));
+  });
+
+  const clock=new THREE.Clock();
+  let ry=0,rx=0;
+  function frame(){
+    requestAnimationFrame(frame);
+    const t=clock.getElapsedTime();
+    const q=window.__sceneQ||0;
+    pmx+=(mx-pmx)*.06;pmy+=(my-pmy)*.06;
+
+    /* куб крутится сам + следует за курсором + докручивается в туман */
+    ry+=(t*0.18+pmx*0.55-ry)*.08;
+    rx+=((-0.22+pmy*0.3+q*1.1)-rx)*.08;
+    group.rotation.set(rx,ry,0);
+    const sc=1-q*0.28;group.scale.setScalar(sc);
+    renderer.domElement.style.opacity=String(clamp(1-q*1.15,0,1));
+
+    /* ховер-кирпич через рейкаст + лёгкое «дыхание» всех */
+    let hov=null;
+    if(!coarse&&q<0.5){
+      ray.setFromCamera(ndc,camera);
+      const hit=ray.intersectObjects(bricks.map(b=>b.m),false)[0];
+      if(hit)hov=bricks.find(b=>b.m===hit.object);
+    }
+    for(const b of bricks){
+      const wave=0.03+Math.sin(t*1.2+b.ph)*0.02;
+      b.tgt=(b===hov)?0.42:wave;
+      b.cur+=(b.tgt-b.cur)*.14;
+      b.m.position.copy(b.base).addScaledVector(b.n,b.cur);
+    }
+    composer.render();
+  }
+  frame();
+}catch(e){/* нет WebGL — сцена просто не показывается, сайт работает */}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+</script>
+
 <script>
 /* ===== ЗАЩИТА САЙТА ===== */
 (function(){
@@ -707,7 +824,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   try{console.log('%c✚ FEL_IKS','font-size:32px;color:#16e0e0;font-weight:900',
     '\nДизайн и код — Fel_iks. Копирование без разрешения запрещено.');}catch(e){}
 })();
-/* ===== КОНЕЦ ЗАЩИТЫ ===== */
 
 const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
@@ -728,7 +844,7 @@ let current=null;
 function activate(n){
   $$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+n));
   $$('.menu-links a').forEach(a=>{const h=a.getAttribute('href').replace(/^#\/?/,'');a.classList.toggle('active',(h||'home')===n);});
-  current=n;window.scrollTo(0,0);update();
+  current=n;window.__current=n;window.scrollTo(0,0);update();
 }
 function go(n){
   document.body.classList.remove('menu-open');
@@ -803,27 +919,6 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{
   }
 }),{threshold:.08,rootMargin:'0px 0px -6% 0px'});
 $$('[data-reveal]').forEach(el=>io.observe(el));
-
-/* ===== КУБ ИЗ КИРПИЧЕЙ (как иглу на igloo.inc) ===== */
-const cube=$('#cube');
-if(cube){
-  const faces=['f-front','f-back','f-right','f-left','f-top','f-bottom'];
-  faces.forEach(f=>{
-    const fEl=document.createElement('div');fEl.className='face '+f;
-    for(let i=0;i<16;i++){
-      const b=document.createElement('i');b.className='cbrick';
-      fEl.appendChild(b);
-    }
-    cube.appendChild(fEl);
-  });
-}
-
-/* мышь для куба */
-let mx=0,my=0,mtx=0,mty=0;
-addEventListener('mousemove',e=>{
-  mtx=(e.clientX/innerWidth-.5)*2;
-  mty=(e.clientY/innerHeight-.5)*2;
-});
 
 /* ===== СТОПКА РАБОТ ===== */
 const WORKS=$$('#workData .work').map(f=>({
@@ -937,7 +1032,7 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')lbOpen(lbI+1);
 });
 
-/* скролл-эффекты: туман, куб, голова, вертелки */
+/* скролл: туман сцены + остальное */
 const sceneWrap=$('#sceneWrap'),fog=$('#fog');
 let plxEls=[],tlCache=[],s3dEls=[];
 function cacheDom(){
@@ -946,23 +1041,22 @@ function cacheDom(){
   s3dEls=$$('[data-s3d]');
 }
 cacheDom();
-let tick=false,lastY=0,sceneQ=0;
+let tick=false,lastY=0;
 function update(){
   tick=false;const y=scrollY,vw=innerWidth,vh=innerHeight;
   const docH=document.documentElement.scrollHeight-vh;
   progress.style.transform=`scaleX(${docH?y/docH:0})`;
-  /* прогресс сцены (туман) */
-  sceneQ=0;
+  let q=0;
   if(current==='home'&&sceneWrap){
     const r=sceneWrap.getBoundingClientRect();
-    sceneQ=clamp(-r.top/(r.height-vh),0,1);
+    q=clamp(-r.top/(r.height-vh),0,1);
   }
-  if(fog)fog.style.opacity=clamp(sceneQ*1.25,0,1).toFixed(2);
-  /* разлёт заголовка по туману */
+  window.__sceneQ=q;
+  if(fog)fog.style.opacity=clamp(q*1.25,0,1).toFixed(2);
   for(let i=0;i<splitSpans.length;i++){
     const sp=splitSpans[i];
-    sp.style.transform=`translate(${sp.dataset.dx*sceneQ*160}px,${sp.dataset.dy*sceneQ*160}px) rotate(${sp.dataset.dr*sceneQ*60}deg)`;
-    sp.style.opacity=1-sceneQ*.9;
+    sp.style.transform=`translate(${sp.dataset.dx*q*160}px,${sp.dataset.dy*q*160}px) rotate(${sp.dataset.dr*q*60}deg)`;
+    sp.style.opacity=1-q*.9;
   }
   for(let i=0;i<plxEls.length;i++){
     plxEls[i].style.transform=`translateY(${y*parseFloat(plxEls[i].dataset.plx)}px)`;
@@ -985,37 +1079,21 @@ function update(){
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update);}});
 
-/* голова + куб в одном цикле */
+/* голова: появляется из тумана и уходит в угол */
 const HEAD_BASE=600;
 let hx=null,hy=null,hs=null,ho=0,vel=0,lastLoopY=scrollY;
-let crx=-16,cry=0;
 function headTarget(){
   const y=scrollY,vw=innerWidth,vh=innerHeight;
   if(current==='home'){
-    /* голова появляется из тумана и уходит в угол */
-    const e2=clamp((sceneQ-0.35)/0.65,0,1);
-    const e=e2*e2*(3-2*e2);
-    const big=Math.min(vh*.62,vw*.55,620);
-    const small=clamp(vw*.15,86,128);
-    return {
-      x:lerp(vw-big-vw*.06,vw-small-18,e),
-      y:lerp(vh*.14,vh-small-20,e),
-      size:lerp(big,small,e),
-      op:clamp((sceneQ-0.3)*4,0,1)
-    };
+    const q=window.__sceneQ||0;
+    const e2=clamp((q-0.35)/0.65,0,1),e=e2*e2*(3-2*e2);
+    const big=Math.min(vh*.62,vw*.55,620),small=clamp(vw*.15,86,128);
+    return {x:lerp(vw-big-vw*.06,vw-small-18,e),y:lerp(vh*.14,vh-small-20,e),size:lerp(big,small,e),op:clamp((q-0.3)*4,0,1)};
   }
   const small=clamp(vw*.15,86,128);
   return {x:vw-small-18,y:vh-small-20,size:small,op:1};
 }
 (function loop(now){
-  /* куб крутится за курсором + медленное вращение + уходит в туман */
-  if(cube){
-    mx=lerp(mx,mtx,.06);my=lerp(my,mty,.06);
-    crx=-14+my*-14;
-    cry=now*0.012+mx*30;
-    const s=1-sceneQ*.3;
-    cube.style.transform=`rotateX(${crx.toFixed(2)}deg) rotateY(${cry.toFixed(2)}deg) scale(${s.toFixed(3)}) translateY(${(sceneQ*-8).toFixed(1)}%)`;
-  }
   if(head){
     const t=headTarget();
     if(hx===null){hx=t.x;hy=t.y;hs=t.size;ho=t.op;}
@@ -1032,7 +1110,7 @@ function headTarget(){
   requestAnimationFrame(loop);
 })(performance.now());
 
-/* прожектор на карточках */
+/* прожектор */
 $$('.card').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
