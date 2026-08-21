@@ -11,14 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-  }
-}
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{
   --bg:#0a0d0f; --panel:#0f1517; --line:#1d2a2d; --txt:#f2f6f6; --muted:#8fa3a6;
@@ -29,7 +22,7 @@
   --crossA:rgba(255,255,255,.12); --crossB:rgba(0,0,0,.4); --crossC:rgba(22,224,224,.28);
   --glowbg:rgba(22,224,224,.10);
   --ghost-shine:rgba(22,224,224,.28);
-  --fog-color:10,13,15;
+  --fog-r:10; --fog-g:13; --fog-b:15;
   --fd:'Unbounded',sans-serif; --fb:'Rubik',sans-serif; --mono:'JetBrains Mono',monospace;
 }
 [data-theme="light"]{
@@ -41,7 +34,7 @@
   --crossA:rgba(0,0,0,.10); --crossB:rgba(0,0,0,.18); --crossC:rgba(0,191,201,.30);
   --glowbg:rgba(0,191,201,.08);
   --ghost-shine:rgba(0,191,201,.30);
-  --fog-color:238,243,243;
+  --fog-r:238; --fog-g:243; --fog-b:243;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -58,7 +51,6 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
-/* ===== ЛОАДЕР ===== */
 #loader{position:fixed;inset:0;z-index:400;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:transform .7s cubic-bezier(.8,0,.2,1)}
 #loader::before{content:'';position:absolute;inset:0;
   background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
@@ -150,7 +142,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .page.active .page-title{animation:titlein .7s cubic-bezier(.2,.8,.2,1)}
 @keyframes titlein{from{opacity:0;transform:translateY(26px);letter-spacing:.25em}}
 
-/* ===== СЦЕНА ===== */
 .scene-wrap{height:230vh;position:relative;z-index:2}
 .scene{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .hero-letters{position:absolute;top:4%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
@@ -160,12 +151,11 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .cube-stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
 .scene-hud{position:absolute;left:6vw;bottom:86px;z-index:3;font-family:var(--mono);font-size:.65rem;letter-spacing:.22em;text-transform:lowercase;color:var(--muted)}
 .scene-hud b{color:var(--cy);font-weight:400}
-/* туман: использует --fog-color для адаптации под тему */
-.fog{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;overflow:hidden}
+.fog{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0.4;overflow:hidden}
 .fog-layer{position:absolute;inset:0;pointer-events:none}
-.fog-layer-1{background:radial-gradient(ellipse at 50% 85%,rgba(var(--fog-color),.25) 0%,transparent 50%)}
-.fog-layer-2{background:radial-gradient(ellipse at 30% 75%,rgba(var(--fog-color),.2) 0%,transparent 40%)}
-.fog-layer-3{background:radial-gradient(ellipse at 70% 80%,rgba(var(--fog-color),.22) 0%,transparent 45%)}
+.fog-layer-1{background:radial-gradient(ellipse at 50% 85%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.35) 0%,transparent 50%)}
+.fog-layer-2{background:radial-gradient(ellipse at 30% 75%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.28) 0%,transparent 40%)}
+.fog-layer-3{background:radial-gradient(ellipse at 70% 80%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.32) 0%,transparent 45%)}
 .scroll-hint{position:absolute;bottom:30px;left:50%;translate:-50% 0;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px;font-family:var(--mono);z-index:3}
 .scroll-hint span{width:60px;height:2px;background:var(--cy);display:inline-block;animation:hint 1.4s ease-in-out infinite}
 @keyframes hint{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0)}}
@@ -209,7 +199,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .end-wrap{display:flex;justify-content:center;position:relative;z-index:1;margin-top:30px}
 .end-wrap img{width:auto;height:auto;max-height:min(46vh,380px);max-width:min(90%,430px);margin-bottom:-64px;will-change:transform}
 
-/* ===== СТОПКА РАБОТ ===== */
 .stack{position:relative;max-width:960px;margin:34px auto 0;display:flex;align-items:center;gap:12px}
 .stack-area{position:relative;flex:1;height:clamp(240px,52vw,470px);perspective:1200px}
 .stack-slot{position:absolute;left:50%;top:50%;width:min(640px,84%);aspect-ratio:16/9;
@@ -232,7 +221,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   font-family:var(--mono);font-size:.8rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
 .stack-meta .nick-line b{color:var(--cy);font-weight:400}
 
-/* лайтбокс */
 .lb{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;gap:18px;padding:4vh 4vw}
 .lb.open{display:flex}
 .lb figure{max-width:min(1100px,86vw);box-shadow:0 0 70px rgba(22,224,224,.35);border:3px solid #000;animation:lbin .35s cubic-bezier(.2,.8,.2,1)}
@@ -427,7 +415,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 </div>
 
 <main>
-<!-- ГЛАВНАЯ -->
 <section class="page active" id="page-home">
   <div class="scene-wrap" id="sceneWrap">
     <div class="scene">
@@ -480,7 +467,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   <div class="end-wrap" aria-hidden="true"><img src="img/hero.png" data-s3d alt=""></div>
 </section>
 
-<!-- ПОРТФОЛИО -->
 <section class="page" id="page-portfolio">
   <div class="page-hero">
     <div class="ghost">portfolio</div>
@@ -556,7 +542,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   </div>
 </section>
 
-<!-- ЗАКАЗЫ -->
 <section class="page" id="page-orders">
   <div class="page-hero">
     <div class="ghost">orders</div>
@@ -589,7 +574,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   </div>
 </section>
 
-<!-- ОФОРМЛЕНИЕ ЗАКАЗА -->
 <section class="page" id="page-order">
   <div class="wrap sec order-wrap">
     <h1 class="page-title" data-scramble>ОФОРМЛЕНИЕ ЗАКАЗА</h1>
@@ -601,7 +585,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   </div>
 </section>
 
-<!-- ОПЕНСУРС -->
 <section class="page" id="page-opensource">
   <div class="page-hero">
     <div class="ghost">code</div>
@@ -618,12 +601,10 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     <div class="cards proj">
       <div class="card" data-tilt data-reveal="left"><span class="num">EXE</span><h3>PNGTuber.exe <span class="dev">в разработке</span></h3>
         <p>Живой PNG-аватар для стримов и роликов: реагирует на микрофон и оживляет образ. Настройка занимает пару минут.</p>
-        <!-- ⬇️ ВСТАВЬ ССЫЛКУ НА РЕЛИЗ GitHub (PNGTuber) -->
         <a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a>
       </div>
       <div class="card" data-tilt data-reveal="right" style="--d:.15s"><span class="num">EXE</span><h3>JARVIS.exe <span class="dev">в разработке</span></h3>
         <p>Компактный помощник для ПК: голосовые команды и автоматизация повседневных задач. Делал для себя — открыл для всех.</p>
-        <!-- ⬇️ ВСТАВЬ ССЫЛКУ НА РЕЛИЗ GitHub (JARVIS) -->
         <a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a>
       </div>
     </div>
@@ -640,7 +621,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   </div>
 </section>
 
-<!-- RANTA -->
 <section class="page" id="page-ranta">
   <div class="page-hero">
     <div class="ghost">ranta</div>
@@ -653,7 +633,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   </div>
 </section>
 
-<!-- ОБРАТНАЯ СВЯЗЬ -->
 <section class="page" id="page-feedback">
   <div class="page-hero">
     <div class="ghost">feedback</div>
@@ -682,152 +661,140 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   <button class="lb-n" aria-label="вперёд">→</button>
 </div>
 
-<!-- ===== КУБ: three.js с addons, RoundedBoxGeometry, правильный свет как в CRYO ===== -->
-<script type="module">
-import * as THREE from 'three';
-import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
-
-const stage=document.getElementById('glStage');
-if(!stage){throw new Error('no stage');}
-const coarse=matchMedia('(pointer:coarse)').matches;
-
-try{
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,coarse?1.5:1.75));
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.2;
-  stage.appendChild(renderer.domElement);
-  
-  const scene=new THREE.Scene();
-  const camera=new THREE.PerspectiveCamera(35,1,.1,60);
-  camera.position.set(0,.4,8);
-  
-  // Свет как в CRYO: ambient + directional + point light внутри
-  scene.add(new THREE.AmbientLight(0xbfd8da,1.2));
-  const key=new THREE.DirectionalLight(0xe8f6f8,2);
-  key.position.set(4,6,3);
-  scene.add(key);
-  const rim=new THREE.DirectionalLight(0x16e0e0,1.5);
-  rim.position.set(-5,-3,-4);
-  scene.add(rim);
-  
-  // Point light внутри куба для свечения через швы
-  const inner=new THREE.PointLight(0x16e0e0,60,18,2);
-  scene.add(inner);
-  
-  const group=new THREE.Group();
-  scene.add(group);
-  
-  const S=3,N=4,GAP=.08,bw=(S-(N+1)*GAP)/N;
-  
-  // HDR ядро для свечения (как в CRYO: цвет × 5.5)
-  const core=new THREE.Mesh(
-    new THREE.BoxGeometry(S*.8,S*.8,S*.8),
-    new THREE.MeshBasicMaterial({color:new THREE.Color(.1,3.2,3.2)})
-  );
-  group.add(core);
-  
-  // Кирпичи с фасками (RoundedBoxGeometry)
-  // Фаска 0.09 (как в CRYO: 0.36 от толщины кирпича)
-  const geo=new RoundedBoxGeometry(bw,bw,bw,4,0.09);
-  const mat=new THREE.MeshPhysicalMaterial({
-    color:0x1a2326,
-    roughness:.48,
-    metalness:.15,
-    sheen:1,
-    sheenColor:new THREE.Color(.5,1,1),
-    sheenRoughness:.35
-  });
-  
-  const bricks=[];
-  const faces=[
-    {axis:2,sign:1},{axis:2,sign:-1},
-    {axis:0,sign:1},{axis:0,sign:-1},
-    {axis:1,sign:1},{axis:1,sign:-1}
-  ];
-  
-  faces.forEach(face=>{
-    for(let i=0;i<N;i++)for(let j=0;j<N;j++){
-      const m=new THREE.Mesh(geo,mat);
-      const pos=new THREE.Vector3();
-      
-      if(face.axis===2){
-        pos.x=-S/2+GAP+bw/2+i*(bw+GAP);
-        pos.y=-S/2+GAP+bw/2+j*(bw+GAP);
-        pos.z=S/2*face.sign;
-      }else if(face.axis===1){
-        pos.x=-S/2+GAP+bw/2+i*(bw+GAP);
-        pos.y=S/2*face.sign;
-        pos.z=-S/2+GAP+bw/2+j*(bw+GAP);
-      }else{
-        pos.x=S/2*face.sign;
-        pos.y=-S/2+GAP+bw/2+i*(bw+GAP);
-        pos.z=-S/2+GAP+bw/2+j*(bw+GAP);
-      }
-      
-      m.position.copy(pos);
-      group.add(m);
-      bricks.push({m,base:pos.clone(),cur:0,tgt:0,ph:Math.random()*6.283});
-    }
-  });
-  
-  function size(){
-    const w=stage.clientWidth,h=stage.clientHeight;
-    if(!w||!h)return;
-    renderer.setSize(w,h);
-    camera.aspect=w/h;
-    camera.updateProjectionMatrix();
-  }
-  size();
-  addEventListener('resize',size);
-  
-  const ndc=new THREE.Vector2(-2,-2),ray=new THREE.Raycaster();
-  let mx=0,my=0,pmx=0,pmy=0;
-  addEventListener('pointermove',e=>{
-    mx=(e.clientX/innerWidth-.5)*2;
-    my=(e.clientY/innerHeight-.5)*2;
-    const r=stage.getBoundingClientRect();
-    ndc.set(((e.clientX-r.left)/r.width)*2-1,-(((e.clientY-r.top)/r.height)*2-1));
-  });
-  
-  const clock=new THREE.Clock(),ry=0,rx=0;
-  (function frame(){
-    requestAnimationFrame(frame);
-    if(document.hidden)return;
-    const t=clock.getElapsedTime(),q=window.__sceneQ||0;
-    pmx+=(mx-pmx)*.06;
-    pmy+=(my-pmy)*.06;
-    ry+=(t*.2+pmx*.5-ry)*.08;
-    rx+=((-0.2+pmy*.3+q*1)-rx)*.08;
-    group.rotation.set(rx,ry,0);
-    group.scale.setScalar(1-q*.3);
-    renderer.domElement.style.opacity=Math.max(0,Math.min(1,1-q*1.2))+'';
-    
-    let hov=null;
-    if(!coarse&&q<.5){
-      ray.setFromCamera(ndc,camera);
-      const hit=ray.intersectObjects(bricks.map(b=>b.m),false)[0];
-      if(hit)hov=bricks.find(b=>b.m===hit.object);
-    }
-    
-    for(const b of bricks){
-      const wave=.03+Math.sin(t*1.2+b.ph)*.02;
-      b.tgt=(b===hov)?.3:wave;
-      b.cur+=(b.tgt-b.cur)*.15;
-      if(b.cur>.001){
-        const n=b.base.clone().normalize();
-        b.m.position.copy(b.base).addScaledVector(n,b.cur);
-      }
-    }
-    renderer.render(scene,camera);
-  })();
-}catch(e){
-  console.warn('WebGL scene failed:',e);
-}
-</script>
-
 <script>
-/* ===== ЗАЩИТА САЙТА ===== */
+// КУБ: простой и надёжный код на three.js r128
+if(typeof THREE!=='undefined'){
+  var stage=document.getElementById('glStage');
+  if(stage){
+    try{
+      var coarse=matchMedia('(pointer:coarse)').matches;
+      var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,coarse?1.5:1.75));
+      stage.appendChild(renderer.domElement);
+      
+      var scene=new THREE.Scene();
+      var camera=new THREE.PerspectiveCamera(35,1,.1,60);
+      camera.position.set(0,.4,8);
+      
+      // Свет как в CRYO
+      scene.add(new THREE.AmbientLight(0xbfd8da,1.2));
+      var key=new THREE.DirectionalLight(0xe8f6f8,2);
+      key.position.set(4,6,3);
+      scene.add(key);
+      var rim=new THREE.DirectionalLight(0x16e0e0,1.5);
+      rim.position.set(-5,-3,-4);
+      scene.add(rim);
+      var inner=new THREE.PointLight(0x16e0e0,80,20,2);
+      scene.add(inner);
+      
+      var group=new THREE.Group();
+      scene.add(group);
+      
+      var S=3,N=4,GAP=.1,bw=(S-(N+1)*GAP)/N;
+      
+      // HDR ядро
+      var core=new THREE.Mesh(
+        new THREE.BoxGeometry(S*.78,S*.78,S*.78),
+        new THREE.MeshBasicMaterial({color:0x0a9a9a})
+      );
+      group.add(core);
+      
+      // Кирпичи
+      var geo=new THREE.BoxGeometry(bw,bw,bw);
+      var mat=new THREE.MeshStandardMaterial({
+        color:0x1a2326,
+        roughness:.55,
+        metalness:.2
+      });
+      
+      var bricks=[];
+      var faces=[
+        {axis:2,sign:1},{axis:2,sign:-1},
+        {axis:0,sign:1},{axis:0,sign:-1},
+        {axis:1,sign:1},{axis:1,sign:-1}
+      ];
+      
+      faces.forEach(function(face){
+        for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+          var m=new THREE.Mesh(geo,mat);
+          var pos=new THREE.Vector3();
+          
+          if(face.axis===2){
+            pos.x=-S/2+GAP+bw/2+i*(bw+GAP);
+            pos.y=-S/2+GAP+bw/2+j*(bw+GAP);
+            pos.z=S/2*face.sign;
+          }else if(face.axis===1){
+            pos.x=-S/2+GAP+bw/2+i*(bw+GAP);
+            pos.y=S/2*face.sign;
+            pos.z=-S/2+GAP+bw/2+j*(bw+GAP);
+          }else{
+            pos.x=S/2*face.sign;
+            pos.y=-S/2+GAP+bw/2+i*(bw+GAP);
+            pos.z=-S/2+GAP+bw/2+j*(bw+GAP);
+          }
+          
+          m.position.copy(pos);
+          group.add(m);
+          bricks.push({m:m,base:pos.clone(),cur:0,tgt:0,ph:Math.random()*6.283});
+        }
+      });
+      
+      function size(){
+        var w=stage.clientWidth,h=stage.clientHeight;
+        if(!w||!h)return;
+        renderer.setSize(w,h);
+        camera.aspect=w/h;
+        camera.updateProjectionMatrix();
+      }
+      size();
+      addEventListener('resize',size);
+      
+      var ndc=new THREE.Vector2(-2,-2),ray=new THREE.Raycaster();
+      var mx=0,my=0,pmx=0,pmy=0;
+      addEventListener('pointermove',function(e){
+        mx=(e.clientX/window.innerWidth-.5)*2;
+        my=(e.clientY/window.innerHeight-.5)*2;
+        var r=stage.getBoundingClientRect();
+        ndc.set(((e.clientX-r.left)/r.width)*2-1,-(((e.clientY-r.top)/r.height)*2-1));
+      });
+      
+      var clock=new THREE.Clock(),ry=0,rx=0;
+      (function frame(){
+        requestAnimationFrame(frame);
+        if(document.hidden)return;
+        var t=clock.getElapsedTime(),q=window.__sceneQ||0;
+        pmx+=(mx-pmx)*.06;
+        pmy+=(my-pmy)*.06;
+        ry+=(t*.2+pmx*.5-ry)*.08;
+        rx+=((-0.2+pmy*.3+q*1)-rx)*.08;
+        group.rotation.set(rx,ry,0);
+        group.scale.setScalar(1-q*.3);
+        renderer.domElement.style.opacity=Math.max(0,Math.min(1,1-q*1.2))+'';
+        
+        var hov=null;
+        if(!coarse&&q<.5){
+          ray.setFromCamera(ndc,camera);
+          var hit=ray.intersectObjects(bricks.map(function(b){return b.m;}),false)[0];
+          if(hit)hov=bricks.find(function(b){return b.m===hit.object;});
+        }
+        
+        for(var i=0;i<bricks.length;i++){
+          var b=bricks[i];
+          var wave=.03+Math.sin(t*1.2+b.ph)*.02;
+          b.tgt=(b===hov)?.35:wave;
+          b.cur+=(b.tgt-b.cur)*.15;
+          if(b.cur>.001){
+            var n=b.base.clone().normalize();
+            b.m.position.copy(b.base).addScaledVector(n,b.cur);
+          }
+        }
+        renderer.render(scene,camera);
+      })();
+    }catch(e){console.error('WebGL failed:',e);}
+  }
+}
+
+/* ===== Остальной JS ===== */
 (function(){
   var ALLOWED=['localhost','127.0.0.1','kladovka-fela.vercel.app'];
   var CANONICAL='https://kladovka-fela.vercel.app';
@@ -856,13 +823,11 @@ const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
-/* темы */
 const tbtns=$$('.tbtn');
 function setTheme(t){if(t!=='light')t='dark';document.documentElement.dataset.theme=t;localStorage.setItem('theme',t);tbtns.forEach(b=>b.classList.toggle('on',b.dataset.set===t));}
 tbtns.forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.set)));
 setTheme(localStorage.getItem('theme')==='light'?'light':'dark');
 
-/* роутер */
 const NAMES={'':'home',home:'home',portfolio:'portfolio',orders:'orders',order:'order',opensource:'opensource',ranta:'ranta',feedback:'feedback'};
 const routeName=()=>NAMES[location.hash.replace(/^#\/?/,'')]||'home';
 let current=null;
@@ -881,7 +846,6 @@ addEventListener('hashchange',()=>go(routeName()));
 $$('.menu a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('menu-open')));
 $$('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
 
-/* ник-кнопка */
 $$('[data-splat]').forEach(a=>a.addEventListener('click',e=>{
   e.preventDefault();
   if(a._busy)return;a._busy=true;
@@ -896,7 +860,6 @@ $$('[data-splat]').forEach(a=>a.addEventListener('click',e=>{
 
 $('#burger').addEventListener('click',()=>document.body.classList.toggle('menu-open'));
 
-/* scramble */
 const CH='█▓▒░#/\\+✚';
 function scramble(el){
   const orig=el.dataset.orig||(el.dataset.orig=el.textContent);
@@ -910,7 +873,6 @@ function scramble(el){
 $$('[data-scramble]').forEach((el,i)=>setTimeout(()=>scramble(el),200+i*150));
 const logo=$('.logo');logo.addEventListener('mouseenter',()=>scramble(logo));
 
-/* заголовок-разлёт */
 const title=$('#splitTitle');
 {
   const t=title.textContent.trim();title.setAttribute('aria-label',t);
@@ -918,7 +880,6 @@ const title=$('#splitTitle');
 }
 const splitSpans=$$('#splitTitle span');
 
-/* кресты */
 const bg=$('#bg');
 const CROSS_N=coarse?14:26;
 for(let i=0;i<CROSS_N;i++){
@@ -931,7 +892,6 @@ for(let i=0;i<CROSS_N;i++){
   w.appendChild(s);bg.appendChild(w);
 }
 
-/* reveal */
 const io=new IntersectionObserver(es=>es.forEach(e=>{
   const el=e.target;
   if(e.isIntersecting){
@@ -945,7 +905,6 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{
 }),{threshold:.08,rootMargin:'0px 0px -6% 0px'});
 $$('[data-reveal]').forEach(el=>io.observe(el));
 
-/* ===== СТОПКА РАБОТ ===== */
 const WORKS=$$('#workData .work').map(f=>({
   src:f.querySelector('img').src,
   cap:f.querySelector('figcaption').textContent.trim()
@@ -1035,7 +994,6 @@ function autoReset(){
 }
 stackLayout();autoReset();
 
-/* лайтбокс */
 const lb=$('#lb'),lbImg=$('#lbImg'),lbCap=$('#lbCap');
 let lbI=0;
 function lbOpen(i){
@@ -1057,7 +1015,6 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')lbOpen(lbI+1);
 });
 
-/* скролл: туман + остальное */
 const sceneWrap=$('#sceneWrap'),fog=$('#fog');
 let plxEls=[],tlCache=[],s3dEls=[];
 function cacheDom(){
@@ -1077,7 +1034,7 @@ function update(){
     q=clamp(-r.top/(r.height-vh),0,1);
   }
   window.__sceneQ=q;
-  if(fog)fog.style.opacity=clamp(q*1.25,0,1).toFixed(2);
+  if(fog)fog.style.opacity=(0.4+q*0.6).toFixed(2);
   for(let i=0;i<splitSpans.length;i++){
     const sp=splitSpans[i];
     sp.style.transform=`translate(${sp.dataset.dx*q*160}px,${sp.dataset.dy*q*160}px) rotate(${sp.dataset.dr*q*60}deg)`;
@@ -1104,7 +1061,6 @@ function update(){
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update);}});
 
-/* голова */
 const HEAD_BASE=600;
 let hx=null,hy=null,hs=null,ho=0,vel=0,lastLoopY=scrollY;
 function headTarget(){
@@ -1135,7 +1091,6 @@ function headTarget(){
   requestAnimationFrame(loop);
 })(performance.now());
 
-/* прожектор */
 $$('.card').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
@@ -1143,7 +1098,6 @@ $$('.card').forEach(el=>{
     el.style.setProperty('--my',(e.clientY-r.top)+'px');
   });
 });
-/* тильт */
 $$('[data-tilt]').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
@@ -1152,7 +1106,6 @@ $$('[data-tilt]').forEach(el=>{
   });
   el.addEventListener('mouseleave',()=>el.style.transform='');
 });
-/* магнит */
 $$('.magnet').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
@@ -1162,7 +1115,6 @@ $$('.magnet').forEach(el=>{
   });
   el.addEventListener('mouseleave',()=>el.style.transform='');
 });
-/* ripple */
 document.addEventListener('click',e=>{
   const b=e.target.closest('.btn');if(!b)return;
   const r=b.getBoundingClientRect(),s=document.createElement('span');
@@ -1171,7 +1123,6 @@ document.addEventListener('click',e=>{
   b.appendChild(s);setTimeout(()=>s.remove(),600);
 });
 
-/* ===== ЛОАДЕР ===== */
 activate(routeName());
 update();
 let ldLoaded=false,ldCounted=false;
