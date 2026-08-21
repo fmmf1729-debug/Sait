@@ -11,7 +11,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<!-- ⬇️ three.js 0.160 — поддерживает MeshPhysicalMaterial с sheen/clearcoat -->
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <style>
 :root{
@@ -136,7 +135,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .scene-wrap{height:230vh;position:relative;z-index:2}
 .scene{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .hero-letters{position:absolute;top:4%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
-/* ⬇️ FEL_IKS опустил ещё ниже (padding-top: 110px у hero-letters и margin-top: 140px у scene-title) */
 .scene-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.4rem,8vw,7rem);line-height:.95;text-transform:uppercase;position:relative;z-index:3;text-align:center;margin-top:140px}
 .scene-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
 .cube-stage{width:min(78vw,640px);aspect-ratio:1;position:relative;z-index:2;min-height:320px;display:flex;align-items:center;justify-content:center}
@@ -387,10 +385,9 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <div class="hero-letters">FEL</div>
       <h1 class="scene-title" id="splitTitle">FEL_IKS</h1>
       <div class="cube-stage" id="glStage">
-        <!-- ⬇️ Fallback если WebGL не собрался -->
         <div class="cube-fallback">сцена не собралась ✚ проверь консоль</div>
       </div>
-      <div class="scene-hud">// наведи курсор на сферу</div>
+      <div class="scene-hud">// наведи курсор на куб</div>
       <div class="fog" id="fog">
         <div class="fog-layer fog-layer-1"></div>
         <div class="fog-layer fog-layer-2"></div>
@@ -433,6 +430,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   </div>
   <div class="end-wrap" aria-hidden="true"><img src="img/hero.png" data-s3d alt=""></div>
 </section>
+
 <section class="page" id="page-portfolio"><div class="page-hero"><div class="ghost">portfolio</div><h1 class="page-title" data-scramble>ПОРТФОЛИО</h1></div><div class="wrap sec over-sec"><img class="over-png" src="img/golova.png" data-s3d alt=""><div class="panel-box" data-reveal="flip"><h2 class="h2" data-reveal="mask">Кто я</h2><p class="lead" data-reveal>Привет, я <b>Fel_iks</b>. Снимаю ролики и стримлю, параллельно разрабатываю сайты, приложения и скины для Minecraft. Ниже — то, что уже сделано, и все мои площадки.</p></div></div><div class="wrap sec"><h2 class="h2" data-reveal="mask">Мои площадки</h2><div class="links">
 <a class="link-card" data-tilt data-reveal="left" href="https://www.youtube.com/@Fel_iks" target="_blank"><svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M2 6c0-1.7 1.3-3 3-3h14c1.7 0 3 1.3 3 3v12c0 1.7-1.3 3-3 3H5c-1.7 0-3-1.3-3-3V6z"/><path class="a" d="M10 8.5v7l6-3.5-6-3.5z"/></svg><b>YOUTUBE</b><span>ролики</span><i>↗</i></a>
 <a class="link-card" data-tilt data-reveal="right" style="--d:.05s" href="https://www.twitch.tv/fel_1kss" target="_blank"><svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M4 2h18v12l-6 6h-4l-3 3v-3H4V2z"/><path class="a" d="M11 6h2v6h-2zM16 6h2v6h-2z"/></svg><b>TWITCH</b><span>стримы</span><i>↗</i></a>
@@ -443,6 +441,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <a class="link-card" data-tilt data-reveal="left" style="--d:.3s" href="https://yoomoney.ru/to/4100117818574710" target="_blank"><svg class="lic" viewBox="0 0 24 24"><circle fill="currentColor" cx="12" cy="12" r="9"/><path class="a" d="M9 7h2l1.5 2.5L14 7h2l-2.7 4.5L16 16h-2l-1.5-2.6L11 16H9l2.7-4.5L9 7z"/></svg><b>YOOMONEY</b><span>поддержать</span><i>↗</i></a>
 <a class="link-card" data-tilt data-reveal="right" style="--d:.35s" href="https://dalink.to/fel_iks" target="_blank"><svg class="lic" viewBox="0 0 24 24"><path fill="currentColor" d="M9.5 14.5a4 4 0 0 1 0-5.7l2.8-2.8a4 4 0 0 1 5.7 5.7l-1.4 1.4-1.4-1.4 1.4-1.4a2 2 0 0 0-2.9-2.9l-2.8 2.8a2 2 0 0 0 0 2.9l-1.4 1.4z"/><path class="a" d="M14.5 9.5a4 4 0 0 1 0 5.7l-2.8 2.8a4 4 0 0 1-5.7-5.7l1.4-1.4 1.4 1.4-1.4 1.4a2 2 0 0 0 2.9 2.9l2.8-2.8a2 2 0 0 0 0-2.9l1.4-1.4z"/></svg><b>DALINK</b><span>все ссылки</span><i>↗</i></a>
 </div></div><div class="wrap sec" style="padding-bottom:90px"><h2 class="h2" data-reveal="mask">Работы</h2><p class="lead" data-reveal>Листай стопку стрелками, колесом или свайпом. Клик по передней карточке — рассмотреть ближе.</p><div class="stack" data-reveal="zoom"><button class="stack-arrow" id="stPrev" aria-label="предыдущий">‹</button><div class="stack-area" id="stArea" style="--stack-ms:450ms"></div><button class="stack-arrow" id="stNext" aria-label="следующий">›</button><div class="stack-meta"><div class="nick-line" id="stNick"></div><div id="stCount"></div></div></div><div id="workData" hidden><figure class="work"><img src="img/prev3.png" alt="Превью"><figcaption>ПРЕВЬЮ ✚</figcaption></figure><figure class="work"><img src="img/prev1.png" alt="Превью"><figcaption>ПРЕВЬЮ ✚</figcaption></figure><figure class="work"><img src="img/prev2.png" alt="Превью"><figcaption>ПРЕВЬЮ ✚</figcaption></figure><figure class="work"><img src="img/prev7.png" alt="Превью"><figcaption>ПРЕВЬЮ ✚</figcaption></figure><figure class="work"><img src="img/banner.png" alt="Шапка канала"><figcaption>ОФОРМЛЕНИЕ ✚</figcaption></figure><figure class="work"><img src="img/prev5.png" alt="Превью"><figcaption>ПРЕВЬЮ ✚</figcaption></figure><figure class="work"><img src="img/prev4.png" alt="Превью"><figcaption>ПРЕВЬЮ ✚</figcaption></figure><figure class="work"><img src="img/prev6.png" alt="Превью"><figcaption>ПРЕВЬЮ ✚</figcaption></figure></div></div><div class="wrap sec"><h2 class="h2" data-reveal="mask">Аватары</h2><div class="ava-strip" data-reveal><img loading="lazy" src="img/ava1.png" alt=""><img loading="lazy" src="img/ava2.png" alt=""><img loading="lazy" src="img/ava3.png" alt=""><img loading="lazy" src="img/ava4.png" alt=""><span>✚ и аватары</span></div></div></section>
+
 <section class="page" id="page-orders"><div class="page-hero"><div class="ghost">orders</div><h1 class="page-title" data-scramble>ЗАКАЗЫ</h1></div><div class="wrap sec over-sec"><img class="over-png" src="img/stand.png" data-s3d alt=""><div class="panel-box" data-reveal="flip"><h2 class="h2" data-reveal="mask">Что можно заказать</h2><p class="lead" data-reveal>Выбирай направление. Если твоей задачи нет в списке — напиши, обсудим индивидуально.</p></div></div><div class="wrap sec"><div class="cards"><div class="card" data-tilt data-reveal="left"><span class="ico">✚</span><span class="num">01</span><h3>Оформление канала / страницы</h3><p>Шапки, аватары и единый стиль для канала или страницы.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div><div class="card" data-tilt data-reveal style="--d:.1s"><span class="ico">✚</span><span class="num">02</span><h3>Решейд скина</h3><p>Переработаю скин: новые цвета, детали, аккуратные переходы.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div><div class="card" data-tilt data-reveal style="--d:.2s"><span class="ico">✚</span><span class="num">03</span><h3>Превью</h3><p>Превью для роликов, которые хочется кликнуть.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div><div class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✚</span><span class="num">04</span><h3>Сайт</h3><p>Сайт под ключ: от идеи до деплоя. С анимациями и своим стилем.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div></div></div><div class="wrap sec"><h2 class="h2" data-reveal="mask">Как проходит заказ</h2><div class="tl"><div class="tl-line"><i></i></div><div class="tl-item"><b>01</b><h3>Заявка</h3><p>Пишешь в Telegram: что нужно, детали, желаемый бюджет.</p></div><div class="tl-item"><b>02</b><h3>Обсуждение</h3><p>Уточняем сроки и итоговую стоимость.</p></div><div class="tl-item"><b>03</b><h3>Работа</h3><p>Делаю и показываю промежуточные варианты.</p></div><div class="tl-item"><b>04</b><h3>Результат</h3><p>Получаешь файлы и исходники, если нужны.</p></div></div></div></section>
 <section class="page" id="page-order"><div class="wrap sec order-wrap"><h1 class="page-title" data-scramble>ОФОРМЛЕНИЕ ЗАКАЗА</h1><div class="plate" data-reveal="flip"><p>Для заказа вам нужно написать сюда: <b class="tg">@zam_fela</b>, указав вид товара, все детали, нужные при работе, и стоимость, на которую вы рассчитываете (итоговая стоимость может отличаться от той, которую вы хотите, — все это будет обговариваться в чате с продавцом).</p><a class="btn btn-accent big magnet" href="https://t.me/zam_fela" target="_blank">НАПИСАТЬ В ЛС ✚</a></div><a class="back" href="#/orders">← назад к заказам</a></div></section>
 <section class="page" id="page-opensource"><div class="page-hero"><div class="ghost">code</div><h1 class="page-title" data-scramble>ОПЕНСУРС</h1></div><div class="wrap sec over-sec"><img class="over-png" src="img/hero.png" data-s3d alt=""><div class="panel-box" data-reveal="flip"><h2 class="h2" data-reveal="mask">Открытые проекты</h2><p class="lead" data-reveal>Программы, которые я разработал. Бесплатно, без подписок и регистраций — скачал и пользуешься. Формат файла выбирается при скачивании.</p></div></div><div class="wrap sec"><div class="cards proj"><div class="card" data-tilt data-reveal="left"><span class="num">EXE</span><h3>PNGTuber.exe <span class="dev">в разработке</span></h3><p>Живой PNG-аватар для стримов и роликов: реагирует на микрофон и оживляет образ. Настройка занимает пару минут.</p><a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a></div><div class="card" data-tilt data-reveal="right" style="--d:.15s"><span class="num">EXE</span><h3>JARVIS.exe <span class="dev">в разработке</span></h3><p>Компактный помощник для ПК: голосовые команды и автоматизация повседневных задач. Делал для себя — открыл для всех.</p><a class="btn btn-accent magnet" href="#" target="_blank">Скачать</a></div></div><p class="note" data-reveal>✚ оба проекта в активной разработке и регулярно обновляются. если что-то не скачивается или работает не так — напиши в telegram, я исправлю.</p></div><div class="wrap sec"><h2 class="h2" data-reveal="mask">Как установить</h2><div class="tl"><div class="tl-line"><i></i></div><div class="tl-item"><b>01</b><h3>Скачай</h3><p>Выбери нужный формат файла при скачивании.</p></div><div class="tl-item"><b>02</b><h3>Запусти</h3><p>Распакуй архив и открой файл. Установка не нужна.</p></div><div class="tl-item"><b>03</b><h3>Пользуйся</h3><p>Вопросы и идеи — пиши в Telegram.</p></div></div></div></section>
@@ -486,57 +485,75 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
 /* ========================================================================
-   СФЕРА ПО СХЕМЕ CRYO / IGLOO.INC
-   three.js 0.160 — поддерживает MeshPhysicalMaterial с sheen/clearcoat
+   КУБ ИЗ КИРПИЧЕЙ (вместо сферы)
+   - 6 граней × 8×8 = 384 кирпича
+   - Большой gap чтобы не налазили
+   - Наш циан цвет
+   - Усиленный свет
    ======================================================================== */
 const C={
-  sphere:{ radius:3, rings:10, gap:0.05, thickness:0.44, bevel:0.36,
-           hoverHeight:3.4, tilt:0.32, spin:0.06 },
-  material:{ color:0x838993, roughness:0.72, metalness:0,
-             sheen:1, sheenColor:0xeaf4ff, sheenRoughness:0.35,
-             emissive:0x7fb4ff, emissiveBase:0.12 },
-  coreLight:{ color:0xdceeff, intensity:185, distance:6, ambient:2.2,
-              coreRadius:0.95, coreBrightness:5.5 },
-  pulse:{ lift:0.2, speed:0.9, spread:0.55 },
-  hover:{ radius:1.5, push:1.5, damping:0.22 }
+  cube:{ size:4, n:8, gap:0.15, thickness:0.25, bevel:0.4, spin:0.08, tilt:0.35 },
+  material:{ color:0x16e0e0, roughness:0.6, metalness:0.1,
+             sheen:1, sheenColor:0x7fffff, sheenRoughness:0.3,
+             emissive:0x16e0e0, emissiveBase:0.25 },
+  coreLight:{ color:0x16e0e0, intensity:400, distance:8, ambient:3.0,
+              coreRadius:1.2, coreBrightness:8.0 },
+  pulse:{ lift:0.08, speed:1.0, spread:0.6 },
+  hover:{ radius:1.2, push:0.35, damping:0.25 }
 };
 
-/* buildSphereBlocks — точно как в lib/sphere-geometry.ts */
-function buildSphereBlocks(){
-  var radius=C.sphere.radius, rings=C.sphere.rings, gap=C.sphere.gap, thickness=C.sphere.thickness;
-  var blocks=[], ringHeight=(Math.PI*radius)/rings;
-  for(var ring=0; ring<rings; ring++){
-    var theta=((ring+0.5)*Math.PI)/rings;
-    var ringRadius=radius*Math.sin(theta);
-    var circumference=2*Math.PI*ringRadius;
-    var count=Math.max(1,Math.round(circumference/ringHeight));
-    var phaseShift=(ring%2===1)?Math.PI/count:0;
-    for(var index=0; index<count; index++){
-      var phi=(index*2*Math.PI)/count+phaseShift;
-      var nx=Math.sin(theta)*Math.cos(phi);
-      var ny=Math.cos(theta);
-      var nz=Math.sin(theta)*Math.sin(phi);
-      var tx=-Math.sin(phi), ty=0, tz=Math.cos(phi);
-      var bx=ny*tz-nz*ty, by=nz*tx-nx*tz, bz=nx*ty-ny*tx;
-      var bl=Math.sqrt(bx*bx+by*by+bz*bz)||1;
-      bx/=bl;by/=bl;bz/=bl;
-      var width=(circumference/count)*(1-gap);
-      var height=ringHeight*(1-gap);
+function buildCubeBlocks(){
+  var S=C.cube.size, N=C.cube.n, gap=C.cube.gap, bt=C.cube.thickness;
+  var bw=(S-(N+1)*gap)/N;
+  var bh=bw;
+  var blocks=[];
+  var faces=[
+    {axis:0,sign:1},{axis:0,sign:-1},
+    {axis:1,sign:1},{axis:1,sign:-1},
+    {axis:2,sign:1},{axis:2,sign:-1}
+  ];
+  for(var fi=0;fi<6;fi++){
+    var face=faces[fi];
+    for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+      var pos=[0,0,0], normal=[0,0,0];
+      var tangent=[0,0,0], bitangent=[0,0,0];
+      if(face.axis===0){
+        pos[0]=S/2*face.sign;
+        pos[1]=-S/2+gap+bw/2+i*(bw+gap);
+        pos[2]=-S/2+gap+bh/2+j*(bh+gap);
+        normal[0]=face.sign;
+        tangent=[0,1,0]; bitangent=[0,0,1];
+      }else if(face.axis===1){
+        pos[0]=-S/2+gap+bw/2+i*(bw+gap);
+        pos[1]=S/2*face.sign;
+        pos[2]=-S/2+gap+bh/2+j*(bh+gap);
+        normal[1]=face.sign;
+        tangent=[1,0,0]; bitangent=[0,0,1];
+      }else{
+        pos[0]=-S/2+gap+bw/2+i*(bw+gap);
+        pos[1]=-S/2+gap+bh/2+j*(bh+gap);
+        pos[2]=S/2*face.sign;
+        normal[2]=face.sign;
+        tangent=[1,0,0]; bitangent=[0,1,0];
+      }
       blocks.push({
-        position:[nx*radius, ny*radius, nz*radius],
-        size:[Math.max(width,0.01), Math.max(height,0.01), thickness],
-        basis:[tx,ty,tz, bx,by,bz, nx,ny,nz],
-        ring:ring, index:index
+        position:pos,
+        size:[bw,bh,bt],
+        basis:[
+          tangent[0],tangent[1],tangent[2],
+          bitangent[0],bitangent[1],bitangent[2],
+          normal[0],normal[1],normal[2]
+        ],
+        face:fi, i:i, j:j
       });
     }
   }
   return blocks;
 }
 
-/* Прямоугольник со скруглёнными углами */
 function rrShape(w,h,r){
   var s=new THREE.Shape(), x=-w/2, y=-h/2;
-  var rr=Math.min(r, w/2, h/2);
+  var rr=Math.min(r,w/2,h/2);
   s.moveTo(x+rr,y); s.lineTo(x+w-rr,y);
   s.quadraticCurveTo(x+w,y,x+w,y+rr);
   s.lineTo(x+w,y+h-rr);
@@ -548,64 +565,57 @@ function rrShape(w,h,r){
   return s;
 }
 
-(function initSphere(){
+(function initCube(){
   var stage=document.getElementById('glStage');
   if(!stage||typeof THREE==='undefined'){
-    console.warn('THREE.js не загрузился');
     if(stage)stage.setAttribute('data-failed','true');
     return;
   }
   try{
-    /* alpha:true — чтобы фон CSS был виден, а не глухой чёрный */
     var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-    /* НЕ ставим setClearColor — рендерер прозрачный, фон сцены берётся из CSS */
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,coarse?1.5:1.75));
-    /* ACES tonemapping + высокая экспозиция — без этого HDR-ядро не пробьётся */
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure=1.4;
-    /* Правильный colorSpace для 0.160 */
+    renderer.toneMappingExposure=1.6;
     if(renderer.outputColorSpace!==undefined){
       renderer.outputColorSpace=THREE.SRGBColorSpace;
-    }else if(renderer.outputEncoding!==undefined){
-      renderer.outputEncoding=THREE.sRGBEncoding;
     }
     stage.appendChild(renderer.domElement);
     
     var scene=new THREE.Scene();
-    /* Прозрачный фон сцены — CSS gradient виден */
     scene.background=null;
     
-    var camera=new THREE.PerspectiveCamera(42,1,.1,100);
-    camera.position.set(0,4.4,12);
+    var camera=new THREE.PerspectiveCamera(40,1,.1,100);
+    camera.position.set(2,3,14);
     camera.lookAt(0,0,0);
     
-    /* ====== СВЕТ ====== */
-    scene.add(new THREE.HemisphereLight(0xe8f0ff,0x8090a0,1.2));
-    var sun=new THREE.DirectionalLight(0xe8f0ff,2.8);
-    sun.position.set(26,8,-16);
-    scene.add(sun);
-    var fill=new THREE.DirectionalLight(0xbfd8da,0.8);
-    fill.position.set(-10,5,8);
+    /* УСИЛЕННЫЙ СВЕТ */
+    scene.add(new THREE.HemisphereLight(0xffffff,0x404060,2.5));
+    var sun1=new THREE.DirectionalLight(0xffffff,5.0);
+    sun1.position.set(20,10,-15);
+    scene.add(sun1);
+    var sun2=new THREE.DirectionalLight(0x16e0e0,3.0);
+    sun2.position.set(-15,8,10);
+    scene.add(sun2);
+    var fill=new THREE.DirectionalLight(0xffffff,2.0);
+    fill.position.set(0,-10,15);
     scene.add(fill);
     
-    /* Группа со сферой (наклон + вращение как в оригинале) */
     var rig=new THREE.Group();
-    rig.rotation.z=C.sphere.tilt;
+    rig.rotation.z=C.cube.tilt;
     scene.add(rig);
-    
     var spinGroup=new THREE.Group();
     rig.add(spinGroup);
     
-    /* ====== HDR-ЯДРО (ярче белого × 5.5) ====== */
+    /* HDR-ЯДРО (×8 яркости) */
     var coreColor=new THREE.Color(C.coreLight.color);
     coreColor.multiplyScalar(C.coreLight.coreBrightness);
     var core=new THREE.Mesh(
-      new THREE.SphereGeometry(C.coreLight.coreRadius,24,24),
+      new THREE.BoxGeometry(C.coreLight.coreRadius*1.8,C.coreLight.coreRadius*1.8,C.coreLight.coreRadius*1.8),
       new THREE.MeshBasicMaterial({color:coreColor,toneMapped:false})
     );
     spinGroup.add(core);
     
-    /* ====== СВЕТ ВНУТРИ СФЕРЫ ====== */
+    /* СВЕТ ВНУТРИ */
     var innerPoint=new THREE.PointLight(
       C.coreLight.color, C.coreLight.intensity, C.coreLight.distance, 2
     );
@@ -613,14 +623,12 @@ function rrShape(w,h,r){
     var innerAmbient=new THREE.AmbientLight(C.coreLight.color,C.coreLight.ambient);
     spinGroup.add(innerAmbient);
     
-    /* ====== КИРПИЧИ ====== */
-    var blocks=buildSphereBlocks();
-    console.log('Сфера: '+blocks.length+' кирпичей в '+C.sphere.rings+' кольцах');
+    var blocks=buildCubeBlocks();
+    console.log('Куб: '+blocks.length+' кирпичей ('+C.cube.n+'×'+C.cube.n+' на грань)');
     
-    /* Геометрия со скруглёнными углами (RoundedBox) */
     var block0=blocks[0];
     var bw=block0.size[0], bh=block0.size[1], bt=block0.size[2];
-    var bevelSize=bt*C.sphere.bevel;
+    var bevelSize=bt*C.cube.bevel;
     var shape=rrShape(bw,bh,bevelSize);
     var brickGeo=new THREE.ExtrudeGeometry(shape,{
       depth:bt,
@@ -631,7 +639,6 @@ function rrShape(w,h,r){
     });
     brickGeo.translate(0,0,-bt/2);
     
-    /* Материал — в 0.160 MeshPhysicalMaterial поддерживает sheen/clearcoat */
     var brickMat=new THREE.MeshPhysicalMaterial({
       color:C.material.color,
       roughness:C.material.roughness,
@@ -641,8 +648,8 @@ function rrShape(w,h,r){
       sheenRoughness:C.material.sheenRoughness,
       emissive:new THREE.Color(C.material.emissive),
       emissiveIntensity:C.material.emissiveBase,
-      clearcoat:0.3,
-      clearcoatRoughness:0.2
+      clearcoat:0.4,
+      clearcoatRoughness:0.15
     });
     
     var meshes=[], basePositions=[], directions=[], currentLifts=[];
@@ -659,24 +666,18 @@ function rrShape(w,h,r){
       directions.push(tmpV.clone().normalize());
       currentLifts.push(0);
       var B=b.basis;
-      basis.set(
-        B[0],B[3],B[6],0,
-        B[1],B[4],B[7],0,
-        B[2],B[5],B[8],0,
-        0,0,0,1
-      );
+      basis.set(B[0],B[3],B[6],0, B[1],B[4],B[7],0, B[2],B[5],B[8],0, 0,0,0,1);
       quat.setFromRotationMatrix(basis);
       m.quaternion.copy(quat);
       spinGroup.add(m);
       meshes.push(m);
     }
     
-    /* Невидимая сфера-ловушка для курсора */
-    var hitSphere=new THREE.Mesh(
-      new THREE.SphereGeometry(C.sphere.radius+C.sphere.thickness,32,32),
+    var hitBox=new THREE.Mesh(
+      new THREE.BoxGeometry(C.cube.size+C.cube.thickness*2,C.cube.size+C.cube.thickness*2,C.cube.size+C.cube.thickness*2),
       new THREE.MeshBasicMaterial({visible:false})
     );
-    spinGroup.add(hitSphere);
+    spinGroup.add(hitBox);
     
     function size(){
       var w=stage.clientWidth,h=stage.clientHeight;
@@ -715,11 +716,11 @@ function rrShape(w,h,r){
       
       pmx+=(mx-pmx)*.04;
       pmy+=(my-pmy)*.04;
-      camera.position.x=pmx*1.8;
-      camera.position.y=4.4-pmy*0.8;
+      camera.position.x=2+pmx*1.5;
+      camera.position.y=3-pmy*0.6;
       camera.lookAt(0,0,0);
       
-      spinGroup.rotation.y+=C.sphere.spin*dt;
+      spinGroup.rotation.y+=C.cube.spin*dt;
       
       var fadeScale=1-q*0.3;
       rig.scale.setScalar(Math.max(0.01,fadeScale));
@@ -728,7 +729,7 @@ function rrShape(w,h,r){
       
       if(!coarse&&q<0.5){
         ray.setFromCamera(ndc,camera);
-        var hits=ray.intersectObject(hitSphere,false);
+        var hits=ray.intersectObject(hitBox,false);
         if(hits.length>0){
           hitLocal.copy(spinGroup.worldToLocal(hits[0].point.clone()));
           hovering=true;
@@ -740,7 +741,7 @@ function rrShape(w,h,r){
       var dampFactor=1-Math.exp(-dt/C.hover.damping);
       for(var i=0;i<blocks.length;i++){
         var b=blocks[i];
-        var phase=(b.ring+b.index)*C.pulse.spread;
+        var phase=(b.i+b.j+b.face*2)*C.pulse.spread;
         var wave=0.5+0.5*Math.sin(t*C.pulse.speed+phase);
         var pulseLift=C.pulse.lift*wave;
         var influence=0;
@@ -761,11 +762,11 @@ function rrShape(w,h,r){
       renderer.render(scene,camera);
     })();
     
-    window.__sphereReady=true;
+    window.__cubeReady=true;
   }catch(e){
-    console.error('Сфера не собралась:',e);
+    console.error('Куб не собрался:',e);
     if(stage)stage.setAttribute('data-failed','true');
-    window.__sphereReady=true;
+    window.__cubeReady=true;
   }
 })();
 
