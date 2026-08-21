@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- three.js обычным скриптом (без модулей) — надёжно -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{
   --bg:#0a0d0f; --panel:#0f1517; --line:#1d2a2d; --txt:#f2f6f6; --muted:#8fa3a6;
@@ -21,6 +23,7 @@
   --crossA:rgba(255,255,255,.12); --crossB:rgba(0,0,0,.4); --crossC:rgba(22,224,224,.28);
   --glowbg:rgba(22,224,224,.10);
   --ghost-shine:rgba(22,224,224,.28);
+  --fog-r:10; --fog-g:13; --fog-b:15;
   --fd:'Unbounded',sans-serif; --fb:'Rubik',sans-serif; --mono:'JetBrains Mono',monospace;
 }
 [data-theme="light"]{
@@ -32,6 +35,7 @@
   --crossA:rgba(0,0,0,.10); --crossB:rgba(0,0,0,.18); --crossC:rgba(0,191,201,.30);
   --glowbg:rgba(0,191,201,.08);
   --ghost-shine:rgba(0,191,201,.30);
+  --fog-r:238; --fog-g:243; --fog-b:243;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -136,15 +140,14 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .hero-letters{position:absolute;top:4%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
 .scene-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.4rem,8vw,7rem);line-height:.95;text-transform:uppercase;position:relative;z-index:3;text-align:center;margin-top:64px}
 .scene-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
-.cube-stage{width:min(80vw,680px);aspect-ratio:1;position:relative;z-index:2}
+.cube-stage{width:min(78vw,620px);aspect-ratio:1;position:relative;z-index:2}
 .cube-stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
 .scene-hud{position:absolute;left:6vw;bottom:86px;z-index:3;font-family:var(--mono);font-size:.65rem;letter-spacing:.22em;text-transform:lowercase;color:var(--muted)}
 .scene-hud b{color:var(--cy);font-weight:400}
 .fog{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
   background:
-   radial-gradient(120% 85% at 50% 108%,rgba(var(--fog-r,10),var(--fog-g,13),var(--fog-b,15),.55) 0%,transparent 62%),
-   linear-gradient(180deg,transparent 0%,rgba(var(--fog-r,10),var(--fog-g,13),var(--fog-b,15),.35) 58%,var(--bg) 94%)}
-[data-theme="light"] .fog{--fog-r:238;--fog-g:243;--fog-b:243}
+   radial-gradient(120% 85% at 50% 108%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.55) 0%,transparent 62%),
+   linear-gradient(180deg,transparent 0%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.35) 58%,var(--bg) 94%)}
 .scroll-hint{position:absolute;bottom:30px;left:50%;translate:-50% 0;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px;font-family:var(--mono);z-index:3}
 .scroll-hint span{width:60px;height:2px;background:var(--cy);display:inline-block;animation:hint 1.4s ease-in-out infinite}
 @keyframes hint{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0)}}
@@ -324,7 +327,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .ftr{padding:18px 6vw;justify-content:center;text-align:center}
   .menu{padding:8vh 8vw}
   .scene-hud{display:none}
-  .cube-stage{width:min(94vw,680px)}
+  .cube-stage{width:min(92vw,620px)}
   .scene-title{margin-top:44px}
 }
 @media(pointer:coarse){.hdr{backdrop-filter:none;background:var(--bg)}}
@@ -498,204 +501,20 @@ const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
-/* ===== КУБ ПО ТЕХНОЛОГИИ IGLOO.INC (только core three, без addons) ===== */
-(async function initCube(){
-  const stage=document.getElementById('glStage');
-  if(!stage)return;
-  let THREE=null;
-  const urls=[
-    'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js',
-    'https://unpkg.com/three@0.160.0/build/three.module.js',
-    'https://esm.sh/three@0.160.0'
-  ];
-  for(const u of urls){try{THREE=await import(u);break;}catch(e){}}
-  if(!THREE){
-    stage.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--mono);color:var(--muted);font-size:.7rem">webgl недоступен</div>';
-    return;
-  }
-  try{
-    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
-    renderer.setPixelRatio(Math.min(devicePixelRatio,coarse?1.5:1.75));
-    renderer.setClearColor(0x000000,0);
-    renderer.toneMapping=THREE.ACESFilmicToneMapping;   // HDR-роллофф как в CRYO
-    renderer.toneMappingExposure=1.15;
-    stage.appendChild(renderer.domElement);
-
-    const scene=new THREE.Scene();
-    const camera=new THREE.PerspectiveCamera(40,1,.1,80);
-    camera.position.set(0,0,7.6);
-
-    /* --- окружение для отражений (PMREM из процедурной сцены) --- */
-    const pmrem=new THREE.PMREMGenerator(renderer);
-    const envScene=new THREE.Scene();
-    envScene.add(new THREE.Mesh(
-      new THREE.SphereGeometry(12,24,24),
-      new THREE.ShaderMaterial({side:THREE.BackSide,
-        vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-        fragmentShader:'varying vec3 vP;void main(){vec3 d=normalize(vP);float h=d.y*.5+.5;vec3 c=mix(vec3(.01,.05,.06),vec3(.10,.38,.42),pow(h,1.6));c+=vec3(.05,.5,.55)*pow(1.-abs(d.y),3.)*.6;gl_FragColor=vec4(c,1.);}'
-      })));
-    const stripMat=new THREE.MeshBasicMaterial({color:new THREE.Color(2.5,7,7.5)});
-    const strip1=new THREE.Mesh(new THREE.PlaneGeometry(7,1.4),stripMat);
-    strip1.position.set(0,5,-7);strip1.lookAt(0,0,0);envScene.add(strip1);
-    const strip2=new THREE.Mesh(new THREE.PlaneGeometry(5,1),stripMat.clone());
-    strip2.position.set(-6,-2,5);strip2.lookAt(0,0,0);envScene.add(strip2);
-    const envTex=pmrem.fromScene(envScene,.05).texture;
-    pmrem.dispose();
-
-    /* --- свет: как в CRYO (ambient + key + rim + внутренний) --- */
-    scene.add(new THREE.AmbientLight(0x9fc6c9,.55));
-    const key=new THREE.DirectionalLight(0xf2fbff,2.4);key.position.set(5,8,6);scene.add(key);
-    const rim=new THREE.DirectionalLight(0x16e0e0,1.6);rim.position.set(-6,-4,-6);scene.add(rim);
-    const inner=new THREE.PointLight(0x16e0e0,30,12,2);scene.add(inner);
-
-    const group=new THREE.Group();scene.add(group);
-
-    /* --- HDR-ядро ярче белого (свет сквозь швы) --- */
-    const S=3.4;
-    const core=new THREE.Mesh(
-      new THREE.BoxGeometry(S*.82,S*.82,S*.82),
-      new THREE.MeshBasicMaterial({color:new THREE.Color(.12,3.2,3.6)}));
-    group.add(core);
-
-    /* --- ореол (фейковый bloom, additive sprite) --- */
-    const haloCv=document.createElement('canvas');haloCv.width=haloCv.height=256;
-    const hx2=haloCv.getContext('2d');
-    const hg=hx2.createRadialGradient(128,128,8,128,128,128);
-    hg.addColorStop(0,'rgba(140,255,255,.85)');
-    hg.addColorStop(.35,'rgba(22,224,224,.28)');
-    hg.addColorStop(1,'rgba(22,224,224,0)');
-    hx2.fillStyle=hg;hx2.fillRect(0,0,256,256);
-    const halo=new THREE.Sprite(new THREE.SpriteMaterial({
-      map:new THREE.CanvasTexture(haloCv),
-      blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.9}));
-    halo.scale.set(7.4,7.4,1);group.add(halo);
-
-    /* --- кирпичи с фасками (ExtrudeGeometry, как фаска 0.36 в CRYO) --- */
-    const N=4,GAP=.1;
-    const bw=(S-(N+1)*GAP)/N;
-    function rrShape(w,h,r){
-      const s=new THREE.Shape(),x=-w/2,y=-h/2;
-      s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);
-      s.lineTo(x+w,y+h-r);s.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-      s.lineTo(x+r,y+h);s.quadraticCurveTo(x,y+h,x,y+h-r);
-      s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);return s;
-    }
-    const brickGeo=new THREE.ExtrudeGeometry(rrShape(bw,bw,.12),{
-      depth:.36,bevelEnabled:true,bevelThickness:.1,bevelSize:.1,bevelSegments:3});
-    brickGeo.center();
-    const brickMat=new THREE.MeshPhysicalMaterial({
-      color:0x0d3138,                 // наш глубокий циан
-      roughness:.32,metalness:.05,
-      clearcoat:.8,clearcoatRoughness:.25,
-      sheen:1,sheenColor:new THREE.Color(0x16e0e0),sheenRoughness:.4,
-      emissive:new THREE.Color(0x032a30),emissiveIntensity:.55,
-      envMap:envTex,envMapIntensity:1.1});
-    const faces=[
-      {n:[0,0,1],u:[0,1,0]},{n:[0,0,-1],u:[0,1,0]},
-      {n:[1,0,0],u:[0,1,0]},{n:[-1,0,0],u:[0,1,0]},
-      {n:[0,1,0],u:[0,0,-1]},{n:[0,-1,0],u:[0,0,1]}];
-    const bricks=[],M4=new THREE.Matrix4(),Q=new THREE.Quaternion();
-    faces.forEach(f=>{
-      const n=new THREE.Vector3(...f.n).normalize();
-      const u=new THREE.Vector3(...f.u).normalize();
-      const t1=new THREE.Vector3().crossVectors(u,n).normalize();
-      const t2=new THREE.Vector3().crossVectors(n,t1).normalize();
-      for(let i=0;i<N;i++)for(let j=0;j<N;j++){
-        const m=new THREE.Mesh(brickGeo,brickMat);
-        const x=-S/2+GAP+bw/2+i*(bw+GAP);
-        const y=-S/2+GAP+bw/2+j*(bw+GAP);
-        const base=new THREE.Vector3().addScaledVector(t1,x).addScaledVector(t2,y).addScaledVector(n,S/2-.14);
-        M4.makeBasis(t1,t2,n);Q.setFromMatrix4(M4);
-        m.quaternion.copy(Q);m.position.copy(base);
-        group.add(m);
-        bricks.push({m,base,n:n.clone(),cur:0,ph:Math.random()*6.283});
-      }
-    });
-
-    /* --- парящие частицы вокруг куба --- */
-    const pCount=140,pPos=new Float32Array(pCount*3);
-    for(let i=0;i<pCount;i++){
-      const r=2.6+Math.random()*1.1,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
-      pPos[i*3]=r*Math.sin(ph)*Math.cos(th);
-      pPos[i*3+1]=r*Math.cos(ph);
-      pPos[i*3+2]=r*Math.sin(ph)*Math.sin(th);
-    }
-    const pGeo=new THREE.BufferGeometry();
-    pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
-    const points=new THREE.Points(pGeo,new THREE.PointsMaterial({
-      color:0x16e0e0,size:.04,transparent:true,opacity:.55,
-      blending:THREE.AdditiveBlending,depthWrite:false}));
-    group.add(points);
-
-    function size(){
-      const w=stage.clientWidth,h=stage.clientHeight;
-      if(!w||!h)return;
-      renderer.setSize(w,h,false);
-      camera.aspect=w/h;camera.updateProjectionMatrix();
-    }
-    size();addEventListener('resize',size);
-
-    /* --- курсор --- */
-    const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(-2,-2);
-    let mx=0,my=0,pmx=0,pmy=0;
-    addEventListener('pointermove',e=>{
-      mx=(e.clientX/innerWidth-.5)*2;my=(e.clientY/innerHeight-.5)*2;
-      const r=stage.getBoundingClientRect();
-      ndc.set(((e.clientX-r.left)/r.width)*2-1,-(((e.clientY-r.top)/r.height)*2-1));
-    });
-
-    const clock=new THREE.Clock();
-    let ry=0,rx=0;
-    (function frame(){
-      requestAnimationFrame(frame);
-      if(document.hidden)return;
-      const t=clock.getElapsedTime(),q=window.__sceneQ||0;
-      pmx+=(mx-pmx)*.06;pmy+=(my-pmy)*.06;
-
-      ry+=(t*.22+pmx*.6-ry)*.08;
-      rx+=((-.16+pmy*.35+q*1.2)-rx)*.08;
-      group.rotation.set(rx,ry,0);
-      group.scale.setScalar(1-q*.22);
-      group.position.y=q*-1.2;
-      renderer.domElement.style.opacity=clamp(1-q*1.15,0,1)+'';
-      points.rotation.y=-t*.05;
-
-      /* hover: кирпич под курсором выдвигается; остальные дышат волной */
-      let hov=null;
-      if(!coarse&&q<.5){
-        ray.setFromCamera(ndc,camera);
-        const hit=ray.intersectObjects(bricks.map(b=>b.m),false)[0];
-        if(hit)hov=bricks.find(b=>b.m===hit.object);
-      }
-      for(let i=0;i<bricks.length;i++){
-        const b=bricks[i];
-        const wave=.045*(.5+.5*Math.sin(t*1.1+b.ph));
-        const target=(b===hov)?.38:wave;
-        b.cur+=(target-b.cur)*.14;
-        b.m.position.copy(b.base).addScaledVector(b.n,b.cur);
-      }
-      renderer.render(scene,camera);
-    })();
-  }catch(e){
-    console.error('cube init error:',e);
-    stage.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--mono);color:var(--muted);font-size:.7rem">webgl ошибка</div>';
-  }
-})();
-
-/* ===== темы ===== */
+/* темы */
 const tbtns=$$('.tbtn');
 function setTheme(t){if(t!=='light')t='dark';document.documentElement.dataset.theme=t;localStorage.setItem('theme',t);tbtns.forEach(b=>b.classList.toggle('on',b.dataset.set===t));}
 tbtns.forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.set)));
 setTheme(localStorage.getItem('theme')==='light'?'light':'dark');
 
-/* ===== роутер ===== */
+/* роутер */
 const NAMES={'':'home',home:'home',portfolio:'portfolio',orders:'orders',order:'order',opensource:'opensource',ranta:'ranta',feedback:'feedback'};
 const routeName=()=>NAMES[location.hash.replace(/^#\/?/,'')]||'home';
 let current=null;
 function activate(n){
   $$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+n));
   $$('.menu-links a').forEach(a=>{const h=a.getAttribute('href').replace(/^#\/?/,'');a.classList.toggle('active',(h||'home')===n);});
-  current=n;window.scrollTo(0,0);update();
+  current=n;window.__current=n;window.scrollTo(0,0);update();
 }
 function go(n){
   document.body.classList.remove('menu-open');
@@ -707,6 +526,7 @@ addEventListener('hashchange',()=>go(routeName()));
 $$('.menu a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('menu-open')));
 $$('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
 
+/* ник-кнопка */
 $$('[data-splat]').forEach(a=>a.addEventListener('click',e=>{
   e.preventDefault();
   if(a._busy)return;a._busy=true;
@@ -882,13 +702,11 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')lbOpen(lbI+1);
 });
 
-/* скролл: туман + прогресс + остальное */
+/* скролл */
 const sceneWrap=$('#sceneWrap'),fog=$('#fog');
-let plxEls=[],tlCache=[],s3dEls=[];
+let tlCache=[];
 function cacheDom(){
-  plxEls=$$('[data-plx]');
   tlCache=$$('.tl').map(tl=>({el:tl,line:tl.querySelector('.tl-line i'),items:$$('.tl-item',tl)}));
-  s3dEls=$$('[data-s3d]');
 }
 cacheDom();
 let tick=false,lastY=0;
@@ -907,15 +725,6 @@ function update(){
     const sp=splitSpans[i];
     sp.style.transform=`translate(${sp.dataset.dx*q*160}px,${sp.dataset.dy*q*160}px) rotate(${sp.dataset.dr*q*60}deg)`;
     sp.style.opacity=1-q*.9;
-  }
-  for(let i=0;i<plxEls.length;i++){
-    plxEls[i].style.transform=`translateY(${y*parseFloat(plxEls[i].dataset.plx)}px)`;
-  }
-  for(let i=0;i<s3dEls.length;i++){
-    const el=s3dEls[i],r=el.getBoundingClientRect();
-    if(r.bottom<-250||r.top>vh+250)continue;
-    const c=(r.top+r.height/2-vh/2)/vh;
-    el.style.transform=`perspective(900px) rotateY(${(c*-26).toFixed(2)}deg) rotateX(${(c*10).toFixed(2)}deg)`;
   }
   lastY=y;
   for(let i=0;i<tlCache.length;i++){
@@ -1007,8 +816,9 @@ function ldFinish(){
   if(l){l.classList.add('done');setTimeout(()=>l.remove(),900);}
   requestAnimationFrame(()=>wipe.classList.add('off'));
 }
-setTimeout(ldFinish,3500);   // страховка от зависания
-addEventListener('load',()=>{
+addEventListener('load',()=>ldFinish());
+setTimeout(ldFinish,4000); /* страховка */
+(function(){
   const el=$('#ldCount'),bar=$('#ldBar');
   if(!el){ldFinish();return;}
   const t0=performance.now(),dur=1600;
@@ -1020,5 +830,7 @@ addEventListener('load',()=>{
     if(p<1)requestAnimationFrame(f);
     else ldFinish();
   })(t0);
-});
+})();
 </script>
+</body>
+</html>
