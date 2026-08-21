@@ -20,8 +20,7 @@
   --sh1:#000; --sh2:rgba(22,224,224,.35); --btnsh:rgba(22,224,224,.9);
   --plate-bg:#f2f6f6; --plate-txt:#06090b;
   --crossA:rgba(255,255,255,.12); --crossB:rgba(0,0,0,.4); --crossC:rgba(22,224,224,.28);
-  --glowbg:rgba(22,224,224,.10);
-  --ghost-shine:rgba(22,224,224,.28);
+  --glowbg:rgba(22,224,224,.10); --ghost-shine:rgba(22,224,224,.28);
   --fog-r:10; --fog-g:13; --fog-b:15;
   --fd:'Unbounded',sans-serif; --fb:'Rubik',sans-serif; --mono:'JetBrains Mono',monospace;
 }
@@ -32,8 +31,7 @@
   --sh1:#00bfc9; --sh2:rgba(0,0,0,.18); --btnsh:#000;
   --plate-bg:#0b1011; --plate-txt:#f2f6f6;
   --crossA:rgba(0,0,0,.10); --crossB:rgba(0,0,0,.18); --crossC:rgba(0,191,201,.30);
-  --glowbg:rgba(0,191,201,.08);
-  --ghost-shine:rgba(0,191,201,.30);
+  --glowbg:rgba(0,191,201,.08); --ghost-shine:rgba(0,191,201,.30);
   --fog-r:238; --fog-g:243; --fog-b:243;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -147,15 +145,15 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .hero-letters{position:absolute;top:4%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
 .scene-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.4rem,8vw,7rem);line-height:.95;text-transform:uppercase;position:relative;z-index:3;text-align:center;margin-top:64px}
 .scene-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
-.cube-stage{width:min(72vw,560px);aspect-ratio:1;position:relative;z-index:2}
+.cube-stage{width:min(72vw,560px);aspect-ratio:1;position:relative;z-index:2;min-height:300px}
 .cube-stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
 .scene-hud{position:absolute;left:6vw;bottom:86px;z-index:3;font-family:var(--mono);font-size:.65rem;letter-spacing:.22em;text-transform:lowercase;color:var(--muted)}
 .scene-hud b{color:var(--cy);font-weight:400}
-.fog{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0.5;overflow:hidden}
+.fog{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0.6;overflow:hidden}
 .fog-layer{position:absolute;inset:0;pointer-events:none}
-.fog-layer-1{background:radial-gradient(ellipse at 50% 85%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.4) 0%,transparent 50%)}
-.fog-layer-2{background:radial-gradient(ellipse at 30% 75%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.3) 0%,transparent 40%)}
-.fog-layer-3{background:radial-gradient(ellipse at 70% 80%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.35) 0%,transparent 45%)}
+.fog-layer-1{background:radial-gradient(ellipse at 50% 85%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.5) 0%,transparent 55%)}
+.fog-layer-2{background:radial-gradient(ellipse at 30% 75%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.4) 0%,transparent 45%)}
+.fog-layer-3{background:radial-gradient(ellipse at 70% 80%,rgba(var(--fog-r),var(--fog-g),var(--fog-b),.45) 0%,transparent 50%)}
 .scroll-hint{position:absolute;bottom:30px;left:50%;translate:-50% 0;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px;font-family:var(--mono);z-index:3}
 .scroll-hint span{width:60px;height:2px;background:var(--cy);display:inline-block;animation:hint 1.4s ease-in-out infinite}
 @keyframes hint{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0)}}
@@ -467,12 +465,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   <div class="end-wrap" aria-hidden="true"><img src="img/hero.png" data-s3d alt=""></div>
 </section>
 
-<!-- Остальные секции без изменений -->
 <section class="page" id="page-portfolio">
-  <div class="page-hero">
-    <div class="ghost">portfolio</div>
-    <h1 class="page-title" data-scramble>ПОРТФОЛИО</h1>
-  </div>
+  <div class="page-hero"><div class="ghost">portfolio</div><h1 class="page-title" data-scramble>ПОРТФОЛИО</h1></div>
   <div class="wrap sec over-sec">
     <img class="over-png" src="img/golova.png" data-s3d alt="">
     <div class="panel-box" data-reveal="flip">
@@ -543,7 +537,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   </div>
 </section>
 
-<!-- Остальные страницы без изменений -->
 <section class="page" id="page-orders"><div class="page-hero"><div class="ghost">orders</div><h1 class="page-title" data-scramble>ЗАКАЗЫ</h1></div><div class="wrap sec over-sec"><img class="over-png" src="img/stand.png" data-s3d alt=""><div class="panel-box" data-reveal="flip"><h2 class="h2" data-reveal="mask">Что можно заказать</h2><p class="lead" data-reveal>Выбирай направление. Если твоей задачи нет в списке — напиши, обсудим индивидуально.</p></div></div><div class="wrap sec"><div class="cards"><div class="card" data-tilt data-reveal="left"><span class="ico">✚</span><span class="num">01</span><h3>Оформление канала / страницы</h3><p>Шапки, аватары и единый стиль для канала или страницы.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div><div class="card" data-tilt data-reveal style="--d:.1s"><span class="ico">✚</span><span class="num">02</span><h3>Решейд скина</h3><p>Переработаю скин: новые цвета, детали, аккуратные переходы.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div><div class="card" data-tilt data-reveal style="--d:.2s"><span class="ico">✚</span><span class="num">03</span><h3>Превью</h3><p>Превью для роликов, которые хочется кликнуть.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div><div class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✚</span><span class="num">04</span><h3>Сайт</h3><p>Сайт под ключ: от идеи до деплоя. С анимациями и своим стилем.</p><a href="#/order" class="btn btn-accent magnet">Заказать</a></div></div></div><div class="wrap sec"><h2 class="h2" data-reveal="mask">Как проходит заказ</h2><div class="tl"><div class="tl-line"><i></i></div><div class="tl-item"><b>01</b><h3>Заявка</h3><p>Пишешь в Telegram: что нужно, детали, желаемый бюджет.</p></div><div class="tl-item"><b>02</b><h3>Обсуждение</h3><p>Уточняем сроки и итоговую стоимость.</p></div><div class="tl-item"><b>03</b><h3>Работа</h3><p>Делаю и показываю промежуточные варианты.</p></div><div class="tl-item"><b>04</b><h3>Результат</h3><p>Получаешь файлы и исходники, если нужны.</p></div></div></div></section>
 
 <section class="page" id="page-order"><div class="wrap sec order-wrap"><h1 class="page-title" data-scramble>ОФОРМЛЕНИЕ ЗАКАЗА</h1><div class="plate" data-reveal="flip"><p>Для заказа вам нужно написать сюда: <b class="tg">@zam_fela</b>, указав вид товара, все детали, нужные при работе, и стоимость, на которую вы рассчитываете (итоговая стоимость может отличаться от той, которую вы хотите, — все это будет обговариваться в чате с продавцом).</p><a class="btn btn-accent big magnet" href="https://t.me/zam_fela" target="_blank">НАПИСАТЬ В ЛС ✚</a></div><a class="back" href="#/orders">← назад к заказам</a></div></section>
@@ -560,172 +553,12 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <div class="lb" id="lb"><button class="lb-x" aria-label="закрыть">✕</button><button class="lb-p" aria-label="назад">←</button><figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure><button class="lb-n" aria-label="вперёд">→</button></div>
 
 <script>
-// КУБ ПО СХЕМЕ IGLOO: процедурная раскладка + фаски + свет + пульсация + hover
-if(typeof THREE!=='undefined'){
-  var stage=document.getElementById('glStage');
-  if(stage){
-    try{
-      var coarse=matchMedia('(pointer:coarse)').matches;
-      var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,coarse?1.5:1.75));
-      stage.appendChild(renderer.domElement);
-      
-      var scene=new THREE.Scene();
-      var camera=new THREE.PerspectiveCamera(35,1,.1,60);
-      camera.position.set(0,.4,8);
-      
-      // Свет как в CRYO
-      scene.add(new THREE.AmbientLight(0xbfd8da,1.2));
-      var key=new THREE.DirectionalLight(0xe8f6f8,2);
-      key.position.set(4,6,3);
-      scene.add(key);
-      var rim=new THREE.DirectionalLight(0x16e0e0,1.5);
-      rim.position.set(-5,-3,-4);
-      scene.add(rim);
-      
-      var group=new THREE.Group();
-      scene.add(group);
-      
-      var S=3,N=4,GAP=.1,bw=(S-(N+1)*GAP)/N;
-      
-      // HDR ядро (×5.5 яркости)
-      var core=new THREE.Mesh(
-        new THREE.BoxGeometry(S*.78,S*.78,S*.78),
-        new THREE.MeshBasicMaterial({color:new THREE.Color(.1,3.2,3.2),toneMapped:false})
-      );
-      group.add(core);
-      
-      // PointLight внутри
-      var innerLight=new THREE.PointLight(0x16e0e0,185,6,2);
-      group.add(innerLight);
-      
-      // Кирпичи с фасками (ExtrudeGeometry для имитации RoundedBox)
-      var shape=new THREE.Shape();
-      shape.moveTo(-bw/2+.08,-bw/2);
-      shape.lineTo(bw/2-.08,-bw/2);
-      shape.quadraticCurveTo(bw/2,-bw/2,bw/2,-bw/2+.08);
-      shape.lineTo(bw/2,bw/2-.08);
-      shape.quadraticCurveTo(bw/2,bw/2,bw/2-.08,bw/2);
-      shape.lineTo(-bw/2+.08,bw/2);
-      shape.quadraticCurveTo(-bw/2,bw/2,-bw/2,bw/2-.08);
-      shape.lineTo(-bw/2,-bw/2+.08);
-      shape.quadraticCurveTo(-bw/2,-bw/2,-bw/2+.08,-bw/2);
-      
-      var geo=new THREE.ExtrudeGeometry(shape,{depth:bw,bevelEnabled:true,bevelThickness:.08,bevelSize:.08,bevelSegments:3});
-      geo.center();
-      
-      var mat=new THREE.MeshPhysicalMaterial({
-        color:0x1a2326,
-        roughness:.72,
-        metalness:0,
-        sheen:1,
-        sheenColor:0xeaf4ff,
-        sheenRoughness:.35,
-        emissive:0x7fb4ff,
-        emissiveIntensity:.12
-      });
-      
-      var bricks=[];
-      var faces=[
-        {axis:2,sign:1},{axis:2,sign:-1},
-        {axis:0,sign:1},{axis:0,sign:-1},
-        {axis:1,sign:1},{axis:1,sign:-1}
-      ];
-      
-      faces.forEach(function(face){
-        for(var i=0;i<N;i++)for(var j=0;j<N;j++){
-          var m=new THREE.Mesh(geo,mat);
-          var pos=new THREE.Vector3();
-          
-          if(face.axis===2){
-            pos.x=-S/2+GAP+bw/2+i*(bw+GAP);
-            pos.y=-S/2+GAP+bw/2+j*(bw+GAP);
-            pos.z=S/2*face.sign;
-          }else if(face.axis===1){
-            pos.x=-S/2+GAP+bw/2+i*(bw+GAP);
-            pos.y=S/2*face.sign;
-            pos.z=-S/2+GAP+bw/2+j*(bw+GAP);
-          }else{
-            pos.x=S/2*face.sign;
-            pos.y=-S/2+GAP+bw/2+i*(bw+GAP);
-            pos.z=-S/2+GAP+bw/2+j*(bw+GAP);
-          }
-          
-          m.position.copy(pos);
-          group.add(m);
-          bricks.push({m:m,base:pos.clone(),cur:0,tgt:0,ring:i,index:j,ph:Math.random()*6.283});
-        }
-      });
-      
-      function size(){
-        var w=stage.clientWidth,h=stage.clientHeight;
-        if(!w||!h)return;
-        renderer.setSize(w,h);
-        camera.aspect=w/h;
-        camera.updateProjectionMatrix();
-      }
-      size();
-      addEventListener('resize',size);
-      
-      var ndc=new THREE.Vector2(-2,-2),ray=new THREE.Raycaster();
-      var mx=0,my=0,pmx=0,pmy=0;
-      addEventListener('pointermove',function(e){
-        mx=(e.clientX/window.innerWidth-.5)*2;
-        my=(e.clientY/window.innerHeight-.5)*2;
-        var r=stage.getBoundingClientRect();
-        ndc.set(((e.clientX-r.left)/r.width)*2-1,-(((e.clientY-r.top)/r.height)*2-1));
-      });
-      
-      var clock=new THREE.Clock(),ry=0,rx=0;
-      (function frame(){
-        requestAnimationFrame(frame);
-        if(document.hidden)return;
-        var t=clock.getElapsedTime(),q=window.__sceneQ||0;
-        pmx+=(mx-pmx)*.06;
-        pmy+=(my-pmy)*.06;
-        ry+=(t*.2+pmx*.5-ry)*.08;
-        rx+=((-0.2+pmy*.3+q*1)-rx)*.08;
-        group.rotation.set(rx,ry,0);
-        group.scale.setScalar(1-q*.3);
-        renderer.domElement.style.opacity=Math.max(0,Math.min(1,1-q*1.2))+'';
-        
-        var hov=null;
-        if(!coarse&&q<.5){
-          ray.setFromCamera(ndc,camera);
-          var hit=ray.intersectObjects(bricks.map(function(b){return b.m;}),false)[0];
-          if(hit)hov=bricks.find(function(b){return b.m===hit.object;});
-        }
-        
-        for(var i=0;i<bricks.length;i++){
-          var b=bricks[i];
-          // Пульсация волной
-          var phase=(b.ring+b.index)*.55;
-          var wave=.5+.5*Math.sin(t*.9+phase);
-          var pulseLift=.2*wave;
-          
-          // Hover с Гауссовым затуханием
-          var influence=0;
-          if(hov===b){
-            influence=1;
-          }
-          var hoverLift=1.5*influence;
-          
-          var lift=pulseLift+hoverLift;
-          b.tgt=lift;
-          b.cur+=(b.tgt-b.cur)*.15;
-          
-          if(b.cur>.001){
-            var n=b.base.clone().normalize();
-            b.m.position.copy(b.base).addScaledVector(n,b.cur);
-          }
-        }
-        renderer.render(scene,camera);
-      })();
-    }catch(e){console.error('WebGL failed:',e);}
-  }
-}
-
-/* Остальной JS без изменений */
+/* ====== ПРОДОЛЖЕНИЕ В СООБЩЕНИИ 2/2 ====== */
+</script>
+</body>
+</html>
+<script>
+// Защита сайта
 (function(){
   var ALLOWED=['localhost','127.0.0.1','kladovka-fela.vercel.app'];
   var CANONICAL='https://kladovka-fela.vercel.app';
@@ -754,11 +587,154 @@ const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
+/* ====== WebGL КУБ (вдохновлён igloo.inc / CRYO) ====== */
+(function initCube(){
+  var stage=document.getElementById('glStage');
+  if(!stage||typeof THREE==='undefined'){return;}
+  try{
+    var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,coarse?1.5:1.75));
+    stage.appendChild(renderer.domElement);
+    
+    var scene=new THREE.Scene();
+    var camera=new THREE.PerspectiveCamera(45,1,.1,100);
+    camera.position.set(0,.3,7.5);
+    
+    // Свет (как в CRYO)
+    scene.add(new THREE.AmbientLight(0xbfd8da,1.5));
+    var key=new THREE.DirectionalLight(0xe8f6f8,2);
+    key.position.set(4,6,3);
+    scene.add(key);
+    var rim=new THREE.DirectionalLight(0x16e0e0,1.5);
+    rim.position.set(-5,-3,-4);
+    scene.add(rim);
+    
+    var group=new THREE.Group();
+    scene.add(group);
+    
+    var S=3,N=4,GAP=.12,bw=(S-(N+1)*GAP)/N;
+    
+    // HDR ядро (ярче белого ×3.2)
+    var core=new THREE.Mesh(
+      new THREE.BoxGeometry(S*.75,S*.75,S*.75),
+      new THREE.MeshBasicMaterial({color:new THREE.Color(.1,3.2,3.2)})
+    );
+    group.add(core);
+    
+    // PointLight внутри куба
+    var innerLight=new THREE.PointLight(0x16e0e0,60,8,2);
+    group.add(innerLight);
+    
+    // Кирпичи (BoxGeometry + материал с emissive)
+    var geo=new THREE.BoxGeometry(bw,bw,bw);
+    var mat=new THREE.MeshPhongMaterial({
+      color:0x1a2326,
+      specular:0x7fb4ff,
+      shininess:35,
+      emissive:0x16e0e0,
+      emissiveIntensity:.15
+    });
+    
+    var bricks=[];
+    var faces=[
+      {axis:2,sign:1},{axis:2,sign:-1},
+      {axis:0,sign:1},{axis:0,sign:-1},
+      {axis:1,sign:1},{axis:1,sign:-1}
+    ];
+    
+    faces.forEach(function(face){
+      for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+        var m=new THREE.Mesh(geo,mat);
+        var pos=new THREE.Vector3();
+        
+        if(face.axis===2){
+          pos.x=-S/2+GAP+bw/2+i*(bw+GAP);
+          pos.y=-S/2+GAP+bw/2+j*(bw+GAP);
+          pos.z=S/2*face.sign;
+        }else if(face.axis===1){
+          pos.x=-S/2+GAP+bw/2+i*(bw+GAP);
+          pos.y=S/2*face.sign;
+          pos.z=-S/2+GAP+bw/2+j*(bw+GAP);
+        }else{
+          pos.x=S/2*face.sign;
+          pos.y=-S/2+GAP+bw/2+i*(bw+GAP);
+          pos.z=-S/2+GAP+bw/2+j*(bw+GAP);
+        }
+        
+        m.position.copy(pos);
+        group.add(m);
+        bricks.push({m:m,base:pos.clone(),cur:0,tgt:0,ring:i,index:j,ph:Math.random()*6.283});
+      }
+    });
+    
+    function size(){
+      var w=stage.clientWidth,h=stage.clientHeight;
+      if(!w||!h)return;
+      renderer.setSize(w,h);
+      camera.aspect=w/h;
+      camera.updateProjectionMatrix();
+    }
+    size();
+    addEventListener('resize',size);
+    
+    var ndc=new THREE.Vector2(-2,-2),ray=new THREE.Raycaster();
+    var mx=0,my=0,pmx=0,pmy=0;
+    addEventListener('pointermove',function(e){
+      mx=(e.clientX/window.innerWidth-.5)*2;
+      my=(e.clientY/window.innerHeight-.5)*2;
+      var r=stage.getBoundingClientRect();
+      ndc.set(((e.clientX-r.left)/r.width)*2-1,-(((e.clientY-r.top)/r.height)*2-1));
+    });
+    
+    var clock=new THREE.Clock(),ry=0,rx=0;
+    (function frame(){
+      requestAnimationFrame(frame);
+      if(document.hidden)return;
+      var t=clock.getElapsedTime(),q=window.__sceneQ||0;
+      pmx+=(mx-pmx)*.06;
+      pmy+=(my-pmy)*.06;
+      ry+=(t*.2+pmx*.5-ry)*.08;
+      rx+=((-0.2+pmy*.3+q*1)-rx)*.08;
+      group.rotation.set(rx,ry,0);
+      group.scale.setScalar(1-q*.3);
+      renderer.domElement.style.opacity=Math.max(0,Math.min(1,1-q*1.2))+'';
+      
+      var hov=null;
+      if(!coarse&&q<.5){
+        ray.setFromCamera(ndc,camera);
+        var hit=ray.intersectObjects(bricks.map(function(b){return b.m;}),false)[0];
+        if(hit)hov=bricks.find(function(b){return b.m===hit.object;});
+      }
+      
+      for(var i=0;i<bricks.length;i++){
+        var b=bricks[i];
+        var phase=(b.ring+b.index)*.55;
+        var wave=.5+.5*Math.sin(t*.9+phase);
+        var pulseLift=.15*wave;
+        var influence=(hov===b)?1:0;
+        var hoverLift=1.2*influence;
+        var lift=pulseLift+hoverLift;
+        b.tgt=lift;
+        b.cur+=(b.tgt-b.cur)*.15;
+        if(b.cur>.001){
+          var n=b.base.clone().normalize();
+          b.m.position.copy(b.base).addScaledVector(n,b.cur);
+        }
+      }
+      renderer.render(scene,camera);
+    })();
+  }catch(e){
+    console.error('WebGL failed:',e);
+  }
+})();
+
+/* Темы */
 const tbtns=$$('.tbtn');
 function setTheme(t){if(t!=='light')t='dark';document.documentElement.dataset.theme=t;localStorage.setItem('theme',t);tbtns.forEach(b=>b.classList.toggle('on',b.dataset.set===t));}
 tbtns.forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.set)));
 setTheme(localStorage.getItem('theme')==='light'?'light':'dark');
 
+/* Роутер */
 const NAMES={'':'home',home:'home',portfolio:'portfolio',orders:'orders',order:'order',opensource:'opensource',ranta:'ranta',feedback:'feedback'};
 const routeName=()=>NAMES[location.hash.replace(/^#\/?/,'')]||'home';
 let current=null;
@@ -791,6 +767,7 @@ $$('[data-splat]').forEach(a=>a.addEventListener('click',e=>{
 
 $('#burger').addEventListener('click',()=>document.body.classList.toggle('menu-open'));
 
+/* Scramble */
 const CH='█▓▒░#/\\+✚';
 function scramble(el){
   const orig=el.dataset.orig||(el.dataset.orig=el.textContent);
@@ -823,6 +800,7 @@ for(let i=0;i<CROSS_N;i++){
   w.appendChild(s);bg.appendChild(w);
 }
 
+/* Reveal */
 const io=new IntersectionObserver(es=>es.forEach(e=>{
   const el=e.target;
   if(e.isIntersecting){
@@ -836,6 +814,7 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{
 }),{threshold:.08,rootMargin:'0px 0px -6% 0px'});
 $$('[data-reveal]').forEach(el=>io.observe(el));
 
+/* Стопка работ */
 const WORKS=$$('#workData .work').map(f=>({
   src:f.querySelector('img').src,
   cap:f.querySelector('figcaption').textContent.trim()
@@ -925,6 +904,7 @@ function autoReset(){
 }
 stackLayout();autoReset();
 
+/* Лайтбокс */
 const lb=$('#lb'),lbImg=$('#lbImg'),lbCap=$('#lbCap');
 let lbI=0;
 function lbOpen(i){
@@ -946,6 +926,7 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')lbOpen(lbI+1);
 });
 
+/* Скролл + туман */
 const sceneWrap=$('#sceneWrap'),fog=$('#fog');
 let plxEls=[],tlCache=[],s3dEls=[];
 function cacheDom(){
@@ -965,13 +946,13 @@ function update(){
     q=clamp(-r.top/(r.height-vh),0,1);
   }
   window.__sceneQ=q;
-  if(fog)fog.style.opacity=(0.5+q*0.5).toFixed(2);
+  if(fog)fog.style.opacity=(0.6+q*0.4).toFixed(2);
   for(let i=0;i<splitSpans.length;i++){
     const sp=splitSpans[i];
     sp.style.transform=`translate(${sp.dataset.dx*q*160}px,${sp.dataset.dy*q*160}px) rotate(${sp.dataset.dr*q*60}deg)`;
     sp.style.opacity=1-q*.9;
   }
-    for(let i=0;i<plxEls.length;i++){
+  for(let i=0;i<plxEls.length;i++){
     plxEls[i].style.transform=`translateY(${y*parseFloat(plxEls[i].dataset.plx)}px)`;
   }
   for(let i=0;i<s3dEls.length;i++){
@@ -992,6 +973,7 @@ function update(){
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update);}});
 
+/* Голова */
 const HEAD_BASE=600;
 let hx=null,hy=null,hs=null,ho=0,vel=0,lastLoopY=scrollY;
 function headTarget(){
@@ -1022,6 +1004,7 @@ function headTarget(){
   requestAnimationFrame(loop);
 })(performance.now());
 
+/* Эффекты на карточках */
 $$('.card').forEach(el=>{
   el.addEventListener('mousemove',e=>{
     const r=el.getBoundingClientRect();
@@ -1054,26 +1037,31 @@ document.addEventListener('click',e=>{
   b.appendChild(s);setTimeout(()=>s.remove(),600);
 });
 
+/* ====== ЛОАДЕР (с защитой от зависания) ====== */
 activate(routeName());
 update();
-let ldLoaded=false,ldCounted=false;
+let ldLoaded=false,ldCounted=false,ldFinished=false;
 function ldFinish(){
-  if(!(ldLoaded&&ldCounted))return;
+  if(ldFinished)return;
+  ldFinished=true;
   const l=$('#loader');
   if(l){l.classList.add('done');setTimeout(()=>l.remove(),900);}
   requestAnimationFrame(()=>wipe.classList.add('off'));
 }
-addEventListener('load',()=>{ldLoaded=true;ldFinish();});
+// Защита: если за 4 секунды не загрузилось — принудительно закрываем лоадер
+setTimeout(ldFinish,4000);
+addEventListener('load',()=>{ldLoaded=true;if(ldCounted)ldFinish();});
 (function(){
   const el=$('#ldCount'),bar=$('#ldBar');
-  if(!el){ldCounted=true;ldFinish();return;}
+  if(!el){ldCounted=true;if(ldLoaded)ldFinish();return;}
   const t0=performance.now(),dur=1600;
   (function f(now){
+    if(ldFinished)return;
     const p=clamp((now-t0)/dur,0,1),e=1-Math.pow(1-p,3);
     el.textContent=String(Math.round(e*100)).padStart(3,'0');
     if(bar)bar.style.transform=`scaleX(${e})`;
     if(p<1)requestAnimationFrame(f);
-    else{ldCounted=true;ldFinish();}
+    else{ldCounted=true;if(ldLoaded)ldFinish();}
   })(t0);
 })();
 </script>
