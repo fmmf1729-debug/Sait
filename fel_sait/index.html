@@ -21,6 +21,7 @@
   --crossA:rgba(255,255,255,.12); --crossB:rgba(0,0,0,.4); --crossC:rgba(22,224,224,.28);
   --glowbg:rgba(22,224,224,.10);
   --ghost-shine:rgba(22,224,224,.28);
+  --fog1:rgba(238,244,244,.55); --fog2:rgba(238,244,244,.4);
   --fd:'Unbounded',sans-serif; --fb:'Rubik',sans-serif; --mono:'JetBrains Mono',monospace;
 }
 [data-theme="light"]{
@@ -32,6 +33,7 @@
   --crossA:rgba(0,0,0,.10); --crossB:rgba(0,0,0,.18); --crossC:rgba(0,191,201,.30);
   --glowbg:rgba(0,191,201,.08);
   --ghost-shine:rgba(0,191,201,.30);
+  --fog1:rgba(255,255,255,.7); --fog2:rgba(255,255,255,.55);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -93,7 +95,7 @@ a{color:inherit;text-decoration:none}
 .crossw.c .cross{filter:drop-shadow(0 0 12px rgba(22,224,224,.4))}
 @keyframes floaty{from{transform:rotate(var(--r)) translateY(0)}to{transform:rotate(calc(var(--r) + 20deg)) translateY(-30px)}}
 
-#head{position:fixed;left:0;top:0;width:600px;max-width:none;transform-origin:top left;z-index:60;pointer-events:none;will-change:transform}
+#head{position:fixed;left:0;top:0;width:600px;max-width:none;transform-origin:top left;z-index:60;pointer-events:none;will-change:transform;opacity:0}
 
 .hdr{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:14px;
   padding:12px 22px;padding-right:max(22px,env(safe-area-inset-right));
@@ -140,15 +142,42 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .page.active .page-title{animation:titlein .7s cubic-bezier(.2,.8,.2,1)}
 @keyframes titlein{from{opacity:0;transform:translateY(26px);letter-spacing:.25em}}
 
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 8vw 80px;z-index:2}
-.hero-letters{position:absolute;top:6%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
-.hero-title{font-family:var(--fd);font-weight:900;font-size:clamp(3rem,12vw,9rem);line-height:.95;text-transform:uppercase;position:relative;z-index:1}
-.hero-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
-.hero-sub{margin-top:28px;color:var(--muted);font-size:clamp(.9rem,2vw,1.2rem);letter-spacing:.15em;text-transform:uppercase;position:relative;z-index:1}
-.hero-actions{display:flex;gap:18px;margin-top:34px;flex-wrap:wrap;position:relative;z-index:1}
-.scroll-hint{position:absolute;bottom:34px;left:8vw;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px;font-family:var(--mono)}
+/* ===== СЦЕНА КАК НА IGLOO.INC: куб из кирпичей + туман ===== */
+.scene-wrap{height:230vh;position:relative;z-index:2}
+.scene{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.hero-letters{position:absolute;top:4%;left:-2%;font-family:var(--fd);font-weight:900;font-size:38vw;line-height:1;color:transparent;-webkit-text-stroke:2px var(--stroke);pointer-events:none;user-select:none}
+.scene-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.6rem,10vw,8rem);line-height:.95;text-transform:uppercase;position:relative;z-index:3;text-align:center}
+.scene-title span{display:inline-block;will-change:transform,opacity;text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2)}
+.cube-stage{--cs:min(58vw,430px);width:var(--cs);height:var(--cs);perspective:1400px;position:relative;z-index:2;margin-top:10px}
+.cube{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.face{--half:calc(var(--cs)/2);position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:5px;padding:5px;
+  background:radial-gradient(circle at 50% 50%,rgba(22,224,224,.75),rgba(22,224,224,.25) 65%,rgba(22,224,224,.12));
+  box-shadow:0 0 40px rgba(22,224,224,.25)}
+.f-front {transform:rotateY(0deg) translateZ(var(--half))}
+.f-back  {transform:rotateY(180deg) translateZ(var(--half))}
+.f-right {transform:rotateY(90deg) translateZ(var(--half))}
+.f-left  {transform:rotateY(-90deg) translateZ(var(--half))}
+.f-top   {transform:rotateX(90deg) translateZ(var(--half))}
+.f-bottom{transform:rotateX(-90deg) translateZ(var(--half))}
+.cbrick{background:linear-gradient(180deg,#272e31,#14191b);border-radius:5px;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 -3px 0 rgba(0,0,0,.5);
+  transform:translateZ(0);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+.cbrick:hover,.cbrick:active{transform:translateZ(30px);
+  box-shadow:0 0 20px var(--glow),inset 0 2px 0 rgba(255,255,255,.12),inset 0 -3px 0 rgba(0,0,0,.5)}
+[data-theme="light"] .cbrick{background:linear-gradient(180deg,#ffffff,#dfe7e7);box-shadow:inset 0 2px 0 rgba(255,255,255,.9),inset 0 -3px 0 rgba(0,0,0,.15)}
+/* туман-переход */
+.fog{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
+  background:
+   radial-gradient(55% 42% at 30% 58%,var(--fog1),transparent 70%),
+   radial-gradient(48% 40% at 72% 62%,var(--fog2),transparent 72%),
+   radial-gradient(70% 55% at 50% 70%,var(--fog2),transparent 75%),
+   linear-gradient(180deg,transparent 0%,var(--bg) 92%)}
+.scroll-hint{position:absolute;bottom:30px;left:50%;translate:-50% 0;font-size:.75rem;letter-spacing:.3em;color:var(--muted);display:flex;align-items:center;gap:10px;font-family:var(--mono);z-index:3}
 .scroll-hint span{width:60px;height:2px;background:var(--cy);display:inline-block;animation:hint 1.4s ease-in-out infinite}
 @keyframes hint{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+
+.hero-sub{color:var(--muted);font-size:clamp(.9rem,2vw,1.2rem);letter-spacing:.15em;text-transform:uppercase}
+.hero-actions{display:flex;gap:18px;margin-top:26px;flex-wrap:wrap}
 
 .page-hero{position:relative;padding:150px 8vw 30px;z-index:2;overflow:hidden}
 .page-title{font-family:var(--fd);font-weight:900;font-size:clamp(2.2rem,8vw,6rem);text-transform:uppercase;text-shadow:4px 4px 0 var(--sh1),8px 8px 0 var(--sh2);position:relative;z-index:1}
@@ -231,39 +260,21 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .tl-item h3{font-family:var(--fd);text-transform:uppercase;margin:8px 0 6px;font-size:1.05rem}
 .tl-item p{color:var(--muted);line-height:1.6}
 
-/* ===== КАРТОЧКИ ===== */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:22px;margin-top:34px}
 .cards.proj{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
-.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;background:var(--panel);border:2px solid var(--line);padding:26px;transition:border-color .3s,box-shadow .3s,translate .3s,background .3s;transform-style:preserve-3d;will-change:transform}
-.card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -6px;z-index:6;
-  background:color-mix(in srgb,var(--cy) 22%,var(--panel))}
+.card{position:relative;display:flex;flex-direction:column;align-items:flex-start;background:var(--panel);border:2px solid var(--line);padding:26px;transition:border-color .3s,box-shadow .3s,translate .3s;transform-style:preserve-3d;will-change:transform}
+.card>*{position:relative;z-index:1}
+.card::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),var(--glowbg),transparent 70%);opacity:0;transition:opacity .3s}
+.card:hover::after{opacity:1}
+.card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -6px;z-index:6}
 .card .ico{font-size:1.5rem;color:var(--muted);display:inline-block;transition:.3s;margin-bottom:6px}
+.card:hover .ico{color:var(--cy);text-shadow:var(--glow)}
 .card .num{font-family:var(--mono);color:var(--cy);font-size:.8rem;letter-spacing:.2em}
 .card h3{font-family:var(--fd);font-weight:700;text-transform:uppercase;margin:10px 0 10px;font-size:1.05rem}
 .card p{color:var(--muted);line-height:1.6;font-size:.95rem;margin-bottom:16px;flex:1}
 .card .go{position:absolute;right:18px;top:18px;font-size:1.3rem;transition:.3s}
-.card:hover .go{color:var(--cy)}
-
-/* ===== КИРПИЧНЫЙ ПААЗЛ: текст напечатан на кирпичах ===== */
-.master{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:inherit;width:100%;transition:opacity .3s}
-.card:hover>.master,.card.bricked>.master{opacity:0}
-.bricks{position:absolute;inset:0;z-index:2;pointer-events:none;transform-style:preserve-3d;opacity:0;transition:opacity .35s}
-.card:hover .bricks,.card.bricked .bricks{opacity:1}
-.bricks *{pointer-events:none}
-.brick{position:absolute;border-radius:9px;overflow:hidden;background:var(--panel);
-  transform:translateZ(0);
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.06),inset 0 -3px 0 rgba(0,0,0,.4),inset 0 0 0 2px color-mix(in srgb,var(--line) 80%,transparent);
-  transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .4s;
-  transition-delay:var(--bd),var(--bd)}
-.card:hover .brick,.card.bricked .brick{
-  transform:translateZ(var(--bz));
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 -3px 0 rgba(0,0,0,.45),0 0 14px var(--glowbg),inset 0 0 0 2px color-mix(in srgb,var(--cy) 45%,var(--line))}
-.card:hover .brick.hot,.card.bricked .brick.hot{
-  transform:translateZ(48px);
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.1),inset 0 -4px 0 rgba(0,0,0,.5),0 0 24px var(--glow),inset 0 0 0 2px var(--cy);
-  transition-delay:0s,0s}
-.skin{position:absolute;left:var(--ox,0);top:var(--oy,0);width:var(--cw,100%);height:var(--ch,100%);
-  display:flex;flex-direction:column;align-items:flex-start;gap:inherit}
+.card:hover .go{color:var(--cy);transform:translateX(8px) scale(1.2)}
 
 .btn{position:relative;z-index:1;display:inline-block;overflow:hidden;background:#000;color:#fff;border:3px solid #000;padding:14px 26px;font-family:var(--fd);font-weight:700;text-transform:uppercase;font-size:.85rem;letter-spacing:.08em;cursor:pointer;box-shadow:6px 6px 0 var(--btnsh);transition:translate .2s,box-shadow .2s;touch-action:manipulation}
 .btn::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;
@@ -279,15 +290,14 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 @keyframes rip{to{transform:scale(4);opacity:0}}
 
 .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:16px;margin-top:30px}
-.link-card{position:relative;background:var(--panel);border:2px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:6px;transition:border-color .25s,box-shadow .25s,translate .25s,background .3s;transform-style:preserve-3d;will-change:transform}
-.link-card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -4px;z-index:6;
-  background:color-mix(in srgb,var(--cy) 22%,var(--panel))}
+.link-card{position:relative;background:var(--panel);border:2px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:6px;transition:border-color .25s,box-shadow .25s,translate .25s;transform-style:preserve-3d;will-change:transform}
 .link-card .lic{width:28px;height:28px;margin-bottom:6px;transition:transform .3s}
 .link-card .lic .a{fill:var(--cy)}
 .link-card b{font-family:var(--fd);font-size:1rem}
 .link-card span{color:var(--muted);font-size:.8rem;font-family:var(--mono)}
 .link-card i{position:absolute;right:16px;top:16px;font-style:normal;transition:.25s;font-family:var(--mono)}
-.link-card:hover i{color:var(--cy)}
+.link-card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -4px;z-index:6}
+.link-card:hover i{color:var(--cy);transform:translate(4px,-4px) rotate(45deg)}
 
 .ava-strip{display:flex;align-items:center;gap:14px;color:var(--muted);flex-wrap:wrap;font-family:var(--mono);font-size:.8rem}
 .ava-strip img{position:relative;width:64px;height:64px;object-fit:cover;border:3px solid #000;box-shadow:4px 4px 0 rgba(22,224,224,.7);transition:.25s}
@@ -329,9 +339,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .hdr-cta{display:none}
   .wrap{padding:0 20px}
   .sec{padding:46px 0}
-  .hero{padding:110px 6vw 70px;align-items:center;text-align:center}
   .hero-actions{justify-content:center}
-  .scroll-hint{left:50%;translate:-50% 0}
   .h2{text-align:center}
   .lead{text-align:center;margin-left:auto;margin-right:auto}
   .note{text-align:center}
@@ -363,6 +371,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .ava-strip img{width:56px;height:56px}
   .ftr{padding:18px 6vw;justify-content:center;text-align:center}
   .menu{padding:8vh 8vw}
+  .cube-stage{--cs:min(74vw,430px)}
 }
 @media(pointer:coarse){
   .hdr{backdrop-filter:none;background:var(--bg)}
@@ -374,8 +383,9 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .tl-line i{transform:scaleY(1)!important}
   .stack-slot{opacity:1;transform:translate(-50%,-50%)}
   #loader{display:none}
-  .bricks{display:none}
-  .master{opacity:1!important}
+  .scene-wrap{height:auto}
+  .scene{position:relative;height:auto;padding:120px 6vw 60px}
+  .fog{display:none}
 }
 </style>
 </head>
@@ -424,16 +434,27 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 <main>
 <!-- ГЛАВНАЯ -->
 <section class="page active" id="page-home">
-  <div class="hero">
-    <div class="hero-letters" data-plx="0.1">FEL</div>
-    <h1 class="hero-title" id="splitTitle">FEL_IKS</h1>
+
+  <!-- СЦЕНА: куб как на igloo.inc -->
+  <div class="scene-wrap" id="sceneWrap">
+    <div class="scene">
+      <div class="hero-letters">FEL</div>
+      <h1 class="scene-title" id="splitTitle">FEL_IKS</h1>
+      <div class="cube-stage"><div class="cube" id="cube"></div></div>
+      <div class="fog" id="fog"></div>
+      <div class="scroll-hint">scroll<span></span></div>
+    </div>
+  </div>
+
+  <!-- после тумана — старая главная -->
+  <div class="wrap sec" style="padding-top:50px;text-align:center">
     <p class="hero-sub" data-reveal>ролики · стримы · разработка · скины</p>
-    <div class="hero-actions" data-reveal style="--d:.15s">
+    <div class="hero-actions" data-reveal style="--d:.1s;justify-content:center">
       <a href="#/portfolio" class="btn btn-accent magnet">Смотреть работы</a>
       <a href="#/opensource" class="btn magnet">Открытые проекты</a>
     </div>
-    <div class="scroll-hint">scroll<span></span></div>
   </div>
+
   <div class="marquee" data-reveal><div class="track">
     <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚ RANTA &nbsp;</span>
     <span>СКИНЫ ✚ ПРЕВЬЮ ✚ ОФОРМЛЕНИЕ ✚ САЙТЫ ✚ СОФТ ✚ СТРИМЫ ✚ RANTA &nbsp;</span>
@@ -754,6 +775,7 @@ const title=$('#splitTitle');
   const t=title.textContent.trim();title.setAttribute('aria-label',t);
   title.innerHTML=[...t].map(c=>`<span data-dx="${(Math.random()*2-1).toFixed(2)}" data-dy="${(Math.random()*2-1).toFixed(2)}" data-dr="${(Math.random()*2-1).toFixed(2)}">${c}</span>`).join('');
 }
+const splitSpans=$$('#splitTitle span');
 
 /* кресты */
 const bg=$('#bg');
@@ -782,71 +804,25 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{
 }),{threshold:.08,rootMargin:'0px 0px -6% 0px'});
 $$('[data-reveal]').forEach(el=>io.observe(el));
 
-/* ===== КИРПИЧНЫЙ ПАЗЛ (как у igloo.inc, но в нашем цвете) =====
-   Карточка разрезается на 12 кирпичей; каждый кирпич несёт свой
-   кусок контента — текст выглядит напечатанным прямо на кирпичах. */
-const brickCards=[];
-const BASE=[8,12,8,10,14,8,12,8,10,14,8,12];
-function brickify(card){
-  const master=document.createElement('div');master.className='master';
-  [...card.children].forEach(ch=>master.appendChild(ch));
-  card.appendChild(master);
-  const wrap=document.createElement('div');wrap.className='bricks';
-  const cols=4,rows=3,gx=3,gy=3.4;
-  const cw=(100-gx*(cols-1))/cols,chh=(100-gy*(rows-1))/rows;
-  const bricks=[];
-  let k=0;
-  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-    const b=document.createElement('i');b.className='brick';
-    b.style.cssText=`left:${(c*(cw+gx)).toFixed(2)}%;top:${(r*(chh+gy)).toFixed(2)}%;width:${cw.toFixed(2)}%;height:${chh.toFixed(2)}%;--bz:${BASE[k]}px;--bd:${(k*0.02).toFixed(2)}s`;
-    const skin=document.createElement('div');skin.className='skin';
-    skin.innerHTML=master.innerHTML;
-    b.appendChild(skin);wrap.appendChild(b);bricks.push(b);k++;
-  }
-  card.appendChild(wrap);
-  const pad=getComputedStyle(card).padding;
-  const sizeSkins=()=>{
-    card.style.setProperty('--cw',card.clientWidth+'px');
-    card.style.setProperty('--ch',card.clientHeight+'px');
-    bricks.forEach(b=>{
-      b.style.setProperty('--ox',(-b.offsetLeft)+'px');
-      b.style.setProperty('--oy',(-b.offsetTop)+'px');
-      b.querySelector('.skin').style.padding=pad;
-    });
-  };
-  sizeSkins();
-  brickCards.push(sizeSkins);
-  /* какой кирпич под курсором — тот выдвигается */
-  card.addEventListener('mousemove',e=>{
-    const r=card.getBoundingClientRect();
-    const x=(e.clientX-r.left)/r.width*100,y=(e.clientY-r.top)/r.height*100;
-    const cellW=cw+gx,cellH=chh+gy;
-    const ci=clamp(Math.floor(x/cellW),0,cols-1),ri=clamp(Math.floor(y/cellH),0,rows-1);
-    const idx=ri*cols+ci;
-    bricks.forEach((b,i)=>b.classList.toggle('hot',i===idx));
+/* ===== КУБ ИЗ КИРПИЧЕЙ (как иглу на igloo.inc) ===== */
+const cube=$('#cube');
+if(cube){
+  const faces=['f-front','f-back','f-right','f-left','f-top','f-bottom'];
+  faces.forEach(f=>{
+    const fEl=document.createElement('div');fEl.className='face '+f;
+    for(let i=0;i<16;i++){
+      const b=document.createElement('i');b.className='cbrick';
+      fEl.appendChild(b);
+    }
+    cube.appendChild(fEl);
   });
-  card.addEventListener('mouseleave',()=>bricks.forEach(b=>b.classList.remove('hot')));
-  /* на телефонах тап по карточке (кроме кнопок) включает кирпичи */
-  if(coarse){
-    card.addEventListener('click',e=>{
-      if(e.target.closest('a,button'))return;
-      card.classList.toggle('bricked');
-    },true);
-  }
 }
-$$('.card,.link-card').forEach(brickify);
-addEventListener('resize',()=>brickCards.forEach(f=>f()));
-addEventListener('load',()=>brickCards.forEach(f=>f()));
 
-/* плавный 3D-тилт */
-const tiltEls=$$('[data-tilt]').map(el=>({el,rx:0,ry:0,tx:0,ty:0}));
-tiltEls.forEach(o=>{
-  o.el.addEventListener('mousemove',e=>{
-    const r=o.el.getBoundingClientRect();
-    o.ty=((e.clientX-r.left)/r.width-.5)*16;
-    o.tx=-((e.clientY-r.top)/r.height-.5)*12;
-  });
-  o.el.addEventListener('mouseleave',()=>{o.tx=0;o.ty=0;});
+/* мышь для куба */
+let mx=0,my=0,mtx=0,mty=0;
+addEventListener('mousemove',e=>{
+  mtx=(e.clientX/innerWidth-.5)*2;
+  mty=(e.clientY/innerHeight-.5)*2;
 });
 
 /* ===== СТОПКА РАБОТ ===== */
@@ -961,20 +937,33 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')lbOpen(lbI+1);
 });
 
-/* скролл-эффекты + 3D-вертелки */
-let plxEls=[],splitSpans=[],tlCache=[],s3dEls=[];
+/* скролл-эффекты: туман, куб, голова, вертелки */
+const sceneWrap=$('#sceneWrap'),fog=$('#fog');
+let plxEls=[],tlCache=[],s3dEls=[];
 function cacheDom(){
   plxEls=$$('[data-plx]');
-  splitSpans=$$('#splitTitle span');
   tlCache=$$('.tl').map(tl=>({el:tl,line:tl.querySelector('.tl-line i'),items:$$('.tl-item',tl)}));
   s3dEls=$$('[data-s3d]');
 }
 cacheDom();
-let tick=false,lastY=0;
+let tick=false,lastY=0,sceneQ=0;
 function update(){
   tick=false;const y=scrollY,vw=innerWidth,vh=innerHeight;
   const docH=document.documentElement.scrollHeight-vh;
   progress.style.transform=`scaleX(${docH?y/docH:0})`;
+  /* прогресс сцены (туман) */
+  sceneQ=0;
+  if(current==='home'&&sceneWrap){
+    const r=sceneWrap.getBoundingClientRect();
+    sceneQ=clamp(-r.top/(r.height-vh),0,1);
+  }
+  if(fog)fog.style.opacity=clamp(sceneQ*1.25,0,1).toFixed(2);
+  /* разлёт заголовка по туману */
+  for(let i=0;i<splitSpans.length;i++){
+    const sp=splitSpans[i];
+    sp.style.transform=`translate(${sp.dataset.dx*sceneQ*160}px,${sp.dataset.dy*sceneQ*160}px) rotate(${sp.dataset.dr*sceneQ*60}deg)`;
+    sp.style.opacity=1-sceneQ*.9;
+  }
   for(let i=0;i<plxEls.length;i++){
     plxEls[i].style.transform=`translateY(${y*parseFloat(plxEls[i].dataset.plx)}px)`;
   }
@@ -983,12 +972,6 @@ function update(){
     if(r.bottom<-250||r.top>vh+250)continue;
     const c=(r.top+r.height/2-vh/2)/vh;
     el.style.transform=`perspective(900px) rotateY(${(c*-26).toFixed(2)}deg) rotateX(${(c*10).toFixed(2)}deg)`;
-  }
-  const t=clamp(y/(vh*.7),0,1);
-  for(let i=0;i<splitSpans.length;i++){
-    const sp=splitSpans[i];
-    sp.style.transform=`translate(${sp.dataset.dx*t*160}px,${sp.dataset.dy*t*160}px) rotate(${sp.dataset.dr*t*60}deg)`;
-    sp.style.opacity=1-t*.85;
   }
   lastY=y;
   for(let i=0;i<tlCache.length;i++){
@@ -1002,38 +985,70 @@ function update(){
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update);}});
 
-/* голова + тильт в одном цикле */
+/* голова + куб в одном цикле */
 const HEAD_BASE=600;
-let hx=null,hy=null,hs=null,vel=0,lastLoopY=scrollY;
+let hx=null,hy=null,hs=null,ho=0,vel=0,lastLoopY=scrollY;
+let crx=-16,cry=0;
 function headTarget(){
   const y=scrollY,vw=innerWidth,vh=innerHeight;
-  const p=current==='home'?clamp(y/(vh*.9),0,1):1;
-  const e=p*p*(3-2*p);
-  const big=Math.min(vh*.62,vw*.55,620);
+  if(current==='home'){
+    /* голова появляется из тумана и уходит в угол */
+    const e2=clamp((sceneQ-0.35)/0.65,0,1);
+    const e=e2*e2*(3-2*e2);
+    const big=Math.min(vh*.62,vw*.55,620);
+    const small=clamp(vw*.15,86,128);
+    return {
+      x:lerp(vw-big-vw*.06,vw-small-18,e),
+      y:lerp(vh*.14,vh-small-20,e),
+      size:lerp(big,small,e),
+      op:clamp((sceneQ-0.3)*4,0,1)
+    };
+  }
   const small=clamp(vw*.15,86,128);
-  return {x:lerp(vw-big-vw*.06,vw-small-18,e),y:lerp(vh*.14,vh-small-20,e),size:lerp(big,small,e)};
+  return {x:vw-small-18,y:vh-small-20,size:small,op:1};
 }
 (function loop(now){
+  /* куб крутится за курсором + медленное вращение + уходит в туман */
+  if(cube){
+    mx=lerp(mx,mtx,.06);my=lerp(my,mty,.06);
+    crx=-14+my*-14;
+    cry=now*0.012+mx*30;
+    const s=1-sceneQ*.3;
+    cube.style.transform=`rotateX(${crx.toFixed(2)}deg) rotateY(${cry.toFixed(2)}deg) scale(${s.toFixed(3)}) translateY(${(sceneQ*-8).toFixed(1)}%)`;
+  }
   if(head){
     const t=headTarget();
-    if(hx===null){hx=t.x;hy=t.y;hs=t.size;}
+    if(hx===null){hx=t.x;hy=t.y;hs=t.size;ho=t.op;}
     const k=reduced?1:0.09;
-    hx=lerp(hx,t.x,k);hy=lerp(hy,t.y,k);hs=lerp(hs,t.size,k);
+    hx=lerp(hx,t.x,k);hy=lerp(hy,t.y,k);hs=lerp(hs,t.size,k);ho=lerp(ho,t.op,.12);
     const raw=scrollY-lastLoopY;lastLoopY=scrollY;
     vel=lerp(vel,clamp(raw*.2,-9,9),.08);
     const sm=hs<200?1:.25;
     const bob=reduced?0:Math.sin(now*.0016)*7*sm;
     const rot=reduced?0:Math.sin(now*.0011)*3*sm+vel*.6;
+    head.style.opacity=ho.toFixed(2);
     head.style.transform=`translate(${clamp(hx,6,innerWidth-hs-6)}px,${clamp(hy+bob,70,innerHeight-hs-8)}px) rotate(${rot}deg) scale(${hs/HEAD_BASE})`;
-  }
-  for(let i=0;i<tiltEls.length;i++){
-    const o=tiltEls[i];
-    o.rx=lerp(o.rx,o.tx,.12);o.ry=lerp(o.ry,o.ty,.12);
-    o.el.style.transform=`perspective(900px) rotateX(${o.rx.toFixed(2)}deg) rotateY(${o.ry.toFixed(2)}deg)`;
   }
   requestAnimationFrame(loop);
 })(performance.now());
 
+/* прожектор на карточках */
+$$('.card').forEach(el=>{
+  el.addEventListener('mousemove',e=>{
+    const r=el.getBoundingClientRect();
+    el.style.setProperty('--mx',(e.clientX-r.left)+'px');
+    el.style.setProperty('--my',(e.clientY-r.top)+'px');
+  });
+});
+/* тильт */
+$$('[data-tilt]').forEach(el=>{
+  el.addEventListener('mousemove',e=>{
+    const r=el.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5,yy=(e.clientY-r.top)/r.height-.5;
+    el.style.transform=`perspective(700px) rotateX(${yy*-6}deg) rotateY(${x*6}deg)`;
+  });
+  el.addEventListener('mouseleave',()=>el.style.transform='');
+});
 /* магнит */
 $$('.magnet').forEach(el=>{
   el.addEventListener('mousemove',e=>{
