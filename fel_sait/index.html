@@ -49,25 +49,25 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
-/* ===== INTRO ===== */
-#igloo-intro{position:fixed;inset:0;z-index:9999;background:var(--bg);transition:opacity 1s cubic-bezier(.4,0,.2,1),visibility 1s}
+/* ===== INTRO (стиль igloo: светлая снежная сцена) ===== */
+#igloo-intro{position:fixed;inset:0;z-index:9999;background:#A0A5B1;transition:opacity 1s cubic-bezier(.4,0,.2,1),visibility 1s}
 #igloo-intro.gone{opacity:0;visibility:hidden;pointer-events:none}
 #igloo-intro canvas{position:absolute;inset:0;display:block}
 #ascii-loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;transition:opacity .6s}
 #ascii-loader.hide{opacity:0}
-#ascii-loader::before{content:'-===+++===-';font-family:var(--mono);color:var(--cy);font-size:18px;font-weight:700;letter-spacing:.1em;text-shadow:0 0 10px rgba(22,224,224,.5);animation:ascii 1.2s steps(1) infinite}
+#ascii-loader::before{content:'-===+++===-';font-family:var(--mono);color:#3d4654;font-size:18px;font-weight:700;letter-spacing:.1em;animation:ascii 1.2s steps(1) infinite}
 @keyframes ascii{0%{content:'-===+++==='}10%{content:'===+++==='}20%{content:'==+++==='}30%{content:'=+++==='}40%{content:'+++==='}50%{content:'++==='}60%{content:'+==='}70%{content:'==='}80%{content:'==='}85%{content:'+=='}90%{content:'++=='}95%{content:'+++=='}100%{content:'-===+++==='}}
 .intro-ui{position:absolute;inset:0;z-index:5;pointer-events:none;font-family:var(--mono)}
 .intro-ui>*{opacity:0;animation:uiIn .9s forwards}
 .iu-logo{position:absolute;top:38px;left:40px;animation-delay:.9s!important}
-.iu-logo .lg{font-family:var(--fd);font-weight:900;font-size:2.2rem;letter-spacing:.08em;color:var(--txt)}
-.iu-logo .cp{margin-top:10px;font-size:.68rem;color:var(--muted)}
-.iu-logo .rt{margin-top:14px;font-size:.68rem;color:var(--muted);line-height:1.7}
-.iu-manifesto{position:absolute;top:40px;right:40px;max-width:300px;text-align:right;font-size:.72rem;line-height:1.9;color:var(--muted);animation-delay:1.2s!important}
-.iu-manifesto b{display:block;color:var(--txt);margin-bottom:10px}
-.iu-bottom{position:absolute;left:40px;bottom:36px;font-size:.7rem;color:var(--muted);line-height:2;animation-delay:1.5s!important}
-.iu-sound{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--muted)}
-.iu-sound:hover{color:var(--cy)}
+.iu-logo .lg{font-family:var(--fd);font-weight:900;font-size:2.2rem;letter-spacing:.08em;color:#fff;text-shadow:0 2px 12px rgba(60,70,90,.35)}
+.iu-logo .cp{margin-top:10px;font-size:.68rem;color:rgba(255,255,255,.8)}
+.iu-logo .rt{margin-top:14px;font-size:.68rem;color:rgba(255,255,255,.8);line-height:1.7}
+.iu-manifesto{position:absolute;top:40px;right:40px;max-width:300px;text-align:right;font-size:.72rem;line-height:1.9;color:rgba(255,255,255,.85);animation-delay:1.2s!important}
+.iu-manifesto b{display:block;color:#fff;margin-bottom:10px}
+.iu-bottom{position:absolute;left:40px;bottom:36px;font-size:.7rem;color:rgba(255,255,255,.85);line-height:2;animation-delay:1.5s!important}
+.iu-sound{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:8px;margin-top:10px;color:rgba(255,255,255,.85)}
+.iu-sound:hover{color:#fff}
 .iu-sound svg{width:14px;height:14px;fill:currentColor}
 @keyframes uiIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(max-width:800px){
@@ -364,7 +364,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 </head>
 <body class="intro-locked">
 
-<!-- ===== INTRO: интерактивный куб из блоков (механика igloo) ===== -->
+<!-- ===== INTRO: снежная сцена с кубом из блоков (стиль igloo) ===== -->
 <div id="igloo-intro">
   <div id="ascii-loader"></div>
   <div class="intro-ui">
@@ -681,57 +681,56 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 })();
 
 /* =========================================================
-   INTRO — интерактив как на igloo: блоки подлетают к мыши,
-   номера + плексус-линии, внутреннее свечение, снег, туман
+   INTRO — снежная сцена как в ролике igloo:
+   светлый фон #A0A5B1, куб из блоков, белые светящиеся щели,
+   номера + линии, блоки подлетают к мыши, скролл = вход
 ========================================================= */
 (function(){
   const overlay=document.getElementById('igloo-intro');
-  if(!overlay||!window.THREE)return;
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const coarse=matchMedia('(pointer:coarse)').matches;
-  const isDark=document.documentElement.dataset.theme!=='light';
-  const BG=isDark?0x0a0d0f:0xdfe6e8;
-  const CY=0x9ff5f5;
-  const sm01=v=>v*v*(3-2*v);
-  const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
-
-  const scene=new THREE.Scene();
-  scene.fog=new THREE.FogExp2(BG,0.05);
-  const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,300);
-  const renderer=new THREE.WebGLRenderer({antialias:true});
+  if(!overlay)return;
+  const unlock=()=>{document.body.classList.remove('intro-locked');};
+  if(!window.THREE){overlay.remove();unlock();return;}
+  let renderer;
+  try{
+    renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+  }catch(e){overlay.remove();unlock();return;}
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.setSize(innerWidth,innerHeight);
-  renderer.setClearColor(BG,1);
+  renderer.setClearColor(0xA0A5B1,1);
   overlay.insertBefore(renderer.domElement,overlay.firstChild);
 
-  scene.add(new THREE.AmbientLight(0xffffff,.55));
-  const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(6,10,4);scene.add(dl);
+  const scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0xA0A5B1,0.028);
+  const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,300);
 
-  /* terrain */
-  const tGeo=new THREE.PlaneGeometry(160,160,110,110);
+  scene.add(new THREE.AmbientLight(0xffffff,.85));
+  const dl=new THREE.DirectionalLight(0xffffff,1.1);dl.position.set(5,9,4);scene.add(dl);
+
+  /* terrain — снежные холмы */
+  const tGeo=new THREE.PlaneGeometry(160,160,96,96);
   const tp=tGeo.attributes.position;
   for(let i=0;i<tp.count;i++){
     const x=tp.getX(i),y=tp.getY(i);
     const d=Math.sqrt(x*x+y*y);
-    let h=Math.sin(x*.09)*Math.cos(y*.08)*1.4+Math.sin(x*.23+y*.17)*.5+Math.sin(x*.7)*Math.cos(y*.6)*.15;
-    h+=Math.max(0,4.5-d*.5)*.55; /* холм под кубом */
+    let h=Math.sin(x*.07)*Math.cos(y*.06)*2.2+Math.sin(x*.19+y*.15)*.8+Math.sin(x*.6)*Math.cos(y*.5)*.2;
+    h+=Math.max(0,5-d*.45)*.8;
     tp.setZ(i,h);
   }
   tGeo.computeVertexNormals();
-  const terrain=new THREE.Mesh(tGeo,new THREE.MeshStandardMaterial({color:isDark?0x151b20:0xcfd6da,roughness:.95,metalness:.05,flatShading:true}));
-  terrain.rotation.x=-Math.PI/2;terrain.position.y=-3.1;scene.add(terrain);
+  const terrain=new THREE.Mesh(tGeo,new THREE.MeshStandardMaterial({color:0xd6dbe1,roughness:1,metalness:0,flatShading:true}));
+  terrain.rotation.x=-Math.PI/2;terrain.position.y=-3.2;scene.add(terrain);
 
   /* световое пятно под кубом */
   const gc=document.createElement('canvas');gc.width=gc.height=256;
   const gx=gc.getContext('2d');
   const gr=gx.createRadialGradient(128,128,10,128,128,128);
-  gr.addColorStop(0,'rgba(255,255,255,.85)');gr.addColorStop(.45,'rgba(140,240,240,.3)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  gr.addColorStop(0,'rgba(255,255,255,.95)');gr.addColorStop(.5,'rgba(255,255,255,.35)');gr.addColorStop(1,'rgba(255,255,255,0)');
   gx.fillStyle=gr;gx.fillRect(0,0,256,256);
-  const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(16,16),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-  glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-2.9;scene.add(glowDisc);
+  const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(18,18),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+  glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-3.0;scene.add(glowDisc);
 
   /* ===== КУБ ИЗ БЛОКОВ ===== */
-  const struct=new THREE.Group();struct.position.y=-.4;scene.add(struct);
+  const struct=new THREE.Group();struct.position.y=-.5;scene.add(struct);
   const boxGeo=new THREE.BoxGeometry(.95,.95,.95);
   const edgeGeo=new THREE.EdgesGeometry(boxGeo);
   const UP=new THREE.Vector3(0,0,1);
@@ -742,49 +741,46 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     const base=new THREE.Vector3(x,y,z).multiplyScalar(1.02);
     const out=base.clone().normalize();
     const q=new THREE.Quaternion().setFromUnitVectors(UP,out);
-    const mat=new THREE.MeshStandardMaterial({color:isDark?0x2b343c:0xaab6bd,roughness:.55,metalness:.15});
-    const m=new THREE.Mesh(boxGeo,mat);
+    const m=new THREE.Mesh(boxGeo,new THREE.MeshStandardMaterial({color:0x8f98a3,roughness:.6,metalness:.05}));
     m.position.copy(base);m.quaternion.copy(q);
-    const eMat=new THREE.LineBasicMaterial({color:CY,transparent:true,opacity:.15});
+    const eMat=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.5});
     m.add(new THREE.LineSegments(edgeGeo,eMat));
-    /* номер */
+    struct.add(m);
+    blocks.push({m,base,out,q,eMat,lift:0,target:0,phase:Math.random()*6.28,sp:null,spMat:null});
+  }
+  /* номера на случайных блоках + линии */
+  const numbered=[...blocks].sort(()=>Math.random()-.5).slice(0,12);
+  numbered.forEach(b=>{
     const cv=document.createElement('canvas');cv.width=cv.height=128;
     const cx2=cv.getContext('2d');
-    cx2.fillStyle='rgba(255,255,255,.92)';cx2.font='700 42px "JetBrains Mono",monospace';
+    cx2.fillStyle='rgba(255,255,255,.95)';cx2.font='700 42px "JetBrains Mono",monospace';
     cx2.textAlign='center';cx2.textBaseline='middle';
     cx2.fillText(1+Math.floor(Math.random()*70),64,64);
-    const spMat=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,opacity:0,depthWrite:false});
-    const sp=new THREE.Sprite(spMat);sp.scale.set(.5,.5,1);
-    struct.add(sp);struct.add(m);
-    blocks.push({m,base,out,q,eMat,sp,spMat,lift:0,target:0,phase:Math.random()*6.28});
-  }
-  /* плексус: пары соседей */
+    b.spMat=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,opacity:0,depthWrite:false});
+    b.sp=new THREE.Sprite(b.spMat);b.sp.scale.set(.5,.5,1);
+    struct.add(b.sp);
+  });
   const pairs=[];
-  for(let i=0;i<blocks.length;i++){
-    blocks.map((b,j)=>({j,d:blocks[i].base.distanceTo(b.base)}))
-      .filter(o=>o.j!==i).sort((a,b)=>a.d-b.d).slice(0,2)
-      .forEach(o=>{const a=Math.min(i,o.j),b=Math.max(i,o.j);if(!pairs.some(p=>p[0]===a&&p[1]===b))pairs.push([a,b]);});
-  }
+  for(let i=0;i<numbered.length-1;i++)pairs.push([numbered[i],numbered[i+1]]);
   const pPos=new Float32Array(pairs.length*6);
   const pCol=new Float32Array(pairs.length*6);
   const pGeo=new THREE.BufferGeometry();
   pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
   pGeo.setAttribute('color',new THREE.BufferAttribute(pCol,3));
-  const plexus=new THREE.LineSegments(pGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-  struct.add(plexus);
+  struct.add(new THREE.LineSegments(pGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})));
 
   /* внутреннее свечение */
-  const core=new THREE.Mesh(new THREE.SphereGeometry(1.15,24,24),new THREE.MeshBasicMaterial({color:0xbffcff,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const core=new THREE.Mesh(new THREE.SphereGeometry(1.15,24,24),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false}));
   struct.add(core);
-  const pl=new THREE.PointLight(0x9ffcff,1.6,14);struct.add(pl);
+  const pl=new THREE.PointLight(0xffffff,1.8,16);struct.add(pl);
 
   /* снег */
+  const SN=matchMedia('(pointer:coarse)').matches?220:450;
   const snGeo=new THREE.BufferGeometry();
-  const SN=coarse?250:500;
   const snArr=new Float32Array(SN*3);
-  for(let i=0;i<SN;i++){snArr[i*3]=(Math.random()-.5)*40;snArr[i*3+1]=Math.random()*14-2;snArr[i*3+2]=(Math.random()-.5)*40;}
+  for(let i=0;i<SN;i++){snArr[i*3]=(Math.random()-.5)*44;snArr[i*3+1]=Math.random()*16-3;snArr[i*3+2]=(Math.random()-.5)*44;}
   snGeo.setAttribute('position',new THREE.BufferAttribute(snArr,3));
-  const snow=new THREE.Points(snGeo,new THREE.PointsMaterial({size:.06,color:0xffffff,transparent:true,opacity:.55}));
+  const snow=new THREE.Points(snGeo,new THREE.PointsMaterial({size:.07,color:0xffffff,transparent:true,opacity:.6}));
   scene.add(snow);
 
   /* мышь */
@@ -813,6 +809,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
   const T0=performance.now();
   let exiting=false,exitT=0;
+  const sm01=v=>v*v*(3-2*v);
+  const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
   const tmp=new THREE.Vector3();
 
   function frame(now){
@@ -828,24 +826,26 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       const d=ray.ray.distanceToPoint(b.m.position);
       const f=cl(1-d/2.6,0,1);
       b.target=sm01(f)*intro;
-      b.lift+=(b.target-b.lift)*.07;
+      b.lift+=(b.target-b.lift)*.08;
       const L=b.lift;liftSum+=L;
-      const off=scatter+L*1.15+Math.sin(t*2.1+b.phase)*.05*L;
+      const breath=.22+.16*Math.sin(t*.7+b.phase);
+      const off=scatter+breath+L*1.1;
       b.m.position.copy(b.base).addScaledVector(b.out,off);
       b.m.quaternion.copy(b.q);
-      if(L>.01){b.m.rotateX(Math.sin(b.phase)*L*.35);b.m.rotateY(Math.cos(b.phase*1.7)*L*.35);}
-      b.eMat.opacity=.15+L*.85;
-      b.sp.position.copy(b.m.position).addScaledVector(b.out,.75);
-      b.spMat.opacity=cl((L-.3)/.7,0,1)*.9;
+      if(L>.01){b.m.rotateX(Math.sin(b.phase)*L*.3);b.m.rotateY(Math.cos(b.phase*1.7)*L*.3);}
+      b.eMat.opacity=(.45+.4*Math.sin(t*2+b.phase))*intro;
+      if(b.sp){
+        b.sp.position.copy(b.m.position).addScaledVector(b.out,.75);
+        b.spMat.opacity=cl((L-.25)/.75,0,1)*.95*intro;
+      }
     }
 
-    /* плексус */
     for(let k=0;k<pairs.length;k++){
-      const A=blocks[pairs[k][0]],B=blocks[pairs[k][1]];
-      const inten=Math.min(A.lift,B.lift);
-      tmp.copy(A.sp.position);
+      const A=pairs[k][0],B=pairs[k][1];
+      const inten=Math.min(A.lift,B.lift)*intro;
+      tmp.copy(A.sp?A.sp.position:A.m.position);
       pPos[k*6]=tmp.x;pPos[k*6+1]=tmp.y;pPos[k*6+2]=tmp.z;
-      tmp.copy(B.sp.position);
+      tmp.copy(B.sp?B.sp.position:B.m.position);
       pPos[k*6+3]=tmp.x;pPos[k*6+4]=tmp.y;pPos[k*6+5]=tmp.z;
       pCol[k*6]=inten;pCol[k*6+1]=inten;pCol[k*6+2]=inten;
       pCol[k*6+3]=inten;pCol[k*6+4]=inten;pCol[k*6+5]=inten;
@@ -854,35 +854,33 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     pGeo.attributes.color.needsUpdate=true;
 
     const avg=liftSum/blocks.length;
-    core.material.opacity=.35+.25*Math.sin(t*1.4)+avg*.8;
-    pl.intensity=1.2+avg*2.2;
+    core.material.opacity=(.55+.25*Math.sin(t*1.4)+avg*.6)*intro;
+    pl.intensity=1.4+avg*2;
 
-    /* снег */
     const sp2=snow.geometry.attributes.position;
     for(let i=0;i<SN;i++){
       let y=sp2.getY(i)-.012;
-      if(y<-3)y=12;
+      if(y<-3)y=13;
       sp2.setY(i,y);
     }
     sp2.needsUpdate=true;
 
-    /* камера: медленный облёт + лёгкий параллакс мыши */
-    const ang=t*.1;
-    camera.position.set(Math.sin(ang)*8.6+mouse.x*.5,3.1+Math.sin(t*.23)*.35+mouse.y*.3,Math.cos(ang)*8.6);
-    camera.lookAt(0,.2,0);
+    const ang=t*.08+.6;
+    camera.position.set(Math.sin(ang)*7.6+mouse.x*.5,3.4+Math.sin(t*.23)*.3+mouse.y*.3,Math.cos(ang)*7.6);
+    camera.lookAt(0,.5,0);
 
     if(exiting){
       exitT=Math.min(1,exitT+.02);
       overlay.style.opacity=String(1-sm01(exitT));
       camera.position.multiplyScalar(1.004);
-      if(exitT>=1){overlay.classList.add('gone');document.body.classList.remove('intro-locked');return;}
+      if(exitT>=1){overlay.classList.add('gone');unlock();return;}
     }
     renderer.render(scene,camera);
   }
   requestAnimationFrame(frame);
 
   let fired=false;
-  const tryExit=()=>{if(fired||reduced&&!fired){} if(fired)return;fired=true;exiting=true;};
+  const tryExit=()=>{if(fired)return;fired=true;exiting=true;};
   addEventListener('wheel',tryExit,{passive:true});
   addEventListener('touchmove',tryExit,{passive:true});
   addEventListener('keydown',e=>{if([' ','ArrowDown','Enter'].includes(e.key))tryExit();});
