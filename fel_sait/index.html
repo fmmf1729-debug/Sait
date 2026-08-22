@@ -338,203 +338,179 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 </head>
 <body>
 
-<!-- ===== 3D IGLOO LOADER (Техно-волна) ===== -->
-<div id="igl-loader" style="position:fixed;inset:0;z-index:9999;background:var(--bg);transition:opacity 0.8s,visibility 0.8s">
+<!-- ===== PREMIUM 3D CUBE INTRO (Igloo Style) ===== -->
+<div id="intro-scene" style="position:fixed;inset:0;z-index:9999;background:var(--bg);transition:opacity 1.2s cubic-bezier(.4,0,.2,1), visibility 1.2s">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
   (function(){
-    const loader = document.getElementById('igl-loader');
-    if(!loader) return;
-    
-    const container = document.createElement('div');
-    container.style.cssText = 'width:100vw;height:100vh;position:absolute;top:0;left:0';
-    loader.appendChild(container);
+    const container = document.getElementById('intro-scene');
+    if(!container) return;
 
     const scene = new THREE.Scene();
     const isDark = document.documentElement.dataset.theme !== 'light';
     scene.background = new THREE.Color(isDark ? 0x0a0d0f : 0xeef3f3);
-    scene.fog = new THREE.FogExp2(scene.background, 0.04);
-    
-    const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 100);
-    camera.position.set(5, 4, 5);
-    camera.lookAt(0, 1.5, 0);
-    
+    scene.fog = new THREE.FogExp2(scene.background, 0.035);
+
+    const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 8);
+
     const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
     renderer.setSize(innerWidth, innerHeight);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
     container.appendChild(renderer.domElement);
 
+    // Освещение
     const ambient = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambient);
-    const pl1 = new THREE.PointLight(0x16e0e0, 2, 30);
-    pl1.position.set(4, 4, 4);
+    const pl1 = new THREE.PointLight(0x16e0e0, 2.5, 20);
+    pl1.position.set(5, 5, 5);
     scene.add(pl1);
-    const pl2 = new THREE.PointLight(0x16e0e0, 1.5, 30);
-    pl2.position.set(-4, 2, -4);
+    const pl2 = new THREE.PointLight(0x16e0e0, 1.5, 20);
+    pl2.position.set(-5, -3, 4);
     scene.add(pl2);
 
     const group = new THREE.Group();
     scene.add(group);
-    const blocks = [];
-    const lines = [];
 
-    const coreMat = new THREE.MeshPhongMaterial({
+    // 1. Внутреннее ядро (тёмное, металлическое)
+    const coreGeo = new THREE.BoxGeometry(1.8, 1.8, 1.8, 4, 4, 4);
+    const coreMat = new THREE.MeshStandardMaterial({
       color: isDark ? 0x0f1517 : 0xffffff,
-      emissive: 0x16e0e0,
-      emissiveIntensity: 0.4,
-      shininess: 80,
+      metalness: 0.9,
+      roughness: 0.2,
       transparent: true,
       opacity: 0.9
     });
-    const edgeMat = new THREE.LineBasicMaterial({ color: 0x16e0e0, transparent: true, opacity: 0.8 });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    group.add(core);
 
-    function createBlock(x, y, z, idx) {
-      const geo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
-      const mesh = new THREE.Mesh(geo, coreMat);
-      mesh.position.set(x, y, z);
-      
-      // Рёбра для техно-эффекта
-      const edges = new THREE.EdgesGeometry(geo);
-      const line = new THREE.LineSegments(edges, edgeMat);
-      mesh.add(line);
-      
-      mesh.userData = { 
-        orig: {x, y, z}, 
-        idx, 
-        rotSpeed: 0.005 + Math.random() * 0.01,
-        phase: Math.random() * Math.PI * 2
-      };
-      
-      // Спрайт с номером
-      const canvas = document.createElement('canvas');
-      canvas.width = 64; canvas.height = 64;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = isDark ? 'rgba(10,13,15,0.8)' : 'rgba(238,243,243,0.8)';
-      ctx.fillRect(0, 0, 64, 64);
-      ctx.fillStyle = '#16e0e0';
-      ctx.font = 'bold 24px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(idx, 32, 32);
-      const tex = new THREE.CanvasTexture(canvas);
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, transparent: true}));
-      sprite.scale.set(0.4, 0.4, 1);
-      mesh.add(sprite);
-      
-      blocks.push(mesh);
-      group.add(mesh);
-    }
+    // 2. Светящиеся грани (Wireframe)
+    const edges = new THREE.EdgesGeometry(coreGeo);
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x16e0e0, transparent: true, opacity: 0.9 });
+    const wireframe = new THREE.LineSegments(edges, edgeMat);
+    wireframe.scale.set(1.02, 1.02, 1.02);
+    group.add(wireframe);
 
-    let i = 1;
-    for(let j=0; j<8; j++){ const a=(j/8)*Math.PI*2; createBlock(Math.cos(a)*1.8, 0.5, Math.sin(a)*1.8, i++); }
-    for(let j=0; j<6; j++){ const a=(j/6)*Math.PI*2+Math.PI/6; createBlock(Math.cos(a)*1.6, 1.3, Math.sin(a)*1.6, i++); }
-    for(let j=0; j<5; j++){ const a=(j/5)*Math.PI*2; createBlock(Math.cos(a)*1.3, 2.1, Math.sin(a)*1.3, i++); }
-    for(let j=0; j<3; j++){ const a=(j/3)*Math.PI*2+Math.PI/3; createBlock(Math.cos(a)*0.9, 2.9, Math.sin(a)*0.9, i++); }
-    createBlock(0, 0.5, 2.2, i++);
-    createBlock(0, 1.3, 2.2, i++);
+    // 3. Внешняя стеклянная оболочка (Crystal/Ice effect)
+    const glassGeo = new THREE.BoxGeometry(2.2, 2.2, 2.2, 4, 4, 4);
+    const glassMat = new THREE.MeshPhysicalMaterial({
+      color: 0x16e0e0,
+      metalness: 0.1,
+      roughness: 0.05,
+      transmission: 0.6, // Прозрачность как у стекла
+      thickness: 1.5,
+      transparent: true,
+      opacity: 0.4,
+      side: THREE.DoubleSide
+    });
+    const glass = new THREE.Mesh(glassGeo, glassMat);
+    group.add(glass);
 
-    const connMat = new THREE.LineBasicMaterial({color: 0x16e0e0, transparent: true, opacity: 0.3});
-    for(let a=0; a<blocks.length; a++){
-      for(let b=a+1; b<blocks.length; b++){
-        if(blocks[a].position.distanceTo(blocks[b].position) < 2.2){
-          const pts = [blocks[a].position.clone(), blocks[b].position.clone()];
-          const geo = new THREE.BufferGeometry().setFromPoints(pts);
-          const line = new THREE.Line(geo, connMat);
-          line.userData = {b1: blocks[a], b2: blocks[b]};
-          lines.push(line);
-          group.add(line);
-        }
-      }
-    }
-
+    // 4. Частицы вокруг куба
     const pGeo = new THREE.BufferGeometry();
-    const pCount = 600;
+    const pCount = 400;
     const pArr = new Float32Array(pCount * 3);
-    for(let j=0; j<pCount*3; j++) pArr[j] = (Math.random()-0.5) * 20;
+    for(let i=0; i<pCount*3; i++) {
+      pArr[i] = (Math.random() - 0.5) * 12;
+    }
     pGeo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
-    const pMat = new THREE.PointsMaterial({size: 0.05, color: 0x16e0e0, transparent: true, opacity: 0.6});
+    const pMat = new THREE.PointsMaterial({
+      size: 0.04,
+      color: 0x16e0e0,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending
+    });
     const particles = new THREE.Points(pGeo, pMat);
     scene.add(particles);
 
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `position:absolute;top:40px;left:40px;z-index:10;font-family:var(--fd);font-size:2rem;font-weight:900;color:var(--cy);text-transform:uppercase;letter-spacing:0.1em;text-shadow:0 0 20px rgba(22,224,224,0.6);animation:pulse 3s ease-in-out infinite`;
-    overlay.textContent = 'FEL_IKS';
-    loader.appendChild(overlay);
+    // UI Оверлей
+    const ui = document.createElement('div');
+    ui.style.cssText = `position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:10`;
+    
+    const title = document.createElement('div');
+    title.style.cssText = `font-family:var(--fd);font-size:clamp(3rem,10vw,6rem);font-weight:900;color:var(--cy);text-transform:uppercase;letter-spacing:0.1em;text-shadow:0 0 40px rgba(22,224,224,0.4);margin-bottom:20px;opacity:0;animation:fadeUp 1s 0.5s forwards`;
+    title.textContent = 'FEL_IKS';
+    
+    const subtitle = document.createElement('div');
+    subtitle.style.cssText = `font-family:var(--mono);font-size:0.8rem;color:var(--muted);letter-spacing:0.3em;text-transform:uppercase;opacity:0;animation:fadeUp 1s 0.8s forwards`;
+    subtitle.textContent = 'digital reality';
 
-    const hint = document.createElement('div');
-    hint.style.cssText = `position:absolute;bottom:40px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:0.7rem;color:var(--cy);letter-spacing:0.3em;text-transform:uppercase;animation:bounce 2s ease-in-out infinite;z-index:10;cursor:pointer`;
-    hint.textContent = 'СКРОЛЛЬ ИЛИ КЛИКНИ ЧТОБЫ ВОЙТИ';
-    loader.appendChild(hint);
+    const scrollHint = document.createElement('div');
+    scrollHint.style.cssText = `position:absolute;bottom:40px;font-family:var(--mono);font-size:0.7rem;color:var(--cy);letter-spacing:0.3em;text-transform:uppercase;opacity:0;animation:fadeUp 1s 1.2s forwards, bounce 2s 2s ease-in-out infinite;cursor:pointer;pointer-events:auto`;
+    scrollHint.textContent = 'СКРОЛЛЬ ЧТОБЫ ВОЙТИ';
 
-    let time = 0, assembling = true;
-    const scattered = blocks.map(b => ({
-      x: b.position.x + (Math.random()-0.5)*10,
-      y: b.position.y + Math.random()*6,
-      z: b.position.z + (Math.random()-0.5)*10
-    }));
+    ui.appendChild(title);
+    ui.appendChild(subtitle);
+    ui.appendChild(scrollHint);
+    container.appendChild(ui);
 
+    const style = document.createElement('style');
+    style.textContent = `@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}} @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}`;
+    document.head.appendChild(style);
+
+    // Анимация
+    let time = 0;
+    let isExiting = false;
+    
     function animate(){
       requestAnimationFrame(animate);
-      time += 0.01;
+      time += 0.008;
 
-      blocks.forEach((b, idx) => {
-        const target = assembling ? b.userData.orig : scattered[idx];
-        b.position.x += (target.x - b.position.x) * 0.025;
-        b.position.y += (target.y - b.position.y) * 0.025;
-        b.position.z += (target.z - b.position.z) * 0.025;
-        b.rotation.x += b.userData.rotSpeed;
-        b.rotation.y += b.userData.rotSpeed;
-        
-        const edge = b.children[0];
-        edge.material.opacity = 0.5 + Math.sin(time * 3 + b.userData.phase) * 0.3;
-      });
+      // Плавное вращение куба по разным осям
+      group.rotation.y = time * 0.5;
+      group.rotation.x = Math.sin(time * 0.3) * 0.15;
+      group.rotation.z = Math.cos(time * 0.2) * 0.05;
 
-      lines.forEach(l => {
-        const pos = l.geometry.attributes.position;
-        pos.setXYZ(0, l.userData.b1.position.x, l.userData.b1.position.y, l.userData.b1.position.z);
-        pos.setXYZ(1, l.userData.b2.position.x, l.userData.b2.position.y, l.userData.b2.position.z);
-        pos.needsUpdate = true;
-        l.material.opacity = 0.2 + Math.sin(time * 2 + l.userData.b1.userData.idx) * 0.15;
-      });
+      // Лёгкое парение
+      group.position.y = Math.sin(time * 0.8) * 0.15;
 
-      camera.position.x = Math.sin(time * 0.2) * 5.5;
-      camera.position.z = Math.cos(time * 0.2) * 5.5;
-      camera.position.y = 4 + Math.sin(time * 0.3) * 0.5;
-      camera.lookAt(0, 1.5, 0);
+      // Пульсация свечения граней
+      edgeMat.opacity = 0.6 + Math.sin(time * 3) * 0.3;
+      glassMat.opacity = 0.3 + Math.sin(time * 2) * 0.1;
 
-      particles.rotation.y = time * 0.05;
+      // Вращение частиц
+      particles.rotation.y = time * 0.1;
+      particles.rotation.x = time * 0.05;
+
+      // Эффект выхода при скролле
+      if(isExiting){
+        container.style.opacity = '0';
+        container.style.visibility = 'hidden';
+        renderer.dispose();
+        return;
+      }
+
       renderer.render(scene, camera);
     }
     animate();
 
-    let hidden = false;
-    function hide(){
-      if(hidden) return;
-      hidden = true;
-      loader.style.opacity = '0';
-      loader.style.visibility = 'hidden';
-      setTimeout(() => loader.remove(), 800);
+    // Обработчик выхода по скроллу или клику
+    function exitIntro(){
+      if(isExiting) return;
+      isExiting = true;
+      // Даём анимации CSS сработать, затем удаляем из DOM
+      setTimeout(() => {
+        container.remove();
+      }, 1200);
     }
 
-    // Гарантированное исчезновение через 4.5 сек, или по первому взаимодействию
-    setTimeout(hide, 4500);
-    addEventListener('wheel', hide, {passive: true, once: true});
-    addEventListener('click', hide, {once: true});
-    addEventListener('touchstart', hide, {passive: true, once: true});
+    window.addEventListener('wheel', exitIntro, {passive: true, once: true});
+    window.addEventListener('click', exitIntro, {once: true});
+    window.addEventListener('touchstart', exitIntro, {passive: true, once: true});
 
-    addEventListener('resize', () => {
+    // Ресайз
+    window.addEventListener('resize', () => {
+      if(isExiting) return;
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
     });
-
-    const style = document.createElement('style');
-    style.textContent = `@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}} @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-10px)}}`;
-    document.head.appendChild(style);
   })();
   </script>
 </div>
-<!-- ===== КОНЕЦ 3D LOADER ===== -->
+<!-- ===== КОНЕЦ 3D INTRO ===== -->
 
 <div id="wipe"></div><div id="bg"></div><div id="progress"></div>
 <img id="head" src="img/golova.png" alt="">
