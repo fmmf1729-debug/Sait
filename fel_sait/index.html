@@ -49,17 +49,14 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
-/* ===== IGLOO-STYLE INTRO ===== */
+/* ===== INTRO ===== */
 #igloo-intro{position:fixed;inset:0;z-index:9999;background:var(--bg);transition:opacity 1s cubic-bezier(.4,0,.2,1),visibility 1s}
 #igloo-intro.gone{opacity:0;visibility:hidden;pointer-events:none}
 #igloo-intro canvas{position:absolute;inset:0;display:block}
 #ascii-loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;transition:opacity .6s}
 #ascii-loader.hide{opacity:0}
 #ascii-loader::before{content:'-===+++===-';font-family:var(--mono);color:var(--cy);font-size:18px;font-weight:700;letter-spacing:.1em;text-shadow:0 0 10px rgba(22,224,224,.5);animation:ascii 1.2s steps(1) infinite}
-@keyframes ascii{
-0%{content:'-===+++==='}10%{content:'===+++==='}20%{content:'==+++==='}30%{content:'=+++==='}
-40%{content:'+++==='}50%{content:'++==='}60%{content:'+==='}70%{content:'==='}
-80%{content:'==='}85%{content:'+=='}90%{content:'++=='}95%{content:'+++=='}100%{content:'-===+++==='}}
+@keyframes ascii{0%{content:'-===+++==='}10%{content:'===+++==='}20%{content:'==+++==='}30%{content:'=+++==='}40%{content:'+++==='}50%{content:'++==='}60%{content:'+==='}70%{content:'==='}80%{content:'==='}85%{content:'+=='}90%{content:'++=='}95%{content:'+++=='}100%{content:'-===+++==='}}
 .intro-ui{position:absolute;inset:0;z-index:5;pointer-events:none;font-family:var(--mono)}
 .intro-ui>*{opacity:0;animation:uiIn .9s forwards}
 .iu-logo{position:absolute;top:38px;left:40px;animation-delay:.9s!important}
@@ -176,7 +173,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .lead b{color:var(--txt)}
 .inline{color:var(--cy);border-bottom:2px solid var(--cy)}
 .note{margin-top:26px;color:var(--muted);font-family:var(--mono);font-size:.85rem}
-
 .nick{rotate:-2deg;margin-top:4px}
 .dev{display:inline-block;margin-left:10px;padding:4px 10px;border:2px solid var(--cy);color:var(--cy);font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;vertical-align:middle;translate:0 -2px}
 
@@ -362,12 +358,13 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   .tl-line i{transform:scaleY(1)!important}
   .stack-slot{opacity:1;transform:translate(-50%,-50%)}
   #igloo-intro{display:none}
+  body.intro-locked{overflow:auto}
 }
 </style>
 </head>
 <body class="intro-locked">
 
-<!-- ===== IGLOO-STYLE 3D INTRO: куб из блоков, техно-волна, выдвижение ===== -->
+<!-- ===== INTRO: интерактивный куб из блоков (механика igloo) ===== -->
 <div id="igloo-intro">
   <div id="ascii-loader"></div>
   <div class="intro-ui">
@@ -531,7 +528,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   <div class="wrap sec">
     <h2 class="h2" data-reveal="mask">Аватары</h2>
     <div class="ava-strip" data-reveal>
-      <img loading="lazy" src="img/ava1.png" alt=""><img loading="lazy" src="img/ava1.png" alt="">
+      <img loading="lazy" src="img/ava1.png" alt=""><img loading="lazy" src="img/ava2.png" alt="">
       <img loading="lazy" src="img/ava3.png" alt=""><img loading="lazy" src="img/ava4.png" alt="">
       <span>✚ и аватары</span>
     </div>
@@ -684,9 +681,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 })();
 
 /* =========================================================
-   IGLOO-STYLE INTRO — куб из блоков + техно-волна
-   (адаптация механик igloo.inc: exploded-блоки, cage, outline,
-    triangles-волна, номера с линиями, монохром → цвет, scroll-exit)
+   INTRO — интерактив как на igloo: блоки подлетают к мыши,
+   номера + плексус-линии, внутреннее свечение, снег, туман
 ========================================================= */
 (function(){
   const overlay=document.getElementById('igloo-intro');
@@ -694,173 +690,190 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const coarse=matchMedia('(pointer:coarse)').matches;
   const isDark=document.documentElement.dataset.theme!=='light';
-  const CY=0x16e0e0;
   const BG=isDark?0x0a0d0f:0xdfe6e8;
+  const CY=0x9ff5f5;
+  const sm01=v=>v*v*(3-2*v);
+  const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 
   const scene=new THREE.Scene();
-  scene.fog=new THREE.FogExp2(BG,0.055);
-  const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.1,200);
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+  scene.fog=new THREE.FogExp2(BG,0.05);
+  const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,300);
+  const renderer=new THREE.WebGLRenderer({antialias:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.setSize(innerWidth,innerHeight);
   renderer.setClearColor(BG,1);
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;
   overlay.insertBefore(renderer.domElement,overlay.firstChild);
 
-  scene.add(new THREE.AmbientLight(0xffffff,0.5));
-  const key=new THREE.DirectionalLight(0xffffff,0.9);key.position.set(6,10,4);scene.add(key);
-  const cy1=new THREE.PointLight(CY,1.4,40);cy1.position.set(6,5,6);scene.add(cy1);
-  const cy2=new THREE.PointLight(CY,1.0,40);cy2.position.set(-6,3,-4);scene.add(cy2);
+  scene.add(new THREE.AmbientLight(0xffffff,.55));
+  const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(6,10,4);scene.add(dl);
 
-  const world=new THREE.Group();scene.add(world);
-
-  /* --- terrain (как снежная площадка у igloo) --- */
-  const tGeo=new THREE.PlaneGeometry(90,90,90,90);
+  /* terrain */
+  const tGeo=new THREE.PlaneGeometry(160,160,110,110);
   const tp=tGeo.attributes.position;
   for(let i=0;i<tp.count;i++){
     const x=tp.getX(i),y=tp.getY(i);
-    const h=Math.sin(x*0.12)*Math.cos(y*0.1)*0.9+Math.sin(x*0.35+y*0.22)*0.35+Math.sin(x*0.9)*Math.cos(y*0.8)*0.12;
     const d=Math.sqrt(x*x+y*y);
-    tp.setZ(i,h+Math.max(0,3-d*0.35)*0.6);
+    let h=Math.sin(x*.09)*Math.cos(y*.08)*1.4+Math.sin(x*.23+y*.17)*.5+Math.sin(x*.7)*Math.cos(y*.6)*.15;
+    h+=Math.max(0,4.5-d*.5)*.55; /* холм под кубом */
+    tp.setZ(i,h);
   }
   tGeo.computeVertexNormals();
-  const terrain=new THREE.Mesh(tGeo,new THREE.MeshStandardMaterial({color:isDark?0x11161a:0xcfd6da,roughness:0.95,metalness:0.05,flatShading:true}));
-  terrain.rotation.x=-Math.PI/2;terrain.position.y=-2.6;world.add(terrain);
+  const terrain=new THREE.Mesh(tGeo,new THREE.MeshStandardMaterial({color:isDark?0x151b20:0xcfd6da,roughness:.95,metalness:.05,flatShading:true}));
+  terrain.rotation.x=-Math.PI/2;terrain.position.y=-3.1;scene.add(terrain);
 
   /* световое пятно под кубом */
-  const glowC=document.createElement('canvas');glowC.width=glowC.height=256;
-  const gctx=glowC.getContext('2d');
-  const gr=gctx.createRadialGradient(128,128,10,128,128,128);
-  gr.addColorStop(0,'rgba(255,255,255,0.9)');gr.addColorStop(0.4,'rgba(120,240,240,0.35)');gr.addColorStop(1,'rgba(0,0,0,0)');
-  gctx.fillStyle=gr;gctx.fillRect(0,0,256,256);
-  const glowTex=new THREE.CanvasTexture(glowC);
-  const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(14,14),new THREE.MeshBasicMaterial({map:glowTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-  glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-2.5;world.add(glowDisc);
+  const gc=document.createElement('canvas');gc.width=gc.height=256;
+  const gx=gc.getContext('2d');
+  const gr=gx.createRadialGradient(128,128,10,128,128,128);
+  gr.addColorStop(0,'rgba(255,255,255,.85)');gr.addColorStop(.45,'rgba(140,240,240,.3)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  gx.fillStyle=gr;gx.fillRect(0,0,256,256);
+  const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(16,16),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+  glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-2.9;scene.add(glowDisc);
 
-  /* --- КУБ ИЗ БЛОКОВ (оболочка 4x4x4, как иглу из кирпичей) --- */
-  const blocks=[];const S=0.92,GAP=1.0;
-  const boxGeo=new THREE.BoxGeometry(S,S,S);
+  /* ===== КУБ ИЗ БЛОКОВ ===== */
+  const struct=new THREE.Group();struct.position.y=-.4;scene.add(struct);
+  const boxGeo=new THREE.BoxGeometry(.95,.95,.95);
   const edgeGeo=new THREE.EdgesGeometry(boxGeo);
-  const up=new THREE.Vector3(0,0,1);
-  for(let x=-1.5;x<=1.5;x++)for(let y=-1.5;y<=1.5;y++)for(let z=-1.5;z<=1.5;z++){
-    const m=Math.max(Math.abs(x),Math.abs(y),Math.abs(z));
-    if(m<1.5)continue; // только оболочка
-    const mat=new THREE.MeshStandardMaterial({color:isDark?0x232a31:0xb9c2c8,roughness:0.55,metalness:0.25});
-    const b=new THREE.Mesh(boxGeo,mat);
-    const base=new THREE.Vector3(x*GAP,y*GAP,z*GAP);
-    b.position.copy(base);
+  const UP=new THREE.Vector3(0,0,1);
+  const blocks=[];
+  const V=[-1.5,-.5,.5,1.5];
+  for(const x of V)for(const y of V)for(const z of V){
+    if(Math.max(Math.abs(x),Math.abs(y),Math.abs(z))<1.5)continue;
+    const base=new THREE.Vector3(x,y,z).multiplyScalar(1.02);
     const out=base.clone().normalize();
-    b.quaternion.setFromUnitVectors(up,out);
-    const eMat=new THREE.LineBasicMaterial({color:CY,transparent:true,opacity:0});
-    b.add(new THREE.LineSegments(edgeGeo,eMat));
-    b.userData={base:base.clone(),out:out.clone(),eMat:eMat,phase:Math.random()*Math.PI*2,num:0};
-    blocks.push(b);world.add(b);
+    const q=new THREE.Quaternion().setFromUnitVectors(UP,out);
+    const mat=new THREE.MeshStandardMaterial({color:isDark?0x2b343c:0xaab6bd,roughness:.55,metalness:.15});
+    const m=new THREE.Mesh(boxGeo,mat);
+    m.position.copy(base);m.quaternion.copy(q);
+    const eMat=new THREE.LineBasicMaterial({color:CY,transparent:true,opacity:.15});
+    m.add(new THREE.LineSegments(edgeGeo,eMat));
+    /* номер */
+    const cv=document.createElement('canvas');cv.width=cv.height=128;
+    const cx2=cv.getContext('2d');
+    cx2.fillStyle='rgba(255,255,255,.92)';cx2.font='700 42px "JetBrains Mono",monospace';
+    cx2.textAlign='center';cx2.textBaseline='middle';
+    cx2.fillText(1+Math.floor(Math.random()*70),64,64);
+    const spMat=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,opacity:0,depthWrite:false});
+    const sp=new THREE.Sprite(spMat);sp.scale.set(.5,.5,1);
+    struct.add(sp);struct.add(m);
+    blocks.push({m,base,out,q,eMat,sp,spMat,lift:0,target:0,phase:Math.random()*6.28});
   }
-
-  /* номера на случайных блоках + линии-созвездия (как в ролике) */
-  const nums=[];
-  const picked=[...blocks].sort(()=>Math.random()-0.5).slice(0,10);
-  picked.forEach((b,i)=>{
-    const n=Math.floor(Math.random()*70)+1;b.userData.num=n;
-    const c=document.createElement('canvas');c.width=c.height=128;
-    const cx=c.getContext('2d');
-    cx.fillStyle='rgba(255,255,255,0.95)';cx.font='700 44px "JetBrains Mono",monospace';
-    cx.textAlign='center';cx.textBaseline='middle';cx.fillText(n,64,64);
-    const sm=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,opacity:0,depthWrite:false});
-    const sp=new THREE.Sprite(sm);sp.scale.set(0.55,0.55,1);
-    sp.position.copy(b.userData.base.clone().multiplyScalar(1.28));
-    sp.userData={mat:sm,phase:b.userData.phase};
-    nums.push(sp);world.add(sp);
-  });
-  const linePts=[];
-  for(let i=0;i<nums.length-1;i++){linePts.push(nums[i].position.clone(),nums[i+1].position.clone());}
-  const constMat=new THREE.LineBasicMaterial({color:isDark?0xffffff:0x33414a,transparent:true,opacity:0});
-  world.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(linePts),constMat));
-
-  /* --- cage (wireframe-обёртка как igloo_cage) --- */
-  const cage=new THREE.LineSegments(
-    new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(4.4,1)),
-    new THREE.LineBasicMaterial({color:isDark?0xa7b2d6:0x51606a,transparent:true,opacity:0.16,blending:THREE.AdditiveBlending,depthWrite:false})
-  );
-  world.add(cage);
-
-  /* --- техно-волна: 3 пачки треугольников на земле --- */
-  const triGroups=[];
-  for(let g=0;g<3;g++){
-    const pts=[];
-    const count=coarse?14:26;
-    for(let i=0;i<count;i++){
-      const a=Math.random()*Math.PI*2,r=4.5+Math.random()*11;
-      const cx0=Math.cos(a)*r,cz0=Math.sin(a)*r,s=0.35+Math.random()*1.1,rot=Math.random()*Math.PI*2;
-      for(let k=0;k<3;k++){
-        const aa=rot+k*Math.PI*2/3;
-        pts.push(new THREE.Vector3(cx0+Math.cos(aa)*s,-2.5+Math.random()*0.15,cz0+Math.sin(aa)*s));
-      }
-    }
-    const m=new THREE.LineBasicMaterial({color:isDark?0xffffff:0x2a3640,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    const lg=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts),m);
-    triGroups.push({mesh:lg,mat:m,phase:g*2.1});
-    world.add(lg);
+  /* плексус: пары соседей */
+  const pairs=[];
+  for(let i=0;i<blocks.length;i++){
+    blocks.map((b,j)=>({j,d:blocks[i].base.distanceTo(b.base)}))
+      .filter(o=>o.j!==i).sort((a,b)=>a.d-b.d).slice(0,2)
+      .forEach(o=>{const a=Math.min(i,o.j),b=Math.max(i,o.j);if(!pairs.some(p=>p[0]===a&&p[1]===b))pairs.push([a,b]);});
   }
+  const pPos=new Float32Array(pairs.length*6);
+  const pCol=new Float32Array(pairs.length*6);
+  const pGeo=new THREE.BufferGeometry();
+  pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+  pGeo.setAttribute('color',new THREE.BufferAttribute(pCol,3));
+  const plexus=new THREE.LineSegments(pGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+  struct.add(plexus);
 
-  /* --- звук (ambient hum, включается кнопкой) --- */
+  /* внутреннее свечение */
+  const core=new THREE.Mesh(new THREE.SphereGeometry(1.15,24,24),new THREE.MeshBasicMaterial({color:0xbffcff,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false}));
+  struct.add(core);
+  const pl=new THREE.PointLight(0x9ffcff,1.6,14);struct.add(pl);
+
+  /* снег */
+  const snGeo=new THREE.BufferGeometry();
+  const SN=coarse?250:500;
+  const snArr=new Float32Array(SN*3);
+  for(let i=0;i<SN;i++){snArr[i*3]=(Math.random()-.5)*40;snArr[i*3+1]=Math.random()*14-2;snArr[i*3+2]=(Math.random()-.5)*40;}
+  snGeo.setAttribute('position',new THREE.BufferAttribute(snArr,3));
+  const snow=new THREE.Points(snGeo,new THREE.PointsMaterial({size:.06,color:0xffffff,transparent:true,opacity:.55}));
+  scene.add(snow);
+
+  /* мышь */
+  const mouse=new THREE.Vector2(0,0);
+  const ray=new THREE.Raycaster();
+  addEventListener('pointermove',e=>{mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);});
+
+  /* звук */
   let audio=null,soundOn=false;
   const sndBtn=document.getElementById('iuSound'),sndTxt=document.getElementById('iuSoundTxt');
   sndBtn.addEventListener('click',()=>{
-    soundOn=!soundOn;
-    sndTxt.textContent='Sound: '+(soundOn?'On':'Off');
+    soundOn=!soundOn;sndTxt.textContent='Sound: '+(soundOn?'On':'Off');
     if(soundOn&&!audio){
       const AC=window.AudioContext||window.webkitAudioContext;audio=new AC();
       const len=AC.sampleRate*2,buf=audio.createBuffer(1,len,AC.sampleRate),d=buf.getChannelData(0);
-      let last=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;last=(last+0.02*w)/1.02;d[i]=last*3;}
+      let last=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;last=(last+.02*w)/1.02;d[i]=last*3;}
       const src=audio.createBufferSource();src.buffer=buf;src.loop=true;
-      const f=audio.createBiquadFilter();f.type='lowpass';f.frequency.value=220;
-      const g=audio.createGain();g.gain.value=0.06;
+      const f=audio.createBiquadFilter();f.type='lowpass';f.frequency.value=240;
+      const g=audio.createGain();g.gain.value=.06;
       src.connect(f);f.connect(g);g.connect(audio.destination);src.start();
     }
     if(audio)audio[soundOn?'resume':'suspend']();
   });
 
-  /* --- таймлайн интро --- */
-  const T0=performance.now();
-  let introDone=false,exiting=false,exitT=0;
-  const ease=t=>t*t*(3-2*t);
+  setTimeout(()=>document.getElementById('ascii-loader').classList.add('hide'),1000);
 
-  setTimeout(()=>document.getElementById('ascii-loader').classList.add('hide'),1100);
+  const T0=performance.now();
+  let exiting=false,exitT=0;
+  const tmp=new THREE.Vector3();
 
   function frame(now){
     requestAnimationFrame(frame);
     const t=(now-T0)/1000;
+    const intro=sm01(clamp((t-.4)/2.2,0,1));
+    const scatter=(1-intro)*3.2;
 
-    /* фазы: 0-1.1 монохром/лоадер → 1.1-3.4 волна включает цвет/грани → дальше дыхание */
-    const introGlow=ease(clamp((t-1.0)/2.2,0,1));
-    const assemble=1-ease(clamp((t-0.6)/2.4,0,1)); // блоки съезжаются из разброса
-    scene.fog.density=0.055-(0.03*introGlow);
+    ray.setFromCamera(mouse,camera);
 
-    /* блоки: выдвижение/дыхание как в ролике */
-    const breathe=Math.pow(Math.max(0,Math.sin(t*0.45)),2)*0.34*introGlow;
+    let liftSum=0;
     for(const b of blocks){
-      const u=b.userData;
-      const off=assemble*2.6+breathe*(0.5+0.5*Math.sin(u.phase+t*0.6));
-      b.position.copy(u.base).addScaledVector(u.out,off);
-      u.eMat.opacity=introGlow*(0.35+0.55*Math.max(0,Math.sin(u.phase*3+t*0.9)));
+      const d=ray.ray.distanceToPoint(b.m.position);
+      const f=cl(1-d/2.6,0,1);
+      b.target=sm01(f)*intro;
+      b.lift+=(b.target-b.lift)*.07;
+      const L=b.lift;liftSum+=L;
+      const off=scatter+L*1.15+Math.sin(t*2.1+b.phase)*.05*L;
+      b.m.position.copy(b.base).addScaledVector(b.out,off);
+      b.m.quaternion.copy(b.q);
+      if(L>.01){b.m.rotateX(Math.sin(b.phase)*L*.35);b.m.rotateY(Math.cos(b.phase*1.7)*L*.35);}
+      b.eMat.opacity=.15+L*.85;
+      b.sp.position.copy(b.m.position).addScaledVector(b.out,.75);
+      b.spMat.opacity=cl((L-.3)/.7,0,1)*.9;
     }
-    for(const s of nums){s.userData.mat.opacity=introGlow*0.9;}
-    constMat.opacity=introGlow*0.3;
-    cage.rotation.y=t*0.05;cage.material.opacity=0.10+introGlow*0.10;
-    for(const g of triGroups){g.mat.opacity=introGlow*(0.12+0.3*Math.max(0,Math.sin(t*0.6+g.phase)));}
-    glowDisc.material.opacity=0.35+introGlow*0.5;
 
-    /* камера: медленный орбит + лёгкий наезд */
-    const ang=t*0.12+0.6;
-    const rad=9.5-assemble*2.0;
-    camera.position.set(Math.sin(ang)*rad,3.4+Math.sin(t*0.3)*0.5,Math.cos(ang)*rad);
-    camera.lookAt(0,0.2,0);
+    /* плексус */
+    for(let k=0;k<pairs.length;k++){
+      const A=blocks[pairs[k][0]],B=blocks[pairs[k][1]];
+      const inten=Math.min(A.lift,B.lift);
+      tmp.copy(A.sp.position);
+      pPos[k*6]=tmp.x;pPos[k*6+1]=tmp.y;pPos[k*6+2]=tmp.z;
+      tmp.copy(B.sp.position);
+      pPos[k*6+3]=tmp.x;pPos[k*6+4]=tmp.y;pPos[k*6+5]=tmp.z;
+      pCol[k*6]=inten;pCol[k*6+1]=inten;pCol[k*6+2]=inten;
+      pCol[k*6+3]=inten;pCol[k*6+4]=inten;pCol[k*6+5]=inten;
+    }
+    pGeo.attributes.position.needsUpdate=true;
+    pGeo.attributes.color.needsUpdate=true;
 
-    /* выход по скроллу */
+    const avg=liftSum/blocks.length;
+    core.material.opacity=.35+.25*Math.sin(t*1.4)+avg*.8;
+    pl.intensity=1.2+avg*2.2;
+
+    /* снег */
+    const sp2=snow.geometry.attributes.position;
+    for(let i=0;i<SN;i++){
+      let y=sp2.getY(i)-.012;
+      if(y<-3)y=12;
+      sp2.setY(i,y);
+    }
+    sp2.needsUpdate=true;
+
+    /* камера: медленный облёт + лёгкий параллакс мыши */
+    const ang=t*.1;
+    camera.position.set(Math.sin(ang)*8.6+mouse.x*.5,3.1+Math.sin(t*.23)*.35+mouse.y*.3,Math.cos(ang)*8.6);
+    camera.lookAt(0,.2,0);
+
     if(exiting){
-      exitT=Math.min(1,exitT+0.02);
-      overlay.style.opacity=String(1-ease(exitT));
+      exitT=Math.min(1,exitT+.02);
+      overlay.style.opacity=String(1-sm01(exitT));
       camera.position.multiplyScalar(1.004);
       if(exitT>=1){overlay.classList.add('gone');document.body.classList.remove('intro-locked');return;}
     }
@@ -868,9 +881,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   }
   requestAnimationFrame(frame);
 
-  function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
   let fired=false;
-  function tryExit(){if(fired)return;fired=true;exiting=true;}
+  const tryExit=()=>{if(fired||reduced&&!fired){} if(fired)return;fired=true;exiting=true;};
   addEventListener('wheel',tryExit,{passive:true});
   addEventListener('touchmove',tryExit,{passive:true});
   addEventListener('keydown',e=>{if([' ','ArrowDown','Enter'].includes(e.key))tryExit();});
