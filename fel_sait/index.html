@@ -1,4 +1,4 @@
-<!-- v8 -->
+<!-- v9 -->
 <!-- ✚ Дизайн и код: Fel_iks. Копирование без разрешения запрещено. -->
 <!DOCTYPE html>
 <html lang="ru">
@@ -50,7 +50,6 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
-/* ===== INTRO ===== */
 #igloo-intro{position:fixed;inset:0;z-index:9999;background:#A0A5B1;transition:opacity 1s cubic-bezier(.4,0,.2,1),visibility 1s}
 #igloo-intro.gone{opacity:0;visibility:hidden;pointer-events:none}
 #igloo-intro canvas{position:absolute;inset:0;display:block}
@@ -240,6 +239,10 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .card::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),var(--glowbg),transparent 70%);opacity:0;transition:opacity .3s}
 .card:hover::after{opacity:1}
+.card::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(105deg,transparent 35%,var(--cy) 50%,transparent 65%) no-repeat;
+  background-size:250% 100%;background-position:130% 0;opacity:.55;transition:background-position .7s ease}
+.card:hover::before{background-position:-30% 0}
 .card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -6px;z-index:6}
 .card .ico{font-size:1.5rem;color:var(--muted);display:inline-block;transition:.3s;margin-bottom:6px}
 .card:hover .ico{color:var(--cy);transform:scale(1.25) rotate(-10deg);text-shadow:var(--glow)}
@@ -677,11 +680,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   document.documentElement.setAttribute('data-author','Fel_iks');
 })();
 
-/* =========================================================
-   INTRO v8 — НЕЗАВИСАЕМЫЙ ОТ ОШИБОК:
-   обработчики выхода вешаются ДО сцены, try/catch вокруг
-   всей сборки, аварийный выход через 15с. Зависнуть НЕ может.
-========================================================= */
+/* ===== INTRO v9 ===== */
 (function(){
   const overlay=document.getElementById('igloo-intro');
   if(!overlay)return;
@@ -692,20 +691,16 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     overlay.classList.add('gone');unlock();
     setTimeout(()=>overlay.remove(),1000);
   }
-  /* выход ДО всего остального — сайт не зависнет никогда */
   addEventListener('wheel',kill,{passive:true,once:true});
   addEventListener('touchstart',kill,{passive:true,once:true});
   addEventListener('touchmove',kill,{passive:true,once:true});
   addEventListener('keydown',kill,{once:true});
   overlay.addEventListener('click',kill,{once:true});
-  setTimeout(kill,15000); /* аварийный выход */
-  if(reduced){kill();return;}
+  setTimeout(kill,15000);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){kill();return;}
   if(!window.THREE){kill();return;}
   let renderer;
-  try{
-    renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-  }catch(e){kill();return;}
-
+  try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch(e){kill();return;}
   try{
     renderer.setPixelRatio(Math.min(devicePixelRatio,2));
     renderer.setSize(innerWidth,innerHeight);
@@ -718,7 +713,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     scene.add(new THREE.AmbientLight(0xffffff,.85));
     const dl=new THREE.DirectionalLight(0xffffff,1.05);dl.position.set(5,9,4);scene.add(dl);
 
-    /* небо */
     scene.add(new THREE.Mesh(new THREE.SphereGeometry(190,24,16),new THREE.ShaderMaterial({
       side:THREE.BackSide,depthWrite:false,
       uniforms:{c1:{value:new THREE.Color(0x6a6f7d)},c2:{value:new THREE.Color(0xe1e6f1)}},
@@ -726,7 +720,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       fragmentShader:'varying vec3 vP;uniform vec3 c1;uniform vec3 c2;void main(){float h=normalize(vP).y*.5+.5;gl_FragColor=vec4(mix(c1,c2,pow(h,1.35)),1.0);}'
     })));
 
-    /* снег-холмы */
     const tGeo=new THREE.PlaneGeometry(220,220,110,110);
     const tp=tGeo.attributes.position;
     for(let i=0;i<tp.count;i++){
@@ -740,7 +733,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     const terrain=new THREE.Mesh(tGeo,new THREE.MeshStandardMaterial({color:0xd6dbe1,roughness:1,metalness:0,flatShading:true}));
     terrain.rotation.x=-Math.PI/2;terrain.position.y=-3.2;scene.add(terrain);
 
-    /* пятно света */
     const gc=document.createElement('canvas');gc.width=gc.height=256;
     const gx=gc.getContext('2d');
     const gr=gx.createRadialGradient(128,128,10,128,128,128);
@@ -749,7 +741,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(18,18),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
     glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-3.0;scene.add(glowDisc);
 
-    /* куб из блоков */
     const struct=new THREE.Group();struct.position.y=-.5;scene.add(struct);
     const boxGeo=new THREE.BoxGeometry(.95,.95,.95);
     const edgeGeo=new THREE.EdgesGeometry(boxGeo);
@@ -794,7 +785,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     );
     struct.add(cage);
 
-    /* треугольная плитка + шокволна */
     const TRI=220;
     const triVerts=[];const triDist=[];
     for(let i=0;i<TRI;i++){
@@ -830,7 +820,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     const ray=new THREE.Raycaster();
     addEventListener('pointermove',e=>{mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);});
 
-    /* звук */
     let audio=null,soundOn=false;
     const sndBtn=document.getElementById('iuSound'),sndTxt=document.getElementById('iuSoundTxt');
     sndBtn.addEventListener('click',e=>{
@@ -863,7 +852,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       requestAnimationFrame(frame);
       try{
         const t=(now-T0)/1000;
-        const wp=sm01(clamp(t/WAVE_D,0,1));
+        const wp=sm01(clampLocal(t/WAVE_D,0,1));
         const waveR=wp*WAVE_MAX;
         ring.visible=wp>0&&wp<1;
         ring.scale.setScalar(Math.max(.001,waveR));
@@ -881,7 +870,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
         let liftSum=0;
         for(const b of blocks){
           const d=ray.ray.distanceToPoint(b.m.position);
-          b.target=sm01(cl(1-d/2.6,0,1));
+          b.target=sm01(clampLocal(1-d/2.6,0,1));
           b.lift+=(b.target-b.lift)*.08;
           const L=b.lift;liftSum+=L;
           const ap=sstep(0,1,(t-.45-b.rand*.9)/1.3);
@@ -895,7 +884,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
           b.eMat.opacity=ap*(.45+.4*Math.sin(t*2+b.phase))+L*.4;
           if(b.sp){
             b.sp.position.copy(b.m.position).addScaledVector(b.out,.75);
-            b.spMat.opacity=cl((L-.25)/.75,0,1)*.95*ap;
+            b.spMat.opacity=clampLocal((L-.25)/.75,0,1)*.95*ap;
           }
         }
         for(let k=0;k<pairs.length;k++){
@@ -935,6 +924,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
         renderer.render(scene,camera);
       }catch(e){kill();}
     }
+    function clampLocal(v,a,b){return Math.max(a,Math.min(b,v));}
     requestAnimationFrame(frame);
     addEventListener('resize',()=>{
       camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
