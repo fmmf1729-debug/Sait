@@ -1,4 +1,4 @@
-<!-- v9 -->
+<!-- v10 -->
 <!-- ✚ Дизайн и код: Fel_iks. Копирование без разрешения запрещено. -->
 <!DOCTYPE html>
 <html lang="ru">
@@ -87,8 +87,8 @@ a{color:inherit;text-decoration:none}
 #wipe.off{transform:translateY(-102%)}
 .splat{position:fixed;z-index:190;background:#050708;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%) scale(0)}
 .splat::before,.splat::after{content:'';position:absolute;background:inherit;border-radius:50%}
-.splat::before{width:18%;height:18%;left:-7%;top:10%}
-.splat::after{width:11%;height:11%;right:-4%;top:4%}
+.splat::before{width:18%;height:18%;left:-7%;;top:10%}
+.splat::after{width:11%;height:11%;right:-4%;;top:4%}
 .splat.go{transition:transform .45s cubic-bezier(.2,.8,.2,1);transform:translate(-50%,-50%) scale(1)}
 #bg{position:fixed;inset:-10%;z-index:0;pointer-events:none}
 .crossw{position:absolute}
@@ -364,7 +364,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 </head>
 <body class="intro-locked">
 
-<!-- ===== INTRO ===== -->
 <div id="igloo-intro">
   <div id="ascii-loader"></div>
   <div class="intro-ui">
@@ -680,7 +679,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   document.documentElement.setAttribute('data-author','Fel_iks');
 })();
 
-/* ===== INTRO v9 ===== */
+/* ===== INTRO v10: куб из блоков + кристальная сфера (в стиле cryo, код наш) ===== */
 (function(){
   const overlay=document.getElementById('igloo-intro');
   if(!overlay)return;
@@ -741,6 +740,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(18,18),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
     glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-3.0;scene.add(glowDisc);
 
+    /* куб из блоков */
     const struct=new THREE.Group();struct.position.y=-.5;scene.add(struct);
     const boxGeo=new THREE.BoxGeometry(.95,.95,.95);
     const edgeGeo=new THREE.EdgesGeometry(boxGeo);
@@ -785,6 +785,31 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     );
     struct.add(cage);
 
+    /* кристальная сфера в стиле cryo: фасетное ядро + френель + осколки на орбите */
+    const core=new THREE.Mesh(new THREE.IcosahedronGeometry(1.05,1),new THREE.MeshPhysicalMaterial({
+      color:0xcfeef2,metalness:.05,roughness:.12,transparent:true,opacity:.95,flatShading:true,
+      emissive:0x16e0e0,emissiveIntensity:.25
+    }));
+    struct.add(core);
+    const rim=new THREE.Mesh(new THREE.SphereGeometry(1.22,48,48),new THREE.ShaderMaterial({
+      transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,
+      uniforms:{uI:{value:0}},
+      vertexShader:'varying vec3 vN;varying vec3 vV;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
+      fragmentShader:'varying vec3 vN;varying vec3 vV;uniform float uI;void main(){float f=pow(1.0-abs(dot(normalize(vN),normalize(vV))),2.5);gl_FragColor=vec4(vec3(0.55,0.95,0.95)*f*uI,f);}'
+    }));
+    struct.add(rim);
+    const shards=new THREE.Group();
+    const shardGeo=new THREE.TetrahedronGeometry(0.12);
+    const shardMat=new THREE.MeshStandardMaterial({color:0xdfe8ee,roughness:.3,metalness:.1,flatShading:true});
+    const shardData=[];
+    for(let i=0;i<24;i++){
+      const m=new THREE.Mesh(shardGeo,shardMat);
+      shardData.push({m,a:Math.random()*6.28,r:1.9+Math.random()*0.7,sp:0.25+Math.random()*0.5,y:(Math.random()-0.5)*1.4,rs:Math.random()*6.28});
+      shards.add(m);
+    }
+    struct.add(shards);
+    const pl=new THREE.PointLight(0xffffff,1.8,16);struct.add(pl);
+
     const TRI=220;
     const triVerts=[];const triDist=[];
     for(let i=0;i<TRI;i++){
@@ -804,10 +829,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
     const ring=new THREE.Mesh(new THREE.RingGeometry(.92,1,72),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
     ring.rotation.x=-Math.PI/2;ring.position.y=-2.9;scene.add(ring);
-
-    const core=new THREE.Mesh(new THREE.SphereGeometry(1.15,24,24),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
-    struct.add(core);
-    const pl=new THREE.PointLight(0xffffff,1.8,16);struct.add(pl);
 
     const SN=matchMedia('(pointer:coarse)').matches?220:450;
     const snGeo=new THREE.BufferGeometry();
@@ -900,8 +921,17 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
         pGeo.attributes.position.needsUpdate=true;
         pGeo.attributes.color.needsUpdate=true;
         cage.material.opacity=.3*wp;
-        core.material.opacity=wp*(.5+.25*Math.sin(t*1.4))+liftSum/blocks.length*.6;
-        pl.intensity=1.4+liftSum/blocks.length*2;
+        /* сфера */
+        core.material.emissiveIntensity=.2+wp*(.5+.25*Math.sin(t*1.4))+liftSum/blocks.length*.6;
+        core.rotation.y=t*.1;core.rotation.x=Math.sin(t*.2)*.15;
+        rim.material.uniforms.uI.value=wp*(.8+.4*Math.sin(t*1.4))+liftSum/blocks.length*.8;
+        rim.rotation.y=t*.15;
+        for(const sd of shardData){
+          const ang=sd.a+t*sd.sp;
+          sd.m.position.set(Math.cos(ang)*sd.r,sd.y+Math.sin(t*sd.sp*1.7+sd.rs)*.15,Math.sin(ang)*sd.r);
+          sd.m.rotation.x=t*sd.rs;sd.m.rotation.y=t*sd.rs*1.3;
+          sd.m.visible=wp>0.5;
+        }
         glowDisc.material.opacity=(.35+.25*Math.sin(t*1.2))*wp;
         const sp2=snGeo.attributes.position;
         for(let i=0;i<SN;i++){
