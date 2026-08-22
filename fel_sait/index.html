@@ -1,4 +1,4 @@
-<!-- v10 -->
+<!-- v11 -->
 <!-- ✚ Дизайн и код: Fel_iks. Копирование без разрешения запрещено. -->
 <!DOCTYPE html>
 <html lang="ru">
@@ -53,6 +53,7 @@ a{color:inherit;text-decoration:none}
 #igloo-intro{position:fixed;inset:0;z-index:9999;background:#A0A5B1;transition:opacity 1s cubic-bezier(.4,0,.2,1),visibility 1s}
 #igloo-intro.gone{opacity:0;visibility:hidden;pointer-events:none}
 #igloo-intro canvas{position:absolute;inset:0;display:block}
+.iu-vig{position:absolute;inset:0;pointer-events:none;z-index:4;background:radial-gradient(ellipse at 50% 45%,transparent 52%,rgba(38,42,50,.38) 100%)}
 #ascii-loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:6;transition:opacity .6s}
 #ascii-loader.hide{opacity:0}
 #ascii-loader::before{content:'-===+++===-';font-family:var(--mono);color:#3d4654;font-size:18px;font-weight:700;letter-spacing:.1em;animation:ascii 1.2s steps(1) infinite}
@@ -87,8 +88,8 @@ a{color:inherit;text-decoration:none}
 #wipe.off{transform:translateY(-102%)}
 .splat{position:fixed;z-index:190;background:#050708;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%) scale(0)}
 .splat::before,.splat::after{content:'';position:absolute;background:inherit;border-radius:50%}
-.splat::before{width:18%;height:18%;left:-7%;;top:10%}
-.splat::after{width:11%;height:11%;right:-4%;;top:4%}
+.splat::before{width:18%;height:18%;left:-7%;top:10%}
+.splat::after{width:11%;height:11%;right:-4%;top:4%}
 .splat.go{transition:transform .45s cubic-bezier(.2,.8,.2,1);transform:translate(-50%,-50%) scale(1)}
 #bg{position:fixed;inset:-10%;z-index:0;pointer-events:none}
 .crossw{position:absolute}
@@ -366,6 +367,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 
 <div id="igloo-intro">
   <div id="ascii-loader"></div>
+  <div class="iu-vig"></div>
   <div class="intro-ui">
     <div class="iu-logo">
       <div class="lg">FEL_IKS</div>
@@ -679,7 +681,8 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   document.documentElement.setAttribute('data-author','Fel_iks');
 })();
 
-/* ===== INTRO v10: куб из блоков + кристальная сфера (в стиле cryo, код наш) ===== */
+/* ===== INTRO v11: куб-иглу из скруглённых камней, свет изнутри,
+   демпфированный ховер, фрост в точке курсора, шокволна, влёт камеры ===== */
 (function(){
   const overlay=document.getElementById('igloo-intro');
   if(!overlay)return;
@@ -704,61 +707,86 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     renderer.setPixelRatio(Math.min(devicePixelRatio,2));
     renderer.setSize(innerWidth,innerHeight);
     renderer.setClearColor(0xA0A5B1,1);
+    renderer.toneMapping=THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure=1.05;
     overlay.insertBefore(renderer.domElement,overlay.firstChild);
 
     const scene=new THREE.Scene();
-    scene.fog=new THREE.FogExp2(0xA0A5B1,0.026);
-    const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,400);
-    scene.add(new THREE.AmbientLight(0xffffff,.85));
-    const dl=new THREE.DirectionalLight(0xffffff,1.05);dl.position.set(5,9,4);scene.add(dl);
+    scene.fog=new THREE.FogExp2(0xa0a5b1,0.02);
+    const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,500);
 
-    scene.add(new THREE.Mesh(new THREE.SphereGeometry(190,24,16),new THREE.ShaderMaterial({
+    scene.add(new THREE.AmbientLight(0xffffff,.9));
+    const dl=new THREE.DirectionalLight(0xffffff,1.1);dl.position.set(6,10,4);scene.add(dl);
+    const fill=new THREE.DirectionalLight(0xbfd4e6,.35);fill.position.set(-6,4,-6);scene.add(fill);
+
+    /* небо-градиент */
+    scene.add(new THREE.Mesh(new THREE.SphereGeometry(220,24,16),new THREE.ShaderMaterial({
       side:THREE.BackSide,depthWrite:false,
       uniforms:{c1:{value:new THREE.Color(0x6a6f7d)},c2:{value:new THREE.Color(0xe1e6f1)}},
       vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-      fragmentShader:'varying vec3 vP;uniform vec3 c1;uniform vec3 c2;void main(){float h=normalize(vP).y*.5+.5;gl_FragColor=vec4(mix(c1,c2,pow(h,1.35)),1.0);}'
+      fragmentShader:'varying vec3 vP;uniform vec3 c1;uniform vec3 c2;void main(){float h=normalize(vP).y*.5+.5;gl_FragColor=vec4(mix(c1,c2,pow(h,1.3)),1.0);}'
     })));
 
-    const tGeo=new THREE.PlaneGeometry(220,220,110,110);
+    /* гладкий снежный рельеф (слоёный шум) */
+    function fbm(x,y){
+      return Math.sin(x*.055)*Math.cos(y*.05)*1.5
+        + .55*Math.sin(x*.14+1.7)*Math.cos(y*.11+.8)
+        + .22*Math.sin(x*.38)*Math.sin(y*.33);
+    }
+    const tGeo=new THREE.PlaneGeometry(260,260,150,150);
     const tp=tGeo.attributes.position;
     for(let i=0;i<tp.count;i++){
       const x=tp.getX(i),y=tp.getY(i);
       const d=Math.sqrt(x*x+y*y);
-      let h=Math.sin(x*.07)*Math.cos(y*.06)*2.2+Math.sin(x*.19+y*.15)*.8+Math.sin(x*.6)*Math.cos(y*.5)*.2;
-      h+=Math.max(0,5-d*.45)*.8;
-      tp.setZ(i,h);
+      tp.setZ(i,fbm(x,y)+Math.max(0,5.5-d*.42)*.9);
     }
     tGeo.computeVertexNormals();
-    const terrain=new THREE.Mesh(tGeo,new THREE.MeshStandardMaterial({color:0xd6dbe1,roughness:1,metalness:0,flatShading:true}));
-    terrain.rotation.x=-Math.PI/2;terrain.position.y=-3.2;scene.add(terrain);
+    const terrain=new THREE.Mesh(tGeo,new THREE.MeshStandardMaterial({color:0xd9dee5,roughness:.95,metalness:0}));
+    terrain.rotation.x=-Math.PI/2;terrain.position.y=-3.1;scene.add(terrain);
 
+    /* световое пятно под кубом */
     const gc=document.createElement('canvas');gc.width=gc.height=256;
     const gx=gc.getContext('2d');
     const gr=gx.createRadialGradient(128,128,10,128,128,128);
     gr.addColorStop(0,'rgba(255,255,255,.95)');gr.addColorStop(.5,'rgba(255,255,255,.35)');gr.addColorStop(1,'rgba(255,255,255,0)');
     gx.fillStyle=gr;gx.fillRect(0,0,256,256);
-    const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(18,18),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-    glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-3.0;scene.add(glowDisc);
+    const glowTex=new THREE.CanvasTexture(gc);
+    const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshBasicMaterial({map:glowTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+    glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-2.95;scene.add(glowDisc);
 
-    /* куб из блоков */
-    const struct=new THREE.Group();struct.position.y=-.5;scene.add(struct);
-    const boxGeo=new THREE.BoxGeometry(.95,.95,.95);
-    const edgeGeo=new THREE.EdgesGeometry(boxGeo);
+    /* скруглённый каменный блок (extrude + фаска), один на все блоки */
+    function roundedBlock(w,h,d,r){
+      const W=w-2*r,H=h-2*r,s=new THREE.Shape(),x=W/2,y=H/2;
+      s.moveTo(-x,-y);s.lineTo(x,-y);s.absArc(x,-y,r,-Math.PI/2,0,false);
+      s.lineTo(x+W/2? x+W/2:x, y); /* noop guard */
+      s.lineTo(W/2,y);s.absArc(x,y,r,0,Math.PI/2,false);
+      s.lineTo(-x,y+H/2? y:y); s.lineTo(-x,y);s.absArc(-x,y,r,Math.PI/2,Math.PI,false);
+      s.lineTo(-W/2,-y);s.absArc(-x,-y,r,Math.PI,Math.PI*1.5,false);
+      const g=new THREE.ExtrudeGeometry(s,{depth:d-2*r,bevelEnabled:true,bevelThickness:r,bevelSize:r*.9,bevelSegments:2,steps:1});
+      g.translate(0,0,-(d-2*r)/2);
+      return g;
+    }
+    const blockGeo=roundedBlock(1.18,.84,.74,.17);
+    const blockMat=new THREE.MeshStandardMaterial({color:0x67707c,roughness:.52,metalness:.08});
+
+    const struct=new THREE.Group();struct.position.y=-.45;scene.add(struct);
     const UP=new THREE.Vector3(0,0,1);
     const blocks=[];
     const V=[-1.5,-.5,.5,1.5];
     for(const x of V)for(const y of V)for(const z of V){
       if(Math.max(Math.abs(x),Math.abs(y),Math.abs(z))<1.5)continue;
-      const base=new THREE.Vector3(x,y,z).multiplyScalar(1.02);
+      const base=new THREE.Vector3(x,y,z).multiplyScalar(1.06);
       const out=base.clone().normalize();
-      const q=new THREE.Quaternion().setFromUnitVectors(UP,out);
-      const m=new THREE.Mesh(boxGeo,new THREE.MeshStandardMaterial({color:0x8f98a3,roughness:.6,metalness:.05}));
-      m.position.copy(base);m.quaternion.copy(q);
+      const m=new THREE.Mesh(blockGeo,blockMat);
+      m.position.copy(base);
+      m.quaternion.setFromUnitVectors(UP,out);
       const eMat=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0});
-      m.add(new THREE.LineSegments(edgeGeo,eMat));
+      m.add(new THREE.LineSegments(new THREE.EdgesGeometry(blockGeo),eMat));
       struct.add(m);
-      blocks.push({m,base,out,q,eMat,lift:0,target:0,phase:Math.random()*6.28,rand:Math.random(),sp:null,spMat:null});
+      blocks.push({m,base,out,eMat,lift:0,target:0,phase:Math.random()*6.28,rand:Math.random(),sp:null,spMat:null});
     }
+
+    /* номера + плексус на случайных блоках */
     const numbered=[...blocks].sort(()=>Math.random()-.5).slice(0,12);
     numbered.forEach(b=>{
       const cv=document.createElement('canvas');cv.width=cv.height=128;
@@ -779,68 +807,41 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     pGeo.setAttribute('color',new THREE.BufferAttribute(pCol,3));
     struct.add(new THREE.LineSegments(pGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})));
 
+    /* cage-каркас */
     const cage=new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(3.4,1)),
+      new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(3.5,1)),
       new THREE.LineBasicMaterial({color:0xa7b2d6,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false})
     );
     struct.add(cage);
 
-    /* кристальная сфера в стиле cryo: фасетное ядро + френель + осколки на орбите */
-    const core=new THREE.Mesh(new THREE.IcosahedronGeometry(1.05,1),new THREE.MeshPhysicalMaterial({
-      color:0xcfeef2,metalness:.05,roughness:.12,transparent:true,opacity:.95,flatShading:true,
-      emissive:0x16e0e0,emissiveIntensity:.25
-    }));
+    /* ядро-сфера + свет изнутри */
+    const core=new THREE.Mesh(new THREE.IcosahedronGeometry(1.5,1),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
     struct.add(core);
-    const rim=new THREE.Mesh(new THREE.SphereGeometry(1.22,48,48),new THREE.ShaderMaterial({
-      transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,
-      uniforms:{uI:{value:0}},
-      vertexShader:'varying vec3 vN;varying vec3 vV;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
-      fragmentShader:'varying vec3 vN;varying vec3 vV;uniform float uI;void main(){float f=pow(1.0-abs(dot(normalize(vN),normalize(vV))),2.5);gl_FragColor=vec4(vec3(0.55,0.95,0.95)*f*uI,f);}'
-    }));
-    struct.add(rim);
-    const shards=new THREE.Group();
-    const shardGeo=new THREE.TetrahedronGeometry(0.12);
-    const shardMat=new THREE.MeshStandardMaterial({color:0xdfe8ee,roughness:.3,metalness:.1,flatShading:true});
-    const shardData=[];
-    for(let i=0;i<24;i++){
-      const m=new THREE.Mesh(shardGeo,shardMat);
-      shardData.push({m,a:Math.random()*6.28,r:1.9+Math.random()*0.7,sp:0.25+Math.random()*0.5,y:(Math.random()-0.5)*1.4,rs:Math.random()*6.28});
-      shards.add(m);
-    }
-    struct.add(shards);
-    const pl=new THREE.PointLight(0xffffff,1.8,16);struct.add(pl);
+    const inner=new THREE.PointLight(0xbfefff,0,14);struct.add(inner);
 
-    const TRI=220;
-    const triVerts=[];const triDist=[];
-    for(let i=0;i<TRI;i++){
-      const a=Math.random()*Math.PI*2,r=2.5+Math.random()*30;
-      const cx0=Math.cos(a)*r,cz0=Math.sin(a)*r,s=.35+Math.random()*1.2,rot=Math.random()*Math.PI*2;
-      for(let k=0;k<3;k++){
-        const aa=rot+k*Math.PI*2/3;
-        triVerts.push(cx0+Math.cos(aa)*s,-3.05+Math.random()*.1,cz0+Math.sin(aa)*s);
-      }
-      triDist.push(r);
-    }
-    const triColArr=new Float32Array(TRI*9);
-    const triGeo=new THREE.BufferGeometry();
-    triGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(triVerts),3));
-    triGeo.setAttribute('color',new THREE.BufferAttribute(triColArr,3));
-    scene.add(new THREE.LineSegments(triGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})));
+    /* фрост-свечение в точке курсора */
+    const frost=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+    frost.scale.set(2.4,2.4,1);struct.add(frost);
+    const proxy=new THREE.Mesh(new THREE.SphereGeometry(3.2,16,16),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,depthTest:false}));
+    struct.add(proxy);
 
-    const ring=new THREE.Mesh(new THREE.RingGeometry(.92,1,72),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-    ring.rotation.x=-Math.PI/2;ring.position.y=-2.9;scene.add(ring);
-
-    const SN=matchMedia('(pointer:coarse)').matches?220:450;
+    /* снег */
+    const SN=matchMedia('(pointer:coarse)').matches?220:500;
     const snGeo=new THREE.BufferGeometry();
     const snArr=new Float32Array(SN*3);
-    for(let i=0;i<SN;i++){snArr[i*3]=(Math.random()-.5)*44;snArr[i*3+1]=Math.random()*16-3;snArr[i*3+2]=(Math.random()-.5)*44;}
+    for(let i=0;i<SN;i++){snArr[i*3]=(Math.random()-.5)*46;snArr[i*3+1]=Math.random()*16-3;snArr[i*3+2]=(Math.random()-.5)*46;}
     snGeo.setAttribute('position',new THREE.BufferAttribute(snArr,3));
     scene.add(new THREE.Points(snGeo,new THREE.PointsMaterial({size:.07,color:0xffffff,transparent:true,opacity:.6})));
+
+    /* шокволна */
+    const ring=new THREE.Mesh(new THREE.RingGeometry(.92,1,72),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+    ring.rotation.x=-Math.PI/2;ring.position.y=-2.9;scene.add(ring);
 
     const mouse=new THREE.Vector2(0,0);
     const ray=new THREE.Raycaster();
     addEventListener('pointermove',e=>{mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);});
 
+    /* звук */
     let audio=null,soundOn=false;
     const sndBtn=document.getElementById('iuSound'),sndTxt=document.getElementById('iuSoundTxt');
     sndBtn.addEventListener('click',e=>{
@@ -864,48 +865,65 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     const sm01=v=>v*v*(3-2*v);
     const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
     const sstep=(a,b,x)=>{const k=cl((x-a)/(b-a),0,1);return k*k*(3-2*k);};
+    const damp=THREE.MathUtils?THREE.MathUtils.damp:(a,b,l,dt)=>a+(b-a)*(1-Math.exp(-l*dt));
     const introPos=new THREE.Vector3(-14,21,14);
     const tmp=new THREE.Vector3();
     const WAVE_MAX=55,WAVE_D=2.6;
+    let lastNow=T0;
 
     function frame(now){
       if(killed)return;
       requestAnimationFrame(frame);
       try{
+        const dt=Math.min(.05,(now-lastNow)/1000);lastNow=now;
         const t=(now-T0)/1000;
-        const wp=sm01(clampLocal(t/WAVE_D,0,1));
+
+        /* камера: влёт -> медленный орбит */
+        const it=cl(t/2.8,0,1),ie=1-Math.pow(1-it,3);
+        const oa=.55+Math.max(0,t-2.8)*.06;
+        const orbX=Math.sin(oa)*7.4+mouse.x*.5;
+        const orbY=2.9+Math.sin(t*.21)*.25+mouse.y*.3;
+        const orbZ=Math.cos(oa)*7.4;
+        if(it<1){
+          camera.position.set(
+            introPos.x+(orbX-introPos.x)*ie,
+            introPos.y+(orbY-introPos.y)*ie,
+            introPos.z+(orbZ-introPos.z)*ie);
+        }else camera.position.set(orbX,orbY,orbZ);
+        camera.lookAt(0,.3,0);
+
+        /* шокволна из центра */
+        const wp=sm01(cl(t/WAVE_D,0,1));
         const waveR=wp*WAVE_MAX;
         ring.visible=wp>0&&wp<1;
         ring.scale.setScalar(Math.max(.001,waveR));
         ring.material.opacity=(1-wp)*.75;
-        for(let i=0;i<TRI;i++){
-          const rev=sstep(0,3,waveR-triDist[i]);
-          const flick=.10+.22*(.5+.5*Math.sin(t*1.7+triDist[i]*.7));
-          const a=rev*flick*wp;
-          for(let k=0;k<3;k++){
-            triColArr[i*9+k*3]=a;triColArr[i*9+k*3+1]=a;triColArr[i*9+k*3+2]=a;
-          }
-        }
-        triGeo.attributes.color.needsUpdate=true;
+
+        /* ховер-луч */
         ray.setFromCamera(mouse,camera);
+        const hits=ray.intersectObject(proxy,false);
+        if(hits.length){frost.position.copy(hits[0].point);frost.material.opacity=damp(frost.material.opacity,.55,6,dt);}
+        else frost.material.opacity=damp(frost.material.opacity,0,6,dt);
+
+        /* блоки: сборка по волне + дыхание + демпфированный подъём у мыши */
         let liftSum=0;
         for(const b of blocks){
           const d=ray.ray.distanceToPoint(b.m.position);
-          b.target=sm01(clampLocal(1-d/2.6,0,1));
-          b.lift+=(b.target-b.lift)*.08;
+          b.target=sm01(cl(1-d/2.4,0,1));
+          b.lift=damp(b.lift,b.target,5,dt);
           const L=b.lift;liftSum+=L;
-          const ap=sstep(0,1,(t-.45-b.rand*.9)/1.3);
-          const idle=.16+.1*Math.sin(t*.8+b.phase);
-          const off=(1-ap)*(1.6+b.rand*1.2)+ap*idle+L*1.1;
+          const ap=sstep(.15+b.rand*.55,.15+b.rand*.55+.9,t);
+          const idle=.12+.08*Math.sin(t*.9+b.phase);
+          const off=(1-ap)*(1.7+b.rand*1.2)+ap*idle+L*1.15;
           b.m.position.copy(b.base).addScaledVector(b.out,off);
-          b.m.position.y+=(1-ap)*b.rand*1.6;
-          b.m.quaternion.copy(b.q);
+          b.m.position.y+=(1-ap)*b.rand*1.5;
+          b.m.quaternion.setFromUnitVectors(UP,b.out);
           if((1-ap)>.01){b.m.rotateX(Math.sin(b.phase)*(1-ap)*.5);b.m.rotateY(Math.cos(b.phase*1.7)*(1-ap)*.5);}
           if(L>.01){b.m.rotateX(Math.sin(b.phase)*L*.3);b.m.rotateY(Math.cos(b.phase*1.7)*L*.3);}
-          b.eMat.opacity=ap*(.45+.4*Math.sin(t*2+b.phase))+L*.4;
+          b.eMat.opacity=ap*(.35+.4*Math.sin(t*2+b.phase))+L*.5;
           if(b.sp){
-            b.sp.position.copy(b.m.position).addScaledVector(b.out,.75);
-            b.spMat.opacity=clampLocal((L-.25)/.75,0,1)*.95*ap;
+            b.sp.position.copy(b.m.position).addScaledVector(b.out,.8);
+            b.spMat.opacity=cl((L-.25)/.75,0,1)*.95*ap;
           }
         }
         for(let k=0;k<pairs.length;k++){
@@ -920,19 +938,13 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
         }
         pGeo.attributes.position.needsUpdate=true;
         pGeo.attributes.color.needsUpdate=true;
+
         cage.material.opacity=.3*wp;
-        /* сфера */
-        core.material.emissiveIntensity=.2+wp*(.5+.25*Math.sin(t*1.4))+liftSum/blocks.length*.6;
-        core.rotation.y=t*.1;core.rotation.x=Math.sin(t*.2)*.15;
-        rim.material.uniforms.uI.value=wp*(.8+.4*Math.sin(t*1.4))+liftSum/blocks.length*.8;
-        rim.rotation.y=t*.15;
-        for(const sd of shardData){
-          const ang=sd.a+t*sd.sp;
-          sd.m.position.set(Math.cos(ang)*sd.r,sd.y+Math.sin(t*sd.sp*1.7+sd.rs)*.15,Math.sin(ang)*sd.r);
-          sd.m.rotation.x=t*sd.rs;sd.m.rotation.y=t*sd.rs*1.3;
-          sd.m.visible=wp>0.5;
-        }
+        core.material.opacity=wp*(.5+.25*Math.sin(t*1.4))+liftSum/blocks.length*.7;
+        inner.intensity=wp*2.6+liftSum/blocks.length*2.2;
         glowDisc.material.opacity=(.35+.25*Math.sin(t*1.2))*wp;
+
+        /* снег */
         const sp2=snGeo.attributes.position;
         for(let i=0;i<SN;i++){
           let y=sp2.getY(i)-.012;
@@ -940,21 +952,10 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
           sp2.setY(i,y);
         }
         sp2.needsUpdate=true;
-        const oa=.6+Math.max(0,t-WAVE_D)*.08;
-        const orbX=Math.sin(oa)*7.6+mouse.x*.5;
-        const orbY=3.4+Math.sin(t*.23)*.3+mouse.y*.3;
-        const orbZ=Math.cos(oa)*7.6;
-        if(t<WAVE_D){
-          const k=sm01(t/WAVE_D);
-          camera.position.set(introPos.x+(orbX-introPos.x)*k,introPos.y+(orbY-introPos.y)*k,introPos.z+(orbZ-introPos.z)*k);
-        }else{
-          camera.position.set(orbX,orbY,orbZ);
-        }
-        camera.lookAt(0,.5,0);
+
         renderer.render(scene,camera);
       }catch(e){kill();}
     }
-    function clampLocal(v,a,b){return Math.max(a,Math.min(b,v));}
     requestAnimationFrame(frame);
     addEventListener('resize',()=>{
       camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
