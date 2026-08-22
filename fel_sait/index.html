@@ -49,7 +49,7 @@ a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#16e0e0;border:2px solid #000}
 
-/* ===== INTRO (стиль igloo: светлая снежная сцена) ===== */
+/* ===== INTRO ===== */
 #igloo-intro{position:fixed;inset:0;z-index:9999;background:#A0A5B1;transition:opacity 1s cubic-bezier(.4,0,.2,1),visibility 1s}
 #igloo-intro.gone{opacity:0;visibility:hidden;pointer-events:none}
 #igloo-intro canvas{position:absolute;inset:0;display:block}
@@ -108,6 +108,7 @@ a{color:inherit;text-decoration:none}
 .tbtn{position:relative;width:22px;height:22px;border:2px solid var(--line);cursor:pointer;transition:.2s;touch-action:manipulation}
 .tbtn[data-set="dark"]{background:#0a0d0f}
 .tbtn[data-set="light"]{background:#f2f6f6}
+.tbtn[data-set="cyan"]{background:#0fd6d6}
 .tbtn:hover{translate:0 -2px;z-index:6}
 .tbtn.on{border-color:#16e0e0;box-shadow:0 0 10px rgba(22,224,224,.6)}
 .burger{width:46px;height:44px;background:none;border:0;cursor:pointer;display:grid;place-items:center;gap:6px;position:relative;z-index:110;touch-action:manipulation}
@@ -239,10 +240,6 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 .card::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),var(--glowbg),transparent 70%);opacity:0;transition:opacity .3s}
 .card:hover::after{opacity:1}
-.card::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
-  background:linear-gradient(105deg,transparent 35%,var(--cy) 50%,transparent 65%) no-repeat;
-  background-size:250% 100%;background-position:130% 0;opacity:.55;transition:background-position .7s ease}
-.card:hover::before{background-position:-30% 0}
 .card:hover{border-color:var(--cy);box-shadow:var(--glow);translate:0 -6px;z-index:6}
 .card .ico{font-size:1.5rem;color:var(--muted);display:inline-block;transition:.3s;margin-bottom:6px}
 .card:hover .ico{color:var(--cy);transform:scale(1.25) rotate(-10deg);text-shadow:var(--glow)}
@@ -364,7 +361,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 </head>
 <body class="intro-locked">
 
-<!-- ===== INTRO: снежная сцена с кубом из блоков (стиль igloo) ===== -->
+<!-- ===== INTRO: igloo-механика: влёт камеры → шокволна из центра → сборка куба → интерактив ===== -->
 <div id="igloo-intro">
   <div id="ascii-loader"></div>
   <div class="intro-ui">
@@ -444,7 +441,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
       <a href="#/orders" class="card" data-tilt data-reveal style="--d:.1s"><span class="ico">✚</span><span class="num">02</span><h3>Заказы</h3><p>Превью, оформление, скины и сайты — беру в работу.</p><span class="go">→</span></a>
       <a href="#/opensource" class="card" data-tilt data-reveal style="--d:.2s"><span class="ico">⚙</span><span class="num">03</span><h3>Опенсурс</h3><p>Бесплатные программы, которые я разработал.</p><span class="go">→</span></a>
       <a href="#/ranta" class="card" data-tilt data-reveal style="--d:.25s"><span class="ico">⛏</span><span class="num">04</span><h3>Ranta</h3><p>Мой майн-сервер для контентмейкеров.</p><span class="go">→</span></a>
-      <a href="#/feedback" class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✉</span><span class="num">05</span><h3>Обратная связь</h3><p>Вопросы, идеи и предложения — пиши, я на связи.</p><span class="go">→</span></a>
+      <a href="#/feedback" class="card" data-tilt data-reveal="right" style="--d:.3s"><span class="ico">✉</span><span class="num">05</span><h3>Обратная связь</h3><p>Раздел готовится. Пока проще всего написать в Telegram.</p><span class="go">→</span></a>
     </div>
   </div>
   <div class="wrap sec">
@@ -681,33 +678,45 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
 })();
 
 /* =========================================================
-   INTRO — снежная сцена как в ролике igloo:
-   светлый фон #A0A5B1, куб из блоков, белые светящиеся щели,
-   номера + линии, блоки подлетают к мыши, скролл = вход
+   INTRO — реконструкция механики igloo.inc:
+   1) камера влетает из (-14,21,14) в (0,.5,0) за 2.5с (power3.inOut)
+   2) ШОКВОЛНА из центра на весь экран: кольцо + раскрытие
+      треугольной плитки и cage (#a7b2d6, additive, .3)
+   3) блоки стартуют "exploded" и собираются по мере волны
+   4) дальше: дыхание блоков, ховер-подъём, plexus + номера
+   5) scroll / tap / click — вход на сайт
 ========================================================= */
 (function(){
   const overlay=document.getElementById('igloo-intro');
   if(!overlay)return;
-  const unlock=()=>{document.body.classList.remove('intro-locked');};
+  const unlock=()=>document.body.classList.remove('intro-locked');
   if(!window.THREE){overlay.remove();unlock();return;}
   let renderer;
-  try{
-    renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-  }catch(e){overlay.remove();unlock();return;}
+  try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}
+  catch(e){overlay.remove();unlock();return;}
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.setSize(innerWidth,innerHeight);
   renderer.setClearColor(0xA0A5B1,1);
   overlay.insertBefore(renderer.domElement,overlay.firstChild);
 
   const scene=new THREE.Scene();
-  scene.fog=new THREE.FogExp2(0xA0A5B1,0.028);
-  const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,300);
+  scene.fog=new THREE.FogExp2(0xA0A5B1,0.026);
+  const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,400);
 
   scene.add(new THREE.AmbientLight(0xffffff,.85));
-  const dl=new THREE.DirectionalLight(0xffffff,1.1);dl.position.set(5,9,4);scene.add(dl);
+  const dl=new THREE.DirectionalLight(0xffffff,1.05);dl.position.set(5,9,4);scene.add(dl);
 
-  /* terrain — снежные холмы */
-  const tGeo=new THREE.PlaneGeometry(160,160,96,96);
+  /* небо: градиент #6a6f7d -> #e1e6f1 как в оригинале */
+  const sky=new THREE.Mesh(new THREE.SphereGeometry(190,24,16),new THREE.ShaderMaterial({
+    side:THREE.BackSide,depthWrite:false,
+    uniforms:{c1:{value:new THREE.Color(0x6a6f7d)},c2:{value:new THREE.Color(0xe1e6f1)}},
+    vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+    fragmentShader:'varying vec3 vP;uniform vec3 c1;uniform vec3 c2;void main(){float h=normalize(vP).y*.5+.5;gl_FragColor=vec4(mix(c1,c2,pow(h,1.35)),1.0);}'
+  }));
+  scene.add(sky);
+
+  /* снежные холмы */
+  const tGeo=new THREE.PlaneGeometry(220,220,110,110);
   const tp=tGeo.attributes.position;
   for(let i=0;i<tp.count;i++){
     const x=tp.getX(i),y=tp.getY(i);
@@ -729,7 +738,7 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   const glowDisc=new THREE.Mesh(new THREE.PlaneGeometry(18,18),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
   glowDisc.rotation.x=-Math.PI/2;glowDisc.position.y=-3.0;scene.add(glowDisc);
 
-  /* ===== КУБ ИЗ БЛОКОВ ===== */
+  /* ===== КУБ ИЗ БЛОКОВ (exploded -> assembled) ===== */
   const struct=new THREE.Group();struct.position.y=-.5;scene.add(struct);
   const boxGeo=new THREE.BoxGeometry(.95,.95,.95);
   const edgeGeo=new THREE.EdgesGeometry(boxGeo);
@@ -743,12 +752,12 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     const q=new THREE.Quaternion().setFromUnitVectors(UP,out);
     const m=new THREE.Mesh(boxGeo,new THREE.MeshStandardMaterial({color:0x8f98a3,roughness:.6,metalness:.05}));
     m.position.copy(base);m.quaternion.copy(q);
-    const eMat=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.5});
+    const eMat=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0});
     m.add(new THREE.LineSegments(edgeGeo,eMat));
     struct.add(m);
-    blocks.push({m,base,out,q,eMat,lift:0,target:0,phase:Math.random()*6.28,sp:null,spMat:null});
+    blocks.push({m,base,out,q,eMat,lift:0,target:0,phase:Math.random()*6.28,rand:Math.random(),sp:null,spMat:null});
   }
-  /* номера на случайных блоках + линии */
+  /* номера + plexus */
   const numbered=[...blocks].sort(()=>Math.random()-.5).slice(0,12);
   numbered.forEach(b=>{
     const cv=document.createElement('canvas');cv.width=cv.height=128;
@@ -769,8 +778,38 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   pGeo.setAttribute('color',new THREE.BufferAttribute(pCol,3));
   struct.add(new THREE.LineSegments(pGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})));
 
-  /* внутреннее свечение */
-  const core=new THREE.Mesh(new THREE.SphereGeometry(1.15,24,24),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false}));
+  /* cage как igloo_cage: #a7b2d6, additive, opacity .3 */
+  const cage=new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(3.4,1)),
+    new THREE.LineBasicMaterial({color:0xa7b2d6,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false})
+  );
+  struct.add(cage);
+
+  /* ===== ТРЕУГОЛЬНАЯ ПЛИТКА НА ЗЕМЛЕ (раскрывается шокволной) ===== */
+  const TRI=220;
+  const triVerts=[];const triDist=[];
+  for(let i=0;i<TRI;i++){
+    const a=Math.random()*Math.PI*2,r=2.5+Math.random()*30;
+    const cx0=Math.cos(a)*r,cz0=Math.sin(a)*r,s=.35+Math.random()*1.2,rot=Math.random()*Math.PI*2;
+    for(let k=0;k<3;k++){
+      const aa=rot+k*Math.PI*2/3;
+      triVerts.push(cx0+Math.cos(aa)*s,-3.05+Math.random()*.1,cz0+Math.sin(aa)*s);
+    }
+    triDist.push(r);
+  }
+  const triPosArr=new Float32Array(triVerts);
+  const triColArr=new Float32Array(TRI*9);
+  const triGeo=new THREE.BufferGeometry();
+  triGeo.setAttribute('position',new THREE.BufferAttribute(triPosArr,3));
+  triGeo.setAttribute('color',new THREE.BufferAttribute(triColArr,3));
+  scene.add(new THREE.LineSegments(triGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})));
+
+  /* кольцо шокволны */
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.92,1,72),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  ring.rotation.x=-Math.PI/2;ring.position.y=-2.9;scene.add(ring);
+
+  /* внутреннее ядро */
+  const core=new THREE.Mesh(new THREE.SphereGeometry(1.15,24,24),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
   struct.add(core);
   const pl=new THREE.PointLight(0xffffff,1.8,16);struct.add(pl);
 
@@ -811,41 +850,62 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
   let exiting=false,exitT=0;
   const sm01=v=>v*v*(3-2*v);
   const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const sstep=(a,b,x)=>{const k=cl((x-a)/(b-a),0,1);return k*k*(3-2*k);};
+  const introPos=new THREE.Vector3(-14,21,14);
   const tmp=new THREE.Vector3();
+  const WAVE_MAX=55,WAVE_D=2.6;
 
   function frame(now){
     requestAnimationFrame(frame);
     const t=(now-T0)/1000;
-    const intro=sm01(clamp((t-.4)/2.2,0,1));
-    const scatter=(1-intro)*3.2;
 
+    /* ШОКВОЛНА из центра на весь экран */
+    const wp=sm01(clamp(t/WAVE_D,0,1));
+    const waveR=wp*WAVE_MAX;
+    ring.visible=wp>0&&wp<1;
+    ring.scale.setScalar(Math.max(.001,waveR));
+    ring.material.opacity=(1-wp)*.75;
+
+    /* треугольная плитка раскрывается волной + ветровой фликер */
+    for(let i=0;i<TRI;i++){
+      const rev=sstep(0,3,waveR-triDist[i]);
+      const flick=.10+.22*(.5+.5*Math.sin(t*1.7+triDist[i]*.7));
+      const a=rev*flick*wp;
+      for(let k=0;k<3;k++){
+        triColArr[i*9+k*3]=a;triColArr[i*9+k*3+1]=a;triColArr[i*9+k*3+2]=a;
+      }
+    }
+    triGeo.attributes.color.needsUpdate=true;
+
+    /* блоки: exploded -> assembled по волне + дыхание + ховер */
     ray.setFromCamera(mouse,camera);
-
     let liftSum=0;
     for(const b of blocks){
       const d=ray.ray.distanceToPoint(b.m.position);
       const f=cl(1-d/2.6,0,1);
-      b.target=sm01(f)*intro;
+      b.target=sm01(f);
       b.lift+=(b.target-b.lift)*.08;
       const L=b.lift;liftSum+=L;
-      const breath=.22+.16*Math.sin(t*.7+b.phase);
-      const off=scatter+breath+L*1.1;
+      const ap=sstep(0,1,(t-.45-b.rand*.9)/1.3);           /* сборка */
+      const idle=.16+.1*Math.sin(t*.8+b.phase);            /* дыхание */
+      const off=(1-ap)*(1.6+b.rand*1.2)+ap*idle+L*1.1;
       b.m.position.copy(b.base).addScaledVector(b.out,off);
+      b.m.position.y+=(1-ap)*b.rand*1.6;
       b.m.quaternion.copy(b.q);
+      if((1-ap)>.01){b.m.rotateX(Math.sin(b.phase)* (1-ap)*.5);b.m.rotateY(Math.cos(b.phase*1.7)*(1-ap)*.5);}
       if(L>.01){b.m.rotateX(Math.sin(b.phase)*L*.3);b.m.rotateY(Math.cos(b.phase*1.7)*L*.3);}
-      b.eMat.opacity=(.45+.4*Math.sin(t*2+b.phase))*intro;
+      b.eMat.opacity=ap*(.45+.4*Math.sin(t*2+b.phase))+L*.4;
       if(b.sp){
         b.sp.position.copy(b.m.position).addScaledVector(b.out,.75);
-        b.spMat.opacity=cl((L-.25)/.75,0,1)*.95*intro;
+        b.spMat.opacity=cl((L-.25)/.75,0,1)*.95*ap;
       }
     }
-
     for(let k=0;k<pairs.length;k++){
       const A=pairs[k][0],B=pairs[k][1];
-      const inten=Math.min(A.lift,B.lift)*intro;
-      tmp.copy(A.sp?A.sp.position:A.m.position);
+      const inten=Math.min(A.lift,B.lift);
+      tmp.copy(A.sp.position);
       pPos[k*6]=tmp.x;pPos[k*6+1]=tmp.y;pPos[k*6+2]=tmp.z;
-      tmp.copy(B.sp?B.sp.position:B.m.position);
+      tmp.copy(B.sp.position);
       pPos[k*6+3]=tmp.x;pPos[k*6+4]=tmp.y;pPos[k*6+5]=tmp.z;
       pCol[k*6]=inten;pCol[k*6+1]=inten;pCol[k*6+2]=inten;
       pCol[k*6+3]=inten;pCol[k*6+4]=inten;pCol[k*6+5]=inten;
@@ -853,10 +913,12 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     pGeo.attributes.position.needsUpdate=true;
     pGeo.attributes.color.needsUpdate=true;
 
-    const avg=liftSum/blocks.length;
-    core.material.opacity=(.55+.25*Math.sin(t*1.4)+avg*.6)*intro;
-    pl.intensity=1.4+avg*2;
+    cage.material.opacity=.3*wp;
+    core.material.opacity=wp*(.5+.25*Math.sin(t*1.4))+liftSum/blocks.length*.6;
+    pl.intensity=1.4+liftSum/blocks.length*2;
+    glowDisc.material.opacity=(.35+.25*Math.sin(t*1.2))*wp;
 
+    /* снег */
     const sp2=snow.geometry.attributes.position;
     for(let i=0;i<SN;i++){
       let y=sp2.getY(i)-.012;
@@ -865,8 +927,21 @@ body.menu-open .menu-links a:nth-child(6){transition-delay:.5s}
     }
     sp2.needsUpdate=true;
 
-    const ang=t*.08+.6;
-    camera.position.set(Math.sin(ang)*7.6+mouse.x*.5,3.4+Math.sin(t*.23)*.3+mouse.y*.3,Math.cos(ang)*7.6);
+    /* камера: влёт из (-14,21,14) -> орбита */
+    const oa=.6+Math.max(0,t-WAVE_D)*.08;
+    const orbX=Math.sin(oa)*7.6+mouse.x*.5;
+    const orbY=3.4+Math.sin(t*.23)*.3+mouse.y*.3;
+    const orbZ=Math.cos(oa)*7.6;
+    if(t<WAVE_D){
+      const k=sm01(t/WAVE_D);
+      camera.position.set(
+        introPos.x+(orbX-introPos.x)*k,
+        introPos.y+(orbY-introPos.y)*k,
+        introPos.z+(orbZ-introPos.z)*k
+      );
+    }else{
+      camera.position.set(orbX,orbY,orbZ);
+    }
     camera.lookAt(0,.5,0);
 
     if(exiting){
@@ -953,26 +1028,6 @@ const title=$('#splitTitle');
   const t=title.textContent.trim();title.setAttribute('aria-label',t);
   title.innerHTML=[...t].map(c=>`<span data-dx="${(Math.random()*2-1).toFixed(2)}" data-dy="${(Math.random()*2-1).toFixed(2)}" data-dr="${(Math.random()*2-1).toFixed(2)}">${c}</span>`).join('');
 }
-
-$$('[data-words]').forEach(el=>{
-  const walk=node=>{
-    [...node.childNodes].forEach(ch=>{
-      if(ch.nodeType===3){
-        const parts=ch.textContent.split(/(\s+)/);
-        const frag=document.createDocumentFragment();
-        let wi=0;
-        parts.forEach(p=>{
-          if(!p)return;
-          if(/^\s+$/.test(p)){frag.appendChild(document.createTextNode(p));return;}
-          const sp=document.createElement('span');sp.className='w';
-          sp.style.setProperty('--wi',wi++);sp.textContent=p;frag.appendChild(sp);
-        });
-        node.replaceChild(frag,ch);
-      }else if(ch.nodeType===1){walk(ch);}
-    });
-  };
-  walk(el);
-});
 
 const bg=$('#bg');
 const CROSS_N=coarse?14:26;
