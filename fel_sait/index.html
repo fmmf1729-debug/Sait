@@ -90,20 +90,17 @@ a{color:inherit;text-decoration:none}
 #progress{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:#16e0e0;z-index:150;
   box-shadow:0 0 12px rgba(22,224,224,.8),0 0 24px rgba(22,224,224,.4)}
 
-/* ===== НОВОЕ: big page number ===== */
 .page-num{position:fixed;right:14px;bottom:14px;font-family:var(--fd);font-weight:900;
   font-size:clamp(3.2rem,8vw,6rem);line-height:1;color:transparent;
   -webkit-text-stroke:1px var(--line);opacity:.22;z-index:4;pointer-events:none;
   letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .page-num b{color:var(--cy);-webkit-text-stroke:0;font-size:.28em;vertical-align:super;margin-right:6px;opacity:.6}
 
-/* ===== НОВОЕ: scroll-percent ===== */
 .scroll-pct{position:fixed;right:14px;top:50%;translate:0 -50%;writing-mode:vertical-rl;
   font-family:var(--mono);font-size:.62rem;letter-spacing:.28em;color:var(--muted);
   z-index:5;pointer-events:none;opacity:.5}
 .scroll-pct b{color:var(--cy)}
 
-/* ===== НОВОЕ: координаты ===== */
 .coords{position:fixed;left:14px;bottom:14px;font-family:var(--mono);font-size:.58rem;
   letter-spacing:.14em;color:var(--muted);z-index:5;pointer-events:none;opacity:.45;line-height:1.6}
 .coords b{color:var(--cy);font-weight:400}
@@ -186,14 +183,9 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}body.menu-open .
 .hero-title{font-family:var(--fd);font-weight:900;font-size:clamp(3rem,12vw,9rem);line-height:.95;text-transform:uppercase;position:relative;z-index:1}
 .hero-title span{display:inline-block;will-change:transform,opacity;
   text-shadow:5px 5px 0 var(--sh1),10px 10px 0 var(--sh2),0 0 30px rgba(22,224,224,.15)}
-/* ===== НОВОЕ: мигающий курсор после заголовка ===== */
-.hero-cursor{display:inline-block;width:.12em;height:.9em;background:var(--cy);margin-left:.1em;vertical-align:middle;
-  animation:blinker 1s step-end infinite;box-shadow:0 0 12px var(--cy)}
-@keyframes blinker{50%{opacity:0}}
 .hero-sub{margin-top:28px;color:var(--muted);font-size:clamp(.9rem,2vw,1.2rem);letter-spacing:.15em;text-transform:uppercase;position:relative;z-index:1}
 .hero-actions{display:flex;gap:18px;margin-top:34px;flex-wrap:wrap;position:relative;z-index:1}
 
-/* ===== НОВОЕ: стикеры в hero ===== */
 .hero-stickers{position:absolute;right:8vw;top:18vh;z-index:3;pointer-events:none}
 .hero-stickers .st{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
   background:var(--panel);border:2px solid var(--line);padding:7px 13px;box-shadow:4px 4px 0 rgba(0,0,0,.3);margin:8px 0;width:fit-content}
@@ -226,9 +218,10 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}body.menu-open .
 .inline{color:var(--cy);border-bottom:2px solid var(--cy)}
 .note{margin-top:26px;color:var(--muted);font-family:var(--mono);font-size:.85rem}
 
-[data-words] .w{display:inline-block;opacity:0;transform:translateY(110%) rotate(8deg);
-  transition:opacity .5s ease,transform .6s cubic-bezier(.2,.8,.2,1);
-  transition-delay:calc(var(--wi)*45ms)}
+/* облегчённое появление слов: без поворота, короче задержка */
+[data-words] .w{display:inline-block;opacity:0;transform:translateY(14px);
+  transition:opacity .4s ease,transform .4s ease;
+  transition-delay:calc(var(--wi)*25ms)}
 [data-words].in .w{opacity:1;transform:none}
 
 .nick{rotate:-2deg;margin-top:4px}
@@ -327,10 +320,6 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}body.menu-open .
   background:linear-gradient(105deg,transparent 35%,var(--cy) 50%,transparent 65%) no-repeat;
   background-size:250% 100%;background-position:130% 0;opacity:.55;transition:background-position .7s ease}
 .card:hover::before{background-position:-30% 0}
-/* ===== НОВОЕ: градиент-рамка при hover ===== */
-.card{background-clip:padding-box;position:relative}
-.card::after-grad{content:'';position:absolute;inset:-2px;border-radius:inherit;background:conic-gradient(from 0deg,var(--cy),transparent 30%,var(--cy) 50%,transparent 80%,var(--cy));opacity:0;transition:opacity .4s;z-index:-1;animation:rotategrad 4s linear infinite}
-@keyframes rotategrad{to{transform:rotate(360deg)}}
 .card:hover{border-color:var(--cy);
   box-shadow:inset 0 1px 0 var(--panel-hi),0 4px 0 rgba(0,0,0,.3),8px 10px 0 var(--panel-sh),0 20px 40px rgba(0,0,0,.28),0 0 24px rgba(22,224,224,.25);
   translate:0 -8px;z-index:6}
@@ -455,8 +444,9 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}body.menu-open .
   .ava-strip img{width:56px;height:56px}
   .ftr{padding:18px 6vw;justify-content:center;text-align:center}
   .menu{padding:8vh 8vw}
-  /* скрываем технические элементы на мобиле — мешают */
   .page-num,.scroll-pct,.coords{display:none}
+  /* мобильная оптимизация: убираем тяжёлые drop-shadow с png и контуров */
+  #head,.over-png,.duo-png,.end-wrap img,.hero-letters,.ghost,.cross,.crossw.c .cross{filter:none}
 }
 @media(pointer:coarse){.hdr{backdrop-filter:none;background:var(--bg)}}
 @media(prefers-reduced-motion:reduce){
@@ -467,7 +457,6 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}body.menu-open .
   .tl-line i{transform:scaleY(1)!important}
   .stack-slot{opacity:1;transform:translate(-50%,-50%)}
   #pre{display:none}
-  .hero-cursor{animation:none}
 }
 </style>
 </head>
@@ -525,7 +514,7 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}body.menu-open .
       <span class="st" id="stDays">est. 0000 days</span>
     </div>
     <div class="hero-letters" data-plx="0.1">FEL</div>
-    <h1 class="hero-title" id="splitTitle">FEL_IKS<span class="hero-cursor"></span></h1>
+    <h1 class="hero-title" id="splitTitle">FEL_IKS</h1>
     <p class="hero-sub" data-reveal data-words>ролики · стримы · разработка · скины</p>
     <div class="hero-actions" data-reveal style="--d:.15s">
       <a href="#/portfolio" class="btn btn-accent magnet">Смотреть работы</a>
@@ -752,8 +741,8 @@ body.menu-open .menu-links a:nth-child(5){transition-delay:.43s}body.menu-open .
 </main>
 
 <div class="big-marquee" aria-hidden="true"><div class="track">
-  <span>FEL_IKS ✚ PORTFOLIO ✚ ORDERS ✚ OPENSOURCE ✚ RANTA ✚&nbsp;</span>
-  <span>FEL_IKS ✚ PORTFOLIO ✚ ORDERS ✚ OPENSOURCE ✚ RANTA ✚&nbsp;</span>
+  <span>FEL_IKS ✚ PORTFOLIO ✚ ORDERS  OPENSOURCE ✚ RANTA ✚&nbsp;</span>
+  <span>FEL_IKS ✚ PORTFOLIO ✚ ORDERS ✚ OPENSOURCE ✚ RANTA &nbsp;</span>
 </div></div>
 
 <footer class="ftr"><span>© 2026 FEL_IKS</span><span>сделал сам, от и до ✚</span></footer>
@@ -792,7 +781,7 @@ const wipe=$('#wipe'),progress=$('#progress'),head=$('#head');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 
-/* ===== НОВОЕ: счётчик дней ===== */
+/* счётчик дней */
 const START_DATE=new Date('2021-01-01').getTime();
 function updateDays(){
   const days=Math.floor((Date.now()-START_DATE)/86400000);
@@ -858,40 +847,37 @@ function scramble(el){
 $$('[data-scramble]').forEach((el,i)=>setTimeout(()=>scramble(el),200+i*150));
 const logo=$('.logo');logo.addEventListener('mouseenter',()=>scramble(logo));
 
-/* split-title */
+/* split-title (без курсора) */
 const title=$('#splitTitle');
-if(title){
-  // сохраняем курсор ▌ и не трогаем его
-  const cursor=title.querySelector('.hero-cursor');
-  const rawText=[...title.childNodes].filter(n=>n.nodeType===3||n!==cursor).map(n=>n.nodeType===3?n.textContent:'').join('').trim();
-  if(!title.dataset.split){
-    title.dataset.split='1';
-    title.setAttribute('aria-label',rawText);
-    const spans=rawText.split('').map(c=>`<span data-dx="${(Math.random()*2-1).toFixed(2)}" data-dy="${(Math.random()*2-1).toFixed(2)}" data-dr="${(Math.random()*2-1).toFixed(2)}">${c}</span>`).join('');
-    title.innerHTML=spans+(cursor?'<span class="hero-cursor"></span>':'');
-  }
+if(title&&!title.dataset.split){
+  const t=title.textContent.trim();
+  title.dataset.split='1';
+  title.setAttribute('aria-label',t);
+  title.innerHTML=[...t].map(c=>`<span data-dx="${(Math.random()*2-1).toFixed(2)}" data-dy="${(Math.random()*2-1).toFixed(2)}" data-dr="${(Math.random()*2-1).toFixed(2)}">${c}</span>`).join('');
 }
 
-/* words walker */
-$$('[data-words]').forEach(el=>{
-  const walk=node=>{
-    [...node.childNodes].forEach(ch=>{
-      if(ch.nodeType===3){
-        const parts=ch.textContent.split(/(\s+)/);
-        const frag=document.createDocumentFragment();
-        let wi=0;
-        parts.forEach(p=>{
-          if(!p)return;
-          if(/^\s+$/.test(p)){frag.appendChild(document.createTextNode(p));return;}
-          const sp=document.createElement('span');sp.className='w';
-          sp.style.setProperty('--wi',wi++);sp.textContent=p;frag.appendChild(sp);
-        });
-        node.replaceChild(frag,ch);
-      }else if(ch.nodeType===1){walk(ch);}
-    });
-  };
-  walk(el);
-});
+/* words walker: на телефонах не дробим — блок проявляется целиком */
+if(!coarse){
+  $$('[data-words]').forEach(el=>{
+    const walk=node=>{
+      [...node.childNodes].forEach(ch=>{
+        if(ch.nodeType===3){
+          const parts=ch.textContent.split(/(\s+)/);
+          const frag=document.createDocumentFragment();
+          let wi=0;
+          parts.forEach(p=>{
+            if(!p)return;
+            if(/^\s+$/.test(p)){frag.appendChild(document.createTextNode(p));return;}
+            const sp=document.createElement('span');sp.className='w';
+            sp.style.setProperty('--wi',wi++);sp.textContent=p;frag.appendChild(sp);
+          });
+          node.replaceChild(frag,ch);
+        }else if(ch.nodeType===1){walk(ch);}
+      });
+    };
+    walk(el);
+  });
+}
 
 /* кресты */
 const bg=$('#bg');
@@ -1028,14 +1014,13 @@ addEventListener('keydown',e=>{
 });
 
 /* кэш */
-let plxEls=[],splitSpans=[],tlCache=[],marqueeEl=null,ghostEls=[],collageEls=[];
+let plxEls=[],splitSpans=[],tlCache=[],marqueeEl=null,ghostEls=[];
 function cacheDom(){
   plxEls=$$('[data-plx]');
   splitSpans=$$('#splitTitle span');
   tlCache=$$('.tl').map(tl=>({el:tl,line:tl.querySelector('.tl-line i'),items:$$('.tl-item',tl)}));
   marqueeEl=$('.marquee');
   ghostEls=$$('.ghost');
-  collageEls=$$('.hero .hero-stickers .st');
 }
 cacheDom();
 let tick=false,lastY=0;
@@ -1043,7 +1028,6 @@ function update(){
   tick=false;const y=scrollY,vw=innerWidth,vh=innerHeight;
   const docH=document.documentElement.scrollHeight-vh;
   progress.style.transform=`scaleX(${docH?y/docH:0})`;
-  /* scroll-pct */
   const sp=$('#scrollPct');
   if(sp)sp.textContent=String(Math.round((docH?y/docH:0)*100)).padStart(3,'0');
   for(let i=0;i<plxEls.length;i++)plxEls[i].style.transform=`translateY(${y*parseFloat(plxEls[i].dataset.plx)}px)`;
@@ -1053,7 +1037,6 @@ function update(){
     sp.style.transform=`translate(${sp.dataset.dx*t*160}px,${sp.dataset.dy*t*160}px) rotate(${sp.dataset.dr*t*60}deg)`;
     sp.style.opacity=1-t*.85;
   }
-  /* скоростной скос */
   const rawU=y-lastY;lastY=y;
   const sk=clamp(rawU*.05,-3.5,3.5);
   if(marqueeEl)marqueeEl.style.transform=`skewY(${sk.toFixed(2)}deg)`;
@@ -1071,7 +1054,7 @@ addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(update)
 
 /* превью в меню */
 const mprev=$('#mprev');
-let mpX=innerWidth/2,mpY=innerHeight/2,px=innerWidth/2,py=innerHeight/2;
+let mpX=innerWidth/2,mpY=innerHeight/2,px=innerWidth/2,py=innerWidth/2;
 addEventListener('mousemove',e=>{px=e.clientX;py=e.clientY;},{passive:true});
 if(mprev&&!coarse){
   $$('.menu-links a').forEach(a=>{
